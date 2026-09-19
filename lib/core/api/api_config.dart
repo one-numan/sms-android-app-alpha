@@ -1,9 +1,9 @@
 /// Configuration file for ONPS ERP Backend API integration.
 class ApiConfig {
-  /// Base URL for the backend server.
-  /// For local Android Emulator testing against a local backend server, use `http://10.0.2.2:8000/api/v1`.
-  /// For physical Android device testing on local Wi-Fi, use your machine's local IP address.
-  static String baseUrl = 'http://10.0.2.2:8000/api/v1';
+  /// Base URL for the running backend server.
+  /// Live server running on: `http://127.0.0.1:8000/api/v1`
+  /// For Android Emulator testing, use `http://10.0.2.2:8000/api/v1`.
+  static String baseUrl = 'http://127.0.0.1:8000/api/v1';
 
   /// Connection timeout in seconds.
   static const int connectTimeoutSeconds = 15;
