@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+  <title>Principal Executive Portal | ONPS ERP</title>
+
+  <!-- Typography & Material Symbols Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+
+  <!-- Tailwind CSS & Configuration -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            background: "#fff8f6",
+            "canvas-cream": "#FDFBF7",
+            "surface-ivory": "#FFFDF9",
+            "surface-container": "#F4EDE4",
+            "deep-espresso": "#2C221E",
+            primary: "#432A1E",
+            "primary-container": "#5C4033",
+            "text-cocoa": "#2D211B",
+            "text-taupe": "#8C7A6B",
+            "border-beige": "#E5D8CA",
+            "caramel-accent": "#C58B5A",
+            "caramel-light": "#E8B88B",
+            "success-forest": "#2E7D4F",
+            "success-mint": "#EAF4ED",
+            "warning-amber": "#A66A00",
+            "warning-gold": "#FFF4D6",
+            "danger-brick": "#B5443C",
+            "danger-blush": "#FBEAE8",
+            "info-marine": "#35758A",
+            "info-ice": "#E8F3F6",
+          },
+          fontFamily: {
+            headline: ["Newsreader", "serif"],
+            body: ["Manrope", "sans-serif"],
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    @layer base {
+      html, body {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        background-color: #FDFBF7;
+        color: #2C221E;
+        font-family: 'Manrope', sans-serif;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
+      .pt-safe { padding-top: env(safe-area-inset-top, 0px); }
+    }
+    ::-webkit-scrollbar { display: none; }
+  </style>
+</head>
+
+<body class="bg-canvas-cream text-text-cocoa flex flex-col min-h-screen overflow-x-hidden antialiased">
+
+  <!-- ========================================================================= -->
+  <!-- TOP APP BAR -->
+  <!-- ========================================================================= -->
+  <header class="fixed top-0 w-full z-50 pt-safe bg-surface-ivory/95 backdrop-blur-xl border-b border-border-beige/70 shadow-[0_1px_8px_rgba(37,25,15,0.04)]">
+    <div class="h-16 px-4 flex items-center justify-between">
+      <div class="flex items-center gap-3 min-w-0 flex-1">
+        <button aria-label="Open navigation menu" class="w-10 h-10 flex items-center justify-center rounded-xl text-deep-espresso hover:bg-surface-container active:scale-95 transition-all shrink-0" id="open-sidebar-btn">
+          <span class="material-symbols-outlined text-[24px]">menu</span>
+        </button>
+        <div class="flex flex-col min-w-0">
+          <div class="flex items-center gap-2">
+            <span class="font-headline text-[1.1rem] text-deep-espresso truncate font-semibold">One Numan Public School</span>
+            <span class="bg-primary text-surface-ivory px-2 py-0.5 rounded font-body text-[10px] tracking-wider uppercase font-bold shrink-0">2026–27</span>
+          </div>
+          <span class="font-body text-[11px] text-text-taupe truncate">Principal Executive Command</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 shrink-0">
+        <button aria-label="Notifications" class="w-10 h-10 flex items-center justify-center rounded-full text-text-cocoa hover:bg-surface-container active:bg-surface-container transition-colors relative">
+          <span class="material-symbols-outlined text-[22px]">notifications</span>
+          <span class="absolute top-2.5 right-2.5 w-2 h-2 bg-caramel-accent rounded-full"></span>
+        </button>
+        <div class="w-9 h-9 rounded-full bg-deep-espresso text-surface-ivory flex items-center justify-center font-bold text-[12px] shadow-sm border border-border-beige shrink-0">
+          NK
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- MAIN CONTENT CONTAINER -->
+  <!-- ========================================================================= -->
+  <main class="flex flex-col relative w-full pt-20 pb-28 bg-canvas-cream min-h-screen overflow-x-hidden">
+    <div class="flex flex-col w-full max-w-2xl mx-auto px-4 space-y-5">
+
+      <!-- 1. PRINCIPAL IDENTITY HEADER -->
+      <section class="bg-surface-ivory rounded-2xl p-5 border border-border-beige/70 shadow-sm">
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3.5 min-w-0">
+            <div class="w-12 h-12 rounded-xl bg-canvas-cream border border-border-beige flex items-center justify-center text-primary shrink-0">
+              <span class="material-symbols-outlined text-[26px]">account_balance</span>
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 mb-0.5">
+                <span class="font-body text-[10px] uppercase font-bold text-text-taupe tracking-wider">Principal Portal</span>
+                <span class="w-1 h-1 rounded-full bg-border-beige"></span>
+                <span class="font-body text-[11px] text-caramel-accent font-semibold">Academic Session 2026–27</span>
+              </div>
+              <h1 class="font-headline text-[1.25rem] text-deep-espresso font-semibold leading-tight truncate">Dr. M. Chacko</h1>
+              <p class="font-body text-[12px] text-text-taupe mt-0.5">Principal &amp; Head of Institution</p>
+            </div>
+          </div>
+          <span class="bg-canvas-cream border border-border-beige px-2.5 py-1 rounded-full font-body text-[11px] font-semibold text-text-cocoa shrink-0">
+            Term 2
+          </span>
+        </div>
+      </section>
+
+      <!-- 2. TODAY'S SCHOOL OVERVIEW -->
+      <section class="space-y-2.5">
+        <div class="flex items-center justify-between px-1">
+          <h2 class="font-headline text-[1.1rem] text-deep-espresso font-semibold">Today's Overview</h2>
+          <span class="font-body text-[11px] text-text-taupe">Morning Session Active</span>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          <!-- Students -->
+          <div class="bg-surface-ivory border border-border-beige/70 rounded-xl p-3 shadow-sm">
+            <span class="font-body text-[11px] text-text-taupe block">Students Enrolled</span>
+            <span class="font-headline text-[1.4rem] font-bold text-deep-espresso block my-1">352</span>
+            <span class="font-body text-[10px] text-text-taupe">Active cohort</span>
+          </div>
+
+          <!-- Teachers -->
+          <div class="bg-surface-ivory border border-border-beige/70 rounded-xl p-3 shadow-sm">
+            <span class="font-body text-[11px] text-text-taupe block">Active Faculty</span>
+            <span class="font-headline text-[1.4rem] font-bold text-deep-espresso block my-1">22</span>
+            <span class="font-body text-[10px] text-text-taupe">Teaching staff</span>
+          </div>
+
+          <!-- Attendance % -->
+          <div class="bg-surface-ivory border border-border-beige/70 rounded-xl p-3 shadow-sm">
+            <span class="font-body text-[11px] text-text-taupe block">Today's Attendance</span>
+            <span class="font-headline text-[1.4rem] font-bold text-success-forest block my-1">94.6%</span>
+            <span class="font-body text-[10px] text-success-forest font-semibold">Recorded sync</span>
+          </div>
+
+          <!-- Classes -->
+          <div class="bg-surface-ivory border border-border-beige/70 rounded-xl p-3 shadow-sm">
+            <span class="font-body text-[11px] text-text-taupe block">Class Divisions</span>
+            <span class="font-headline text-[1.4rem] font-bold text-deep-espresso block my-1">32</span>
+            <span class="font-body text-[10px] text-text-taupe">NUR to XII</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. ATTENDANCE (INSTITUTIONAL METRIC) -->
+      <section class="bg-surface-ivory border border-border-beige/70 rounded-2xl p-4 shadow-sm space-y-3">
+        <div class="flex items-center justify-between pb-2 border-b border-border-beige/40">
+          <div>
+            <h2 class="font-headline text-[1.05rem] text-deep-espresso font-semibold">Today's Attendance</h2>
+            <p class="font-body text-[11px] text-text-taupe">Daily roll call aggregation across all 32 classes</p>
+          </div>
+          <a class="font-body text-[11px] text-primary hover:underline font-bold" href="#">View Report →</a>
+        </div>
+
+        <div class="grid grid-cols-4 gap-2 text-center">
+          <div class="bg-canvas-cream/80 border border-border-beige/50 rounded-xl p-2.5">
+            <span class="font-body text-[10px] uppercase font-bold text-success-forest block">Present</span>
+            <span class="font-headline text-[1.25rem] font-bold text-deep-espresso block mt-1">333</span>
+          </div>
+          <div class="bg-canvas-cream/80 border border-border-beige/50 rounded-xl p-2.5">
+            <span class="font-body text-[10px] uppercase font-bold text-danger-brick block">Absent</span>
+            <span class="font-headline text-[1.25rem] font-bold text-deep-espresso block mt-1">14</span>
+          </div>
+          <div class="bg-canvas-cream/80 border border-border-beige/50 rounded-xl p-2.5">
+            <span class="font-body text-[10px] uppercase font-bold text-warning-amber block">Late</span>
+            <span class="font-headline text-[1.25rem] font-bold text-deep-espresso block mt-1">5</span>
+          </div>
+          <div class="bg-canvas-cream/80 border border-border-beige/50 rounded-xl p-2.5">
+            <span class="font-body text-[10px] uppercase font-bold text-text-taupe block">Rate</span>
+            <span class="font-headline text-[1.25rem] font-bold text-success-forest block mt-1">94.6%</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. ACADEMIC STATUS -->
+      <section class="bg-surface-ivory border border-border-beige/70 rounded-2xl p-4 shadow-sm space-y-3">
+        <div class="flex items-center justify-between pb-2 border-b border-border-beige/40">
+          <div>
+            <h2 class="font-headline text-[1.05rem] text-deep-espresso font-semibold">Academic Progress</h2>
+            <p class="font-body text-[11px] text-text-taupe">Assessments &amp; term progression</p>
+          </div>
+          <a class="font-body text-[11px] text-primary hover:underline font-bold" href="#">Academic Report →</a>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div class="p-3 rounded-xl bg-canvas-cream/70 border border-border-beige/50">
+            <div class="flex items-center justify-between mb-1">
+              <span class="font-body text-[11px] font-bold text-deep-espresso">Marks Entry Status</span>
+              <span class="font-body text-[10px] font-bold text-success-forest bg-success-mint px-2 py-0.5 rounded-full">28 / 32 Submitted</span>
+            </div>
+            <p class="font-body text-[11px] text-text-taupe">4 class sections currently entering term evaluation</p>
+          </div>
+
+          <div class="p-3 rounded-xl bg-canvas-cream/70 border border-border-beige/50">
+            <div class="flex items-center justify-between mb-1">
+              <span class="font-body text-[11px] font-bold text-deep-espresso">Upcoming Examination</span>
+              <span class="font-body text-[10px] font-bold text-caramel-accent bg-warning-gold px-2 py-0.5 rounded-full">18 Nov 2026</span>
+            </div>
+            <p class="font-body text-[11px] text-text-taupe">Term 2 Assessment Schedule finalized</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. NEEDS ATTENTION (ACTIONABLE QUEUE) -->
+      <section class="bg-surface-ivory border border-border-beige/70 rounded-2xl p-4 shadow-sm space-y-3">
+        <div class="flex items-center justify-between pb-2 border-b border-border-beige/40">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-warning-amber text-[20px]">priority_high</span>
+            <h2 class="font-headline text-[1.05rem] text-deep-espresso font-semibold">Needs Attention</h2>
+          </div>
+          <span class="bg-warning-gold text-warning-amber font-body text-[10px] font-bold px-2 py-0.5 rounded-full">3 Action Items</span>
+        </div>
+
+        <div class="space-y-2 text-[12px]">
+          <!-- Item 1 -->
+          <div class="flex items-center justify-between py-2 px-3 rounded-xl bg-canvas-cream/80 border border-border-beige/50">
+            <div class="flex items-center gap-2.5">
+              <span class="material-symbols-outlined text-warning-amber text-[18px]">how_to_reg</span>
+              <span class="font-body text-deep-espresso font-medium">12 Admission Applications Pending Review</span>
+            </div>
+            <a class="font-body text-[11px] text-primary font-bold hover:underline shrink-0" href="#">Review →</a>
+          </div>
+
+          <!-- Item 2 -->
+          <div class="flex items-center justify-between py-2 px-3 rounded-xl bg-canvas-cream/80 border border-border-beige/50">
+            <div class="flex items-center gap-2.5">
+              <span class="material-symbols-outlined text-primary text-[18px]">event_busy</span>
+              <span class="font-body text-deep-espresso font-medium">4 Faculty Leave Requests Awaiting Action</span>
+            </div>
+            <a class="font-body text-[11px] text-primary font-bold hover:underline shrink-0" href="#">Approve →</a>
+          </div>
+
+          <!-- Item 3 -->
+          <div class="flex items-center justify-between py-2 px-3 rounded-xl bg-canvas-cream/80 border border-border-beige/50">
+            <div class="flex items-center gap-2.5">
+              <span class="material-symbols-outlined text-info-marine text-[18px]">campaign</span>
+              <span class="font-body text-deep-espresso font-medium">3 Circular Announcements Pending Moderation</span>
+            </div>
+            <a class="font-body text-[11px] text-primary font-bold hover:underline shrink-0" href="#">Publish →</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. FEE COLLECTION OVERVIEW -->
+      <section class="bg-surface-ivory border border-border-beige/70 rounded-2xl p-4 shadow-sm space-y-3">
+        <div class="flex items-center justify-between pb-2 border-b border-border-beige/40">
+          <div>
+            <h2 class="font-headline text-[1.05rem] text-deep-espresso font-semibold">Fee Collection Summary</h2>
+            <p class="font-body text-[11px] text-text-taupe">Term 2 Institutional Collections Overview</p>
+          </div>
+          <a class="font-body text-[11px] text-primary hover:underline font-bold" href="#">Fee Report →</a>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <div class="p-3 rounded-xl bg-canvas-cream/80 border border-border-beige/50">
+            <span class="font-body text-[10px] uppercase font-bold text-success-forest block">Collected to Date</span>
+            <span class="font-headline text-[1.3rem] font-bold text-success-forest block my-1">₹16,92,800</span>
+            <span class="font-body text-[10px] text-text-taupe">92% of target realized</span>
+          </div>
+
+          <div class="p-3 rounded-xl bg-canvas-cream/80 border border-border-beige/50">
+            <span class="font-body text-[10px] uppercase font-bold text-danger-brick block">Outstanding Balance</span>
+            <span class="font-headline text-[1.3rem] font-bold text-danger-brick block my-1">₹1,47,200</span>
+            <span class="font-body text-[10px] text-text-taupe">Follow-ups active</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 7. STAFF TODAY -->
+      <section class="bg-surface-ivory border border-border-beige/70 rounded-2xl p-4 shadow-sm space-y-3">
+        <div class="flex items-center justify-between pb-2 border-b border-border-beige/40">
+          <div>
+            <h2 class="font-headline text-[1.05rem] text-deep-espresso font-semibold">Staff Today</h2>
+            <p class="font-body text-[11px] text-text-taupe">Faculty attendance status</p>
+          </div>
+          <a class="font-body text-[11px] text-primary hover:underline font-bold" href="#">Staff Attendance →</a>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2 text-center">
+          <div class="bg-canvas-cream/80 border border-border-beige/50 rounded-xl p-2.5">
+            <span class="font-body text-[10px] uppercase font-bold text-success-forest block">Present</span>
+            <span class="font-headline text-[1.2rem] font-bold text-deep-espresso block mt-1">20</span>
+          </div>
+          <div class="bg-canvas-cream/80 border border-border-beige/50 rounded-xl p-2.5">
+            <span class="font-body text-[10px] uppercase font-bold text-warning-amber block">On Leave</span>
+            <span class="font-headline text-[1.2rem] font-bold text-deep-espresso block mt-1">2</span>
+          </div>
+          <div class="bg-canvas-cream/80 border border-border-beige/50 rounded-xl p-2.5">
+            <span class="font-body text-[10px] uppercase font-bold text-text-taupe block">Not Marked</span>
+            <span class="font-headline text-[1.2rem] font-bold text-deep-espresso block mt-1">0</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 8. UPCOMING EVENTS & ANNOUNCEMENTS -->
+      <section class="bg-surface-ivory border border-border-beige/70 rounded-2xl p-4 shadow-sm space-y-3">
+        <div class="flex items-center justify-between pb-2 border-b border-border-beige/40">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-[19px]">event</span>
+            <h2 class="font-headline text-[1.05rem] text-deep-espresso font-semibold">Upcoming Events</h2>
+          </div>
+          <a class="font-body text-[11px] text-primary hover:underline font-bold" href="#">Calendar →</a>
+        </div>
+
+        <div class="divide-y divide-border-beige/40">
+          <div class="py-2.5 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-canvas-cream border border-border-beige flex flex-col items-center justify-center shrink-0">
+                <span class="font-body text-[9px] uppercase font-bold text-primary leading-none">Nov</span>
+                <span class="font-bold text-deep-espresso text-[13px] leading-none mt-0.5">18</span>
+              </div>
+              <div>
+                <span class="font-body text-[12px] text-deep-espresso font-semibold block">Term 2 Examination Commences</span>
+                <span class="font-body text-[10px] text-text-taupe">Grades Nursery through XII</span>
+              </div>
+            </div>
+            <span class="bg-canvas-cream border border-border-beige text-text-cocoa text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0">In 8 Days</span>
+          </div>
+
+          <div class="py-2.5 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-canvas-cream border border-border-beige flex flex-col items-center justify-center shrink-0">
+                <span class="font-body text-[9px] uppercase font-bold text-primary leading-none">Nov</span>
+                <span class="font-bold text-deep-espresso text-[13px] leading-none mt-0.5">22</span>
+              </div>
+              <div>
+                <span class="font-body text-[12px] text-deep-espresso font-semibold block">Parent-Teacher Conference</span>
+                <span class="font-body text-[10px] text-text-taupe">Session 2 Review · 09:00 AM</span>
+              </div>
+            </div>
+            <span class="bg-canvas-cream border border-border-beige text-text-cocoa text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0">Scheduled</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 9. QUICK ACCESS (MAX 8 CORE ERP SHORTCUTS) -->
+      <section class="space-y-2.5">
+        <div class="flex items-center justify-between px-1">
+          <h2 class="font-headline text-[1.05rem] text-deep-espresso font-semibold">Quick Access</h2>
+          <span class="font-body text-[11px] text-text-taupe">Core Management</span>
+        </div>
+
+        <div class="grid grid-cols-4 gap-2">
+          <!-- 1. Students -->
+          <a href="#" class="bg-surface-ivory border border-border-beige/70 rounded-xl p-2.5 flex flex-col items-center text-center hover:bg-canvas-cream transition-colors shadow-sm">
+            <div class="w-9 h-9 rounded-lg bg-canvas-cream text-primary flex items-center justify-center mb-1">
+              <span class="material-symbols-outlined text-[19px]">groups</span>
+            </div>
+            <span class="font-body text-[11px] font-bold text-deep-espresso leading-tight">Students</span>
+          </a>
+
+          <!-- 2. Teachers -->
+          <a href="#" class="bg-surface-ivory border border-border-beige/70 rounded-xl p-2.5 flex flex-col items-center text-center hover:bg-canvas-cream transition-colors shadow-sm">
+            <div class="w-9 h-9 rounded-lg bg-canvas-cream text-primary flex items-center justify-center mb-1">
+              <span class="material-symbols-outlined text-[19px]">badge</span>
+            </div>
+            <span class="font-body text-[11px] font-bold text-deep-espresso leading-tight">Teachers</span>
+          </a>
+
+          <!-- 3. Classes -->
+          <a href="#" class="bg-surface-ivory border border-border-beige/70 rounded-xl p-2.5 flex flex-col items-center text-center hover:bg-canvas-cream transition-colors shadow-sm">
+            <div class="w-9 h-9 rounded-lg bg-canvas-cream text-primary flex items-center justify-center mb-1">
+              <span class="material-symbols-outlined text-[19px]">meeting_room</span>
+            </div>
+            <span class="font-body text-[11px] font-bold text-deep-espresso leading-tight">Classes</span>
+          </a>
+
+          <!-- 4. Exams -->
+          <a href="#" class="bg-surface-ivory border border-border-beige/70 rounded-xl p-2.5 flex flex-col items-center text-center hover:bg-canvas-cream transition-colors shadow-sm">
+            <div class="w-9 h-9 rounded-lg bg-canvas-cream text-primary flex items-center justify-center mb-1">
+              <span class="material-symbols-outlined text-[19px]">grading</span>
+            </div>
+            <span class="font-body text-[11px] font-bold text-deep-espresso leading-tight">Exams</span>
+          </a>
+
+          <!-- 5. Fees -->
+          <a href="#" class="bg-surface-ivory border border-border-beige/70 rounded-xl p-2.5 flex flex-col items-center text-center hover:bg-canvas-cream transition-colors shadow-sm">
+            <div class="w-9 h-9 rounded-lg bg-canvas-cream text-primary flex items-center justify-center mb-1">
+              <span class="material-symbols-outlined text-[19px]">account_balance_wallet</span>
+            </div>
+            <span class="font-body text-[11px] font-bold text-deep-espresso leading-tight">Fees</span>
+          </a>
+
+          <!-- 6. Attendance -->
+          <a href="#" class="bg-surface-ivory border border-border-beige/70 rounded-xl p-2.5 flex flex-col items-center text-center hover:bg-canvas-cream transition-colors shadow-sm">
+            <div class="w-9 h-9 rounded-lg bg-canvas-cream text-primary flex items-center justify-center mb-1">
+              <span class="material-symbols-outlined text-[19px]">fact_check</span>
+            </div>
+            <span class="font-body text-[11px] font-bold text-deep-espresso leading-tight">Attendance</span>
+          </a>
+
+          <!-- 7. Transport -->
+          <a href="#" class="bg-surface-ivory border border-border-beige/70 rounded-xl p-2.5 flex flex-col items-center text-center hover:bg-canvas-cream transition-colors shadow-sm">
+            <div class="w-9 h-9 rounded-lg bg-canvas-cream text-primary flex items-center justify-center mb-1">
+              <span class="material-symbols-outlined text-[19px]">directions_bus</span>
+            </div>
+            <span class="font-body text-[11px] font-bold text-deep-espresso leading-tight">Transport</span>
+          </a>
+
+          <!-- 8. Circulars -->
+          <a href="#" class="bg-surface-ivory border border-border-beige/70 rounded-xl p-2.5 flex flex-col items-center text-center hover:bg-canvas-cream transition-colors shadow-sm">
+            <div class="w-9 h-9 rounded-lg bg-canvas-cream text-primary flex items-center justify-center mb-1">
+              <span class="material-symbols-outlined text-[19px]">campaign</span>
+            </div>
+            <span class="font-body text-[11px] font-bold text-deep-espresso leading-tight">Circulars</span>
+          </a>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- PERSISTENT BOTTOM NAVIGATION DOCK -->
+  <!-- ========================================================================= -->
+  <nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface-ivory/95 backdrop-blur-xl border-t border-border-beige shadow-[0_-2px_12px_rgba(37,25,15,0.06)]">
+    <div class="h-16 px-2 flex justify-around items-center">
+      <a aria-current="page" class="flex-1 flex flex-col items-center justify-center min-w-0 min-h-[44px] py-1 text-primary font-bold" href="#">
+        <span class="material-symbols-outlined text-[22px]">dashboard</span>
+        <span class="font-body text-[10px] tracking-tight mt-0.5 truncate">Portal</span>
+      </a>
+      <a class="flex-1 flex flex-col items-center justify-center min-w-0 min-h-[44px] py-1 text-text-taupe hover:text-deep-espresso transition-colors" href="../all_classes_academic_faculty_allocation_dashboard/code.html">
+        <span class="material-symbols-outlined text-[22px]">school</span>
+        <span class="font-body text-[10px] tracking-tight mt-0.5 truncate">Academics</span>
+      </a>
+      <a class="flex-1 flex flex-col items-center justify-center min-w-0 min-h-[44px] py-1 text-text-taupe hover:text-deep-espresso transition-colors" href="../student_see_all_students_ledger/code.html">
+        <span class="material-symbols-outlined text-[22px]">groups</span>
+        <span class="font-body text-[10px] tracking-tight mt-0.5 truncate">Students</span>
+      </a>
+      <a class="flex-1 flex flex-col items-center justify-center min-w-0 min-h-[44px] py-1 text-text-taupe hover:text-deep-espresso transition-colors" href="../13_school_notice_board_moderated_circulars/code.html">
+        <span class="material-symbols-outlined text-[22px]">campaign</span>
+        <span class="font-body text-[10px] tracking-tight mt-0.5 truncate">Notices</span>
+      </a>
+      <button class="flex-1 flex flex-col items-center justify-center min-w-0 min-h-[44px] py-1 text-text-taupe hover:text-deep-espresso transition-colors" id="bottom-more-btn" type="button">
+        <span class="material-symbols-outlined text-[22px]">grid_view</span>
+        <span class="font-body text-[10px] tracking-tight mt-0.5 truncate">More</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ========================================================================= -->
+  <!-- COMPLETE NAVIGATION DRAWER -->
+  <!-- ========================================================================= -->
+  <div aria-hidden="true" class="fixed inset-0 z-50 pointer-events-none transition-all duration-300" id="nav-drawer">
+    <div class="fixed inset-0 bg-[#2C221E]/50 backdrop-blur-sm opacity-0 transition-opacity duration-300 cursor-pointer" id="drawer-backdrop"></div>
+    <aside class="fixed top-0 left-0 bottom-0 w-[82vw] max-w-[320px] bg-surface-ivory border-r border-border-beige shadow-2xl flex flex-col -translate-x-full transition-transform duration-300 ease-in-out z-10 overflow-hidden" id="drawer-panel">
+      
+      <!-- Drawer Header -->
+      <div class="p-4 bg-deep-espresso text-surface-ivory border-b border-[#3E2A21] shrink-0">
+        <div class="flex items-start justify-between gap-2">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-10 h-10 rounded-full bg-primary border border-border-beige/40 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-caramel-light text-[22px]">school</span>
+            </div>
+            <div class="min-w-0">
+              <h2 class="font-headline text-[15px] font-bold text-surface-ivory leading-tight truncate">One Numan Public School</h2>
+              <span class="font-body text-[10px] text-caramel-light">Academic Session 2026–27</span>
+            </div>
+          </div>
+          <button aria-label="Close navigation menu" class="w-9 h-9 rounded-lg bg-primary hover:bg-[#52372A] text-surface-ivory flex items-center justify-center transition-colors shrink-0" id="close-sidebar-btn">
+            <span class="material-symbols-outlined text-[20px]">close</span>
+          </button>
+        </div>
+
+        <div class="mt-3 p-2.5 rounded-xl bg-[#3E2A21]/90 border border-border-beige/20 flex items-center justify-between">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-full bg-caramel-accent text-deep-espresso flex items-center justify-center font-bold text-[11px] shrink-0">
+              MC
+            </div>
+            <div class="min-w-0">
+              <p class="font-headline text-[12px] font-bold text-surface-ivory truncate">Dr. M. Chacko</p>
+              <p class="font-body text-[10px] text-caramel-light truncate">Principal &amp; Head of Institution</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Drawer Search Omnibox -->
+      <div class="px-3 pt-3 pb-2 bg-surface-ivory/95 border-b border-border-beige/50 shrink-0">
+        <div class="relative flex items-center">
+          <span class="material-symbols-outlined absolute left-2.5 text-text-taupe text-[18px] pointer-events-none">search</span>
+          <input class="w-full pl-8 pr-3 py-1.5 rounded-lg bg-canvas-cream border border-border-beige text-[12px] font-body text-deep-espresso placeholder:text-text-taupe focus:outline-none focus:ring-1 focus:ring-primary" id="drawer-omnibox-search" placeholder="Search ERP modules..." type="text"/>
+        </div>
+      </div>
+
+      <!-- Categorized Drawer Sections -->
+      <div class="flex-1 overflow-y-auto px-3 py-2 space-y-4" id="drawer-nav-sections">
+        <!-- Section 1: Institutional Core -->
+        <div class="drawer-group">
+          <span class="font-body text-[10px] uppercase font-bold text-text-taupe tracking-wider block px-2 mb-1">Institutional Core</span>
+          <div class="space-y-1">
+            <a class="drawer-nav-item min-h-[40px] flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-[12px] bg-primary text-surface-ivory font-bold" href="#">
+              <span class="material-symbols-outlined text-[19px] text-caramel-light">dashboard</span>
+              <span>Principal Command Hub</span>
+            </a>
+            <a class="drawer-nav-item min-h-[40px] flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-[12px] text-text-cocoa hover:bg-surface-container" href="#">
+              <span class="material-symbols-outlined text-[19px] text-text-taupe">groups</span>
+              <span>Student Registry (352)</span>
+            </a>
+            <a class="drawer-nav-item min-h-[40px] flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-[12px] text-text-cocoa hover:bg-surface-container" href="#">
+              <span class="material-symbols-outlined text-[19px] text-text-taupe">badge</span>
+              <span>Faculty Directory (22)</span>
+            </a>
+            <a class="drawer-nav-item min-h-[40px] flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-[12px] text-text-cocoa hover:bg-surface-container" href="#">
+              <span class="material-symbols-outlined text-[19px] text-text-taupe">meeting_room</span>
+              <span>Class Divisions (32)</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Section 2: Academics & Timetable -->
+        <div class="drawer-group">
+          <span class="font-body text-[10px] uppercase font-bold text-text-taupe tracking-wider block px-2 mb-1">Academics &amp; Timetable</span>
+          <div class="space-y-1">
+            <a class="drawer-nav-item min-h-[40px] flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-[12px] text-text-cocoa hover:bg-surface-container" href="#">
+              <span class="material-symbols-outlined text-[19px] text-text-taupe">grading</span>
+              <span>Examinations &amp; Results</span>
+            </a>
+            <a class="drawer-nav-item min-h-[40px] flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-[12px] text-text-cocoa hover:bg-surface-container" href="#">
+              <span class="material-symbols-outlined text-[19px] text-text-taupe">schedule</span>
+              <span>Faculty Timetable Matrix</span>
+            </a>
+            <a class="drawer-nav-item min-h-[40px] flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-[12px] text-text-cocoa hover:bg-surface-container" href="#">
+              <span class="material-symbols-outlined text-[19px] text-text-taupe">fact_check</span>
+              <span>Daily Attendance Ledger</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Section 3: Operations & Approvals -->
+        <div class="drawer-group">
+          <span class="font-body text-[10px] uppercase font-bold text-text-taupe tracking-wider block px-2 mb-1">Operations &amp; Approvals</span>
+          <div class="space-y-1">
+            <a class="drawer-nav-item min-h-[40px] flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-[12px] text-text-cocoa hover:bg-surface-container" href="#">
+              <span class="material-symbols-outlined text-[19px] text-text-taupe">how_to_reg</span>
+              <span>Admissions Enquiries (12)</span>
+            </a>
+            <a class="drawer-nav-item min-h-[40px] flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-[12px] text-text-cocoa hover:bg-surface-container" href="#">
+              <span class="material-symbols-outlined text-[19px] text-text-taupe">event_busy</span>
+              <span>Leave Approvals (4)</span>
+            </a>
+            <a class="drawer-nav-item min-h-[40px] flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-[12px] text-text-cocoa hover:bg-surface-container" href="#">
+              <span class="material-symbols-outlined text-[19px] text-text-taupe">campaign</span>
+              <span>Announcement Moderation (3)</span>
+            </a>
+            <a class="drawer-nav-item min-h-[40px] flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-[12px] text-text-cocoa hover:bg-surface-container" href="#">
+              <span class="material-symbols-outlined text-[19px] text-text-taupe">account_balance_wallet</span>
+              <span>Accounts &amp; Fee Ledger</span>
+            </a>
+            <a class="drawer-nav-item min-h-[40px] flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-[12px] text-text-cocoa hover:bg-surface-container" href="#">
+              <span class="material-symbols-outlined text-[19px] text-text-taupe">directions_bus</span>
+              <span>Transit &amp; Bus Routes</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Drawer Footer -->
+      <div class="p-3 bg-canvas-cream border-t border-border-beige shrink-0 space-y-2">
+        <button class="w-full min-h-[40px] flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-danger-blush hover:bg-[#ffd9d4] text-danger-brick text-[12px] font-body font-bold border border-danger-brick/20 transition-colors active:scale-95" onclick="if(confirm('Are you sure you want to sign out of the Principal Command Hub?')){alert('Signed out.');}">
+          <span class="material-symbols-outlined text-[18px]">logout</span>
+          <span>Sign Out</span>
+        </button>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Drawer Script & Search Filter -->
+  <script>
+    (function () {
+      const drawer = document.getElementById('nav-drawer');
+      const panel = document.getElementById('drawer-panel');
+      const backdrop = document.getElementById('drawer-backdrop');
+      const openBtn = document.getElementById('open-sidebar-btn');
+      const closeBtn = document.getElementById('close-sidebar-btn');
+      const searchInput = document.getElementById('drawer-omnibox-search');
+
+      function openDrawer() {
+        drawer.classList.remove('pointer-events-none');
+        backdrop.classList.remove('opacity-0');
+        backdrop.classList.add('opacity-100');
+        panel.classList.remove('-translate-x-full');
+        panel.classList.add('translate-x-0');
+        drawer.setAttribute('aria-hidden', 'false');
+      }
+
+      function closeDrawer() {
+        backdrop.classList.remove('opacity-100');
+        backdrop.classList.add('opacity-0');
+        panel.classList.remove('translate-x-0');
+        panel.classList.add('-translate-x-full');
+        drawer.setAttribute('aria-hidden', 'true');
+        setTimeout(() => {
+          drawer.classList.add('pointer-events-none');
+        }, 300);
+      }
+
+      const bottomMoreBtn = document.getElementById('bottom-more-btn');
+
+      if (openBtn) openBtn.addEventListener('click', openDrawer);
+      if (bottomMoreBtn) bottomMoreBtn.addEventListener('click', openDrawer);
+      if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
+      if (backdrop) backdrop.addEventListener('click', closeDrawer);
+
+      // Search Omnibox Filter with Group Header Auto-Hiding
+      if (searchInput) {
+        searchInput.addEventListener('input', function (e) {
+          const query = e.target.value.toLowerCase().trim();
+          const groups = document.querySelectorAll('.drawer-group');
+
+          groups.forEach((group) => {
+            let visibleCount = 0;
+            const items = group.querySelectorAll('.drawer-nav-item');
+
+            items.forEach((item) => {
+              const text = item.textContent.toLowerCase();
+              if (text.includes(query)) {
+                item.style.display = 'flex';
+                visibleCount++;
+              } else {
+                item.style.display = 'none';
+              }
+            });
+
+            group.style.display = visibleCount > 0 ? 'block' : 'none';
+          });
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

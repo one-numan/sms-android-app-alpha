@@ -1,0 +1,44 @@
+name: sms_android_app_alpha
+description: "SMS (School Management System by OneNuman) - Alpha Edition."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: ">=3.10.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.3
+  provider: ^6.1.2
+  permission_handler: ^11.3.1
+  google_fonts: ^6.2.1
+  cupertino_icons: ^1.0.8
+  shared_preferences: ^2.2.3
+  go_router: ^14.0.0
+  sqflite: ^2.3.3+1
+  path: ^1.9.0
+  http: ^1.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  flutter_launcher_icons: ^0.14.3
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/brand/onps_logo_1024.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#3E2A22"
+  adaptive_icon_foreground: "assets/brand/onps_logo_1024.png"
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/brand/
+

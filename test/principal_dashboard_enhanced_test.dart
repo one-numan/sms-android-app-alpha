@@ -1,0 +1,113 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:sms_android_app_alpha/data/mock/auth_state.dart';
+import 'package:sms_android_app_alpha/models/models.dart';
+import 'package:sms_android_app_alpha/screens/dashboards/principal_dashboard_screen.dart';
+
+Widget _buildTestApp(Widget child) {
+  final auth = AuthState();
+  auth.login(role: UserRole.principal, username: 'numan_khan');
+
+  final router = GoRouter(
+    initialLocation: '/',
+    routes: [
+      GoRoute(path: '/', builder: (_, __) => child),
+      GoRoute(path: '/faculty/allocation', builder: (_, __) => const Scaffold(body: Text('Faculty Allocation Screen'))),
+      GoRoute(path: '/attendance/matrix', builder: (_, __) => const Scaffold(body: Text('Attendance Matrix Screen'))),
+      GoRoute(path: '/admissions/applications', builder: (_, __) => const Scaffold(body: Text('Applications Screen'))),
+      GoRoute(path: '/attendance/faculty-leave', builder: (_, __) => const Scaffold(body: Text('Faculty Leave Screen'))),
+      GoRoute(path: '/principal/announcements/approval', builder: (_, __) => const Scaffold(body: Text('Announcement Approval Screen'))),
+      GoRoute(path: '/accounts/dashboard', builder: (_, __) => const Scaffold(body: Text('Accounts Dashboard Screen'))),
+      GoRoute(path: '/calendar/academic', builder: (_, __) => const Scaffold(body: Text('Academic Calendar Screen'))),
+      GoRoute(path: '/students/all-students', builder: (_, __) => const Scaffold(body: Text('All Students Screen'))),
+      GoRoute(path: '/students/marks-entry', builder: (_, __) => const Scaffold(body: Text('Marks Entry Screen'))),
+      GoRoute(path: '/faculty/timetable/class', builder: (_, __) => const Scaffold(body: Text('Class Timetable Screen'))),
+      GoRoute(path: '/faculty/directory', builder: (_, __) => const Scaffold(body: Text('Staff Directory Screen'))),
+      GoRoute(path: '/transit/bus', builder: (_, __) => const Scaffold(body: Text('Bus Transit Screen'))),
+      GoRoute(path: '/notices', builder: (_, __) => const Scaffold(body: Text('Notices Screen'))),
+    ],
+  );
+
+  return ChangeNotifierProvider<AuthState>.value(
+    value: auth,
+    child: MaterialApp.router(
+      routerConfig: router,
+    ),
+  );
+}
+
+void main() {
+  testWidgets('Enhanced Principal Dashboard UI/UX Test Suite', (WidgetTester tester) async {
+    await tester.pumpWidget(_buildTestApp(const PrincipalDashboardScreen()));
+    await tester.pumpAndSettle();
+
+    // 1. Verify Principal Identity Header
+    expect(find.text('Principal Numan Khan'), findsOneWidget);
+    expect(find.text('Head of Institution • Executive Leadership'), findsOneWidget);
+    expect(find.text('2026–27'), findsOneWidget);
+
+    // 2. Verify Today's Overview KPIs
+    expect(find.text("TODAY'S OVERVIEW"), findsOneWidget);
+    expect(find.text('352'), findsAtLeastNWidgets(1));
+    expect(find.text('22'), findsOneWidget);
+    expect(find.text('94.6%'), findsAtLeastNWidgets(1));
+    expect(find.text('32'), findsAtLeastNWidgets(1));
+
+    // 3. Verify Unified Attendance Today Section
+    expect(find.text('Attendance Today'), findsOneWidget);
+    expect(find.text('Student Attendance'), findsOneWidget);
+    expect(find.text('Staff Attendance'), findsOneWidget);
+    expect(find.text('333'), findsOneWidget); // Present students
+    expect(find.text('20'), findsOneWidget);  // Present staff
+    expect(find.text('Open Attendance →'), findsOneWidget);
+
+    // 4. Verify Class & Section Progress Section (Replaces Academic Progress)
+    expect(find.text('Class & Section Progress'), findsOneWidget);
+    expect(find.text('Academic Completion'), findsOneWidget);
+    expect(find.text('Class 5-A'), findsOneWidget);
+    expect(find.text('Class 5-B'), findsOneWidget);
+    expect(find.text('Class 8-A'), findsOneWidget);
+    expect(find.text('Class 10-B'), findsOneWidget);
+    expect(find.text('92%'), findsOneWidget);
+    expect(find.text('86%'), findsOneWidget);
+    expect(find.text('78%'), findsOneWidget);
+    expect(find.text('95%'), findsOneWidget);
+    expect(find.text('32 Active Class Sections'), findsOneWidget);
+
+    // 5. Verify Needs Attention Items
+    expect(find.text('Needs Attention'), findsOneWidget);
+    expect(find.text('12 Admission Applications Pending'), findsOneWidget);
+    expect(find.text('4 Faculty Leave Requests Awaiting Action'), findsOneWidget);
+    expect(find.text('3 Circular Announcements Pending Approval'), findsOneWidget);
+
+    // 6. Verify Fee Collection Summary
+    expect(find.text('Fee Collection (Term 2)'), findsOneWidget);
+    expect(find.text('₹16,92,800'), findsOneWidget);
+    expect(find.text('₹1,47,200'), findsOneWidget);
+
+    // 7. Verify Upcoming Events
+    expect(find.text('Upcoming Events'), findsOneWidget);
+    expect(find.text('Term 2 Examination Commences'), findsOneWidget);
+    expect(find.text('Parent-Teacher Conference'), findsOneWidget);
+
+    // 8. Verify Quick Access Shortcuts
+    expect(find.text('QUICK ACCESS'), findsOneWidget);
+    expect(find.text('Students'), findsAtLeastNWidgets(1));
+    expect(find.text('Teachers'), findsAtLeastNWidgets(1));
+    expect(find.text('Classes'), findsAtLeastNWidgets(1));
+    expect(find.text('Exams'), findsOneWidget);
+    expect(find.text('Fees'), findsOneWidget);
+    expect(find.text('Attendance'), findsAtLeastNWidgets(1));
+    expect(find.text('Transport'), findsOneWidget);
+    expect(find.text('Circulars'), findsOneWidget);
+
+    // 9. Test Navigation from Class & Section Progress "View All"
+    final viewAllBtn = find.text('View All →').first;
+    await tester.ensureVisible(viewAllBtn);
+    await tester.tap(viewAllBtn);
+    await tester.pumpAndSettle();
+    expect(find.text('Faculty Allocation Screen'), findsOneWidget);
+  });
+}

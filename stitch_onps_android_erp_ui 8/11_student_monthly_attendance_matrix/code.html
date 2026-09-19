@@ -1,0 +1,547 @@
+<!DOCTYPE html><html class="" lang="en"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&amp;display=swap" rel="stylesheet">
+<style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {background: "#fff8f6", "surface-container-highest": "#f0dfda", "on-primary-container": "#d3ac9c", "on-surface-variant": "#504440", "warning-gold": "#FFF4D6", "on-tertiary-fixed": "#2e1500", "surface-container": "#fceae5", "surface-bright": "#fff8f6", "danger-blush": "#FBEAE8", "tertiary-container": "#683c12", "primary-fixed": "#ffdbcc", "text-cocoa": "#2D211B", "on-primary-fixed": "#2c160b", "info-marine": "#35758A", "on-background": "#221a17", "info-ice": "#E8F3F6", "primary-container": "#5c4033", "text-taupe": "#8C7A6B", "surface-container-low": "#fff1ec", primary: "#432a1e", "surface-tint": "#765749", "surface-ivory": "#FFFDF9", "secondary-fixed-dim": "#e6bfa6", "surface-container-lowest": "#ffffff", "inverse-on-surface": "#feede8", "inverse-surface": "#382e2b", "on-primary": "#ffffff", tertiary: "#4c2700", "error-container": "#ffdad6", "inverse-primary": "#e6bead", "on-surface": "#221a17", "tertiary-fixed-dim": "#fab984", "on-primary-fixed-variant": "#5c4033", "secondary-fixed": "#ffdcc6", "on-secondary-container": "#795a46", "deep-espresso": "#3E2A22", "surface-container-high": "#f6e5e0", "tertiary-fixed": "#ffdcc2", "surface-variant": "#f0dfda", outline: "#82746f", error: "#ba1a1a", "canvas-cream": "#F7F1E8", "on-secondary-fixed": "#2b1607", "outline-variant": "#d4c3bd", "on-secondary": "#ffffff", "secondary-container": "#fed5bb", "danger-brick": "#B5443C", "success-mint": "#EAF4ED", "primary-fixed-dim": "#e6bead", secondary: "#765844", "on-tertiary-container": "#e6a874", "success-forest": "#2E7D4F", "warning-amber": "#A66A00", "border-beige": "#E5D8CA", "on-tertiary-fixed-variant": "#683c12", "surface-dim": "#e7d7d2", "on-error-container": "#93000a", "on-secondary-fixed-variant": "#5c412e", "on-error": "#ffffff", surface: "#fff8f6", "on-tertiary": "#ffffff"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"space-xs": "0.25rem", "gutter-mobile": "0.75rem", "margin-mobile": "1rem", "space-sm": "0.5rem", "space-md": "1rem", "space-lg": "1.5rem", gutter: "1.25rem", "space-xl": "2.25rem", margin: "2rem"}, fontFamily: {"headline-sm": ["Newsreader"], "headline-lg": ["Newsreader"], "headline-xl": ["Newsreader"], "body-lg": ["Manrope"], "label-lg": ["Manrope"], "display-lg-mobile": ["Newsreader"], "title-md": ["Manrope"], caption: ["Manrope"], "display-lg": ["Newsreader"], "headline-xl-mobile": ["Newsreader"], "body-md": ["Manrope"], "label-sm": ["Manrope"], headline: ["Newsreader"], display: ["Newsreader"], body: ["Manrope"], label: ["Manrope"]}}}};</script>
+</head>
+<body class="bg-canvas-cream text-on-surface font-body-md text-body-md flex flex-col min-h-screen">
+<!-- Institutional Top Bar -->
+<header class="fixed top-0 w-full z-40 pt-safe bg-surface-ivory/95 backdrop-blur-xl shadow-[0_1px_8px_rgba(62,42,34,0.05)] border-b border-border-beige/60">
+  <div class="h-16 px-margin-mobile flex items-center justify-between">
+    <div class="flex items-center gap-space-sm min-w-0 flex-1">
+      <img alt="ONPS Crest" class="h-8 w-auto object-contain shrink-0" src="https://lh3.googleusercontent.com/aida/AEtjO1U_NNZt4svpD0mcPo4aLgcm5Lx0nOASVXSPTa3w1EqZLmmSXyInSKhMO8-U9GBE56wdEPMcEO-QzK-Uq5uTBy32T-8V9TV_WgJlpdBAmhukkLxpM8k0G_iFbmiuIeqQ6gGUtmrkVoZmqDCqJ2747T_ndYY-6v4f2QcuXe_To2xcENtTPFEQHtfSv9LnqAqsG4eUO_PCmIJsuljPsvCyO2iCAKVDQhpb3pFUM_uS9MA8ePE38piirIDxLgc">
+      <div class="flex flex-col min-w-0">
+        <div class="flex items-center gap-space-xs">
+          <span class="font-headline-sm text-headline-sm text-deep-espresso truncate">One Numan Public School</span>
+          <span class="bg-secondary-container text-on-secondary-container px-space-xs py-0.5 rounded-full font-label-sm text-[10px] shrink-0">2026-27</span>
+        </div>
+        <span class="font-label-sm text-label-sm text-text-taupe truncate">Student Attendance Dashboard</span>
+      </div>
+    </div>
+    <div class="flex items-center gap-space-xs shrink-0">
+      <button aria-label="Notifications" class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container transition-colors">
+        <span class="material-symbols-outlined text-[22px]">notifications</span>
+      </button>
+      <div class="w-8 h-8 rounded-full bg-deep-espresso flex items-center justify-center shrink-0 shadow-sm text-white font-headline-sm text-xs">
+        DS
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Main Content Area -->
+<main class="flex flex-col relative w-full pt-20 pb-28 px-margin-mobile gap-space-md min-h-screen">
+
+  <!-- 1. COMPACT PAGE HEADER & STUDENT CONTEXT -->
+  <div class="bg-surface-ivory rounded-xl p-space-md border border-border-beige shadow-sm flex items-center justify-between">
+    <div class="flex flex-col min-w-0">
+      <div class="flex items-center gap-2">
+        <h1 class="font-headline-sm text-headline-sm text-deep-espresso">Attendance</h1>
+        <span class="bg-primary/10 text-primary px-2 py-0.5 rounded text-[10px] font-bold">Student Hub</span>
+      </div>
+      <span class="font-body-md text-xs text-text-taupe mt-0.5">Academic Session 2026–27 • Class 5-A • Roll #14</span>
+    </div>
+    <div class="flex flex-col items-end shrink-0">
+      <span class="bg-surface-container px-2 py-0.5 rounded-full text-[10px] font-bold text-deep-espresso">ADM-2024-0412</span>
+      <span class="text-xs font-semibold text-text-cocoa mt-0.5">Diya Sharma</span>
+    </div>
+  </div>
+
+  <!-- 2. ATTENDANCE OVERVIEW BENTO CARD (Primary KPI) -->
+  <div class="bg-deep-espresso text-white rounded-2xl p-space-md shadow-[0_8px_24px_rgba(62,42,34,0.18)] flex flex-col gap-space-sm">
+    <div class="flex items-center justify-between">
+      <span class="bg-success-forest/20 text-emerald-300 border border-emerald-400/30 px-2.5 py-0.5 rounded-full text-xs font-bold flex items-center gap-1">
+        <span class="material-symbols-outlined text-xs">verified</span>
+        Session Standing
+      </span>
+      <div class="flex items-center gap-1 text-white/70 text-[10px]">
+        <span class="material-symbols-outlined text-xs">sync</span>
+        <span>Last updated: Today, 09:42 AM</span>
+      </div>
+    </div>
+
+    <div>
+      <span class="text-white/70 text-[10px] font-bold uppercase tracking-wider">Cumulative Attendance Rate</span>
+      <div class="flex items-baseline gap-2 mt-0.5">
+        <span class="font-headline-xl text-3xl font-bold">80.0%</span>
+        <span class="bg-[#FAB984]/25 text-[#FAB984] px-2 py-0.5 rounded text-[10px] font-bold">CBSE Minimum: 75% (Compliant)</span>
+      </div>
+    </div>
+
+    <div class="border-t border-white/20 pt-2.5 grid grid-cols-4 gap-2 text-center">
+      <div class="flex flex-col items-center">
+        <span class="text-white/60 text-[9px] font-bold uppercase flex items-center gap-0.5">
+          <span class="material-symbols-outlined text-[10px]">check_circle</span> Present
+        </span>
+        <span class="font-headline-sm text-sm font-bold mt-0.5 text-white">3 days</span>
+      </div>
+      <div class="flex flex-col items-center">
+        <span class="text-white/60 text-[9px] font-bold uppercase flex items-center gap-0.5">
+          <span class="material-symbols-outlined text-[10px]">schedule</span> Late (L)
+        </span>
+        <span class="font-headline-sm text-sm font-bold mt-0.5 text-[#FAB984]">1 day</span>
+      </div>
+      <div class="flex flex-col items-center">
+        <span class="text-white/60 text-[9px] font-bold uppercase flex items-center gap-0.5">
+          <span class="material-symbols-outlined text-[10px]">highlight_off</span> Absent
+        </span>
+        <span class="font-headline-sm text-sm font-bold mt-0.5 text-rose-300">1 day</span>
+      </div>
+      <div class="flex flex-col items-center">
+        <span class="text-white/60 text-[9px] font-bold uppercase flex items-center gap-0.5">
+          <span class="material-symbols-outlined text-[10px]">event_busy</span> On Leave
+        </span>
+        <span class="font-headline-sm text-sm font-bold mt-0.5 text-white/70">0 days</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. NOW & NEXT LIVE SCHEDULE CARD -->
+  <div class="bg-surface-ivory rounded-xl p-3 border border-border-beige shadow-sm flex items-center gap-3">
+    <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+      <span class="material-symbols-outlined text-primary text-[20px]">schedule</span>
+    </div>
+    <div class="flex-1 min-w-0">
+      <div class="flex items-center gap-1.5">
+        <span class="bg-success-forest/15 text-success-forest px-1.5 py-0.5 rounded text-[9px] font-bold uppercase">Current Class</span>
+        <span class="text-xs font-bold text-text-cocoa truncate">Period 3 • Science</span>
+      </div>
+      <span class="text-[11px] text-text-taupe block truncate mt-0.5">10:20–11:05 AM • Lab 2 • Robert Chen (Status: Present)</span>
+    </div>
+    <div class="text-right shrink-0">
+      <span class="text-[10px] font-bold text-text-cocoa block">Next: Period 4</span>
+      <span class="text-[9px] text-text-taupe">Social Studies</span>
+    </div>
+  </div>
+
+  <!-- 4. INTERACTIVE DATE SELECTOR -->
+  <div class="flex flex-col gap-1.5">
+    <div class="flex items-center justify-between">
+      <span class="text-[11px] font-bold text-text-taupe tracking-wider uppercase">Attendance By Date</span>
+      <span class="text-[11px] text-text-taupe">Week of 18–24 Sep</span>
+    </div>
+    <div class="flex items-center justify-between gap-1.5 overflow-x-auto py-1">
+      <button class="flex-1 min-w-[44px] py-2 rounded-xl bg-deep-espresso text-white flex flex-col items-center justify-center shadow-xs">
+        <span class="text-[10px] text-white/70 font-semibold">Mon</span>
+        <span class="text-sm font-bold">18</span>
+      </button>
+      <button class="flex-1 min-w-[44px] py-2 rounded-xl bg-surface-ivory border border-border-beige text-text-cocoa flex flex-col items-center justify-center hover:bg-surface-container">
+        <span class="text-[10px] text-text-taupe font-semibold">Tue</span>
+        <span class="text-sm font-bold">19</span>
+      </button>
+      <button class="flex-1 min-w-[44px] py-2 rounded-xl bg-surface-ivory border border-border-beige text-text-cocoa flex flex-col items-center justify-center hover:bg-surface-container">
+        <span class="text-[10px] text-text-taupe font-semibold">Wed</span>
+        <span class="text-sm font-bold">20</span>
+      </button>
+      <button class="flex-1 min-w-[44px] py-2 rounded-xl bg-surface-ivory border border-border-beige text-text-cocoa flex flex-col items-center justify-center hover:bg-surface-container">
+        <span class="text-[10px] text-text-taupe font-semibold">Thu</span>
+        <span class="text-sm font-bold">21</span>
+      </button>
+      <button class="flex-1 min-w-[44px] py-2 rounded-xl bg-surface-ivory border border-border-beige text-text-cocoa flex flex-col items-center justify-center hover:bg-surface-container">
+        <span class="text-[10px] text-text-taupe font-semibold">Fri</span>
+        <span class="text-sm font-bold">22</span>
+      </button>
+      <button class="flex-1 min-w-[44px] py-2 rounded-xl bg-surface-ivory border border-border-beige text-text-cocoa flex flex-col items-center justify-center hover:bg-surface-container">
+        <span class="text-[10px] text-text-taupe font-semibold">Sat</span>
+        <span class="text-sm font-bold">23</span>
+      </button>
+      <button class="flex-1 min-w-[44px] py-2 rounded-xl bg-surface-ivory border border-border-beige text-danger-brick flex flex-col items-center justify-center hover:bg-surface-container">
+        <span class="text-[10px] text-danger-brick font-semibold">Sun</span>
+        <span class="text-sm font-bold">24</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 5. TODAY'S ATTENDANCE + TIMETABLE INTEGRATION -->
+  <div class="flex flex-col gap-1.5">
+    <div class="flex items-center justify-between">
+      <span class="text-[11px] font-bold text-text-taupe tracking-wider uppercase">Today's Schedule & Attendance</span>
+      <span class="text-[11px] text-text-taupe">Mon, 18 Sep 2026</span>
+    </div>
+    <div class="bg-surface-ivory rounded-xl border border-border-beige shadow-sm divide-y divide-border-beige overflow-hidden">
+      <!-- Period 1 -->
+      <div class="p-3 flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+          <span class="material-symbols-outlined text-base">calculate</span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-1.5">
+            <span class="text-xs font-bold text-text-cocoa">Mathematics</span>
+            <span class="text-[10px] text-text-taupe">• Period 1</span>
+          </div>
+          <span class="text-[10px] text-text-taupe block truncate">08:30–09:15 AM • Room 201 • Anita Desai</span>
+        </div>
+        <span class="bg-success-mint text-success-forest px-2 py-0.5 rounded text-[10px] font-bold shrink-0">Present</span>
+      </div>
+
+      <!-- Period 2 -->
+      <div class="p-3 flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+          <span class="material-symbols-outlined text-base">menu_book</span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-1.5">
+            <span class="text-xs font-bold text-text-cocoa">English</span>
+            <span class="text-[10px] text-text-taupe">• Period 2</span>
+          </div>
+          <span class="text-[10px] text-text-taupe block truncate">09:15–10:00 AM • Room 104 • David Miller</span>
+        </div>
+        <span class="bg-success-mint text-success-forest px-2 py-0.5 rounded text-[10px] font-bold shrink-0">Present</span>
+      </div>
+
+      <!-- Recess Break -->
+      <div class="px-3 py-2 bg-canvas-cream/60 flex items-center gap-3">
+        <div class="w-8 h-6 rounded bg-border-beige/50 flex items-center justify-center text-text-taupe shrink-0">
+          <span class="material-symbols-outlined text-xs">coffee</span>
+        </div>
+        <div class="flex-1 flex items-center justify-between text-text-taupe text-[11px]">
+          <span class="font-semibold">Morning Recess</span>
+          <span>10:00–10:20 AM (20 mins break)</span>
+        </div>
+      </div>
+
+      <!-- Period 3 -->
+      <div class="p-3 flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+          <span class="material-symbols-outlined text-base">science</span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-1.5">
+            <span class="text-xs font-bold text-text-cocoa">Science</span>
+            <span class="text-[10px] text-text-taupe">• Period 3</span>
+          </div>
+          <span class="text-[10px] text-text-taupe block truncate">10:20–11:05 AM • Lab 2 • Robert Chen</span>
+        </div>
+        <span class="bg-success-mint text-success-forest px-2 py-0.5 rounded text-[10px] font-bold shrink-0">Present</span>
+      </div>
+
+      <!-- Period 4 -->
+      <div class="p-3 flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+          <span class="material-symbols-outlined text-base">public</span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-1.5">
+            <span class="text-xs font-bold text-text-cocoa">Social Studies</span>
+            <span class="text-[10px] text-text-taupe">• Period 4</span>
+          </div>
+          <span class="text-[10px] text-text-taupe block truncate">11:05–11:50 AM • Room 203 • Priya Nair</span>
+        </div>
+        <span class="bg-success-mint text-success-forest px-2 py-0.5 rounded text-[10px] font-bold shrink-0">Present</span>
+      </div>
+
+      <!-- Lunch Break -->
+      <div class="px-3 py-2 bg-canvas-cream/60 flex items-center gap-3">
+        <div class="w-8 h-6 rounded bg-border-beige/50 flex items-center justify-center text-text-taupe shrink-0">
+          <span class="material-symbols-outlined text-xs">restaurant</span>
+        </div>
+        <div class="flex-1 flex items-center justify-between text-text-taupe text-[11px]">
+          <span class="font-semibold">Mid-Day Lunch Recess</span>
+          <span>11:50 AM–12:30 PM (40 mins break)</span>
+        </div>
+      </div>
+
+      <!-- Period 5 (Not marked yet) -->
+      <div class="p-3 flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+          <span class="material-symbols-outlined text-base">translate</span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-1.5">
+            <span class="text-xs font-bold text-text-cocoa">Hindi</span>
+            <span class="text-[10px] text-text-taupe">• Period 5</span>
+          </div>
+          <span class="text-[10px] text-text-taupe block truncate">12:30–01:15 PM • Room 201 • Anita Desai</span>
+        </div>
+        <span class="bg-surface-container text-text-taupe px-2 py-0.5 rounded text-[10px] font-bold shrink-0">Not marked</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. MONTHLY ATTENDANCE MATRIX & CALENDAR -->
+  <div class="bg-surface-ivory rounded-xl p-space-md border border-border-beige shadow-sm flex flex-col gap-space-sm">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary text-lg">calendar_month</span>
+        <span class="font-headline-sm text-base font-bold text-deep-espresso">October 2026</span>
+      </div>
+      <span class="bg-surface-container px-2 py-0.5 rounded text-[10px] font-bold text-deep-espresso">Monthly Matrix</span>
+    </div>
+
+    <!-- 4-Pill Ribbon -->
+    <div class="grid grid-cols-4 gap-1.5">
+      <div class="bg-success-mint p-2 rounded-lg text-center">
+        <span class="font-headline-sm text-sm font-bold text-success-forest block">21</span>
+        <span class="text-[9px] font-semibold text-success-forest">Present</span>
+      </div>
+      <div class="bg-danger-blush p-2 rounded-lg text-center">
+        <span class="font-headline-sm text-sm font-bold text-danger-brick block">1</span>
+        <span class="text-[9px] font-semibold text-danger-brick">Absent</span>
+      </div>
+      <div class="bg-warning-gold p-2 rounded-lg text-center">
+        <span class="font-headline-sm text-sm font-bold text-warning-amber block">1</span>
+        <span class="text-[9px] font-semibold text-warning-amber">Late (L)</span>
+      </div>
+      <div class="bg-info-ice p-2 rounded-lg text-center">
+        <span class="font-headline-sm text-sm font-bold text-info-marine block">2</span>
+        <span class="text-[9px] font-semibold text-info-marine">Holidays</span>
+      </div>
+    </div>
+
+    <!-- Mini Calendar Matrix -->
+    <div class="pt-2 border-t border-border-beige">
+      <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-text-taupe pb-1">
+        <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>
+      </div>
+      <div class="grid grid-cols-7 gap-1 text-center text-xs">
+        <span class="p-1 text-text-taupe/40">28</span><span class="p-1 text-text-taupe/40">29</span><span class="p-1 text-text-taupe/40">30</span>
+        <span class="p-1 rounded font-semibold text-text-cocoa">1</span>
+        <span class="p-1 rounded font-semibold text-info-marine bg-info-ice">2</span>
+        <span class="p-1 rounded font-semibold text-text-cocoa">3</span>
+        <span class="p-1 rounded font-semibold text-danger-brick">4</span>
+        <span class="p-1 rounded font-semibold text-text-cocoa">5</span>
+        <span class="p-1 rounded font-semibold text-text-cocoa">6</span>
+        <span class="p-1 rounded font-semibold text-text-cocoa">7</span>
+        <span class="p-1 rounded font-semibold text-text-cocoa">8</span>
+        <span class="p-1 rounded font-semibold text-text-cocoa">9</span>
+        <span class="p-1 rounded font-semibold text-text-cocoa">10</span>
+        <span class="p-1 rounded font-semibold text-danger-brick">11</span>
+        <span class="p-1 rounded font-semibold text-info-marine bg-info-ice">12</span>
+        <span class="p-1 rounded font-semibold text-text-cocoa">13</span>
+        <span class="p-1 rounded font-semibold text-text-cocoa">14</span>
+        <span class="p-1 rounded font-semibold text-text-cocoa">15</span>
+        <span class="p-1 rounded font-semibold text-text-cocoa">16</span>
+        <span class="p-1 rounded font-semibold text-text-cocoa">17</span>
+        <span class="p-1 rounded font-semibold text-danger-brick">18</span>
+        <span class="p-1 rounded font-semibold text-text-cocoa">19</span>
+        <span class="p-1 rounded font-semibold text-text-cocoa">20</span>
+        <span class="p-1 rounded font-bold text-danger-brick bg-danger-blush">21</span>
+        <span class="p-1 rounded font-semibold text-text-cocoa">22</span>
+        <span class="p-1 rounded font-bold text-warning-amber bg-warning-gold">23</span>
+        <span class="p-1 rounded font-bold text-white bg-deep-espresso">24</span>
+        <span class="p-1 rounded font-semibold text-text-cocoa">25</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. SUBJECT-WISE ATTENDANCE BREAKDOWN -->
+  <div class="flex flex-col gap-1.5">
+    <div class="flex items-center justify-between">
+      <span class="text-[11px] font-bold text-text-taupe tracking-wider uppercase">Subject-Wise Attendance</span>
+      <span class="text-[11px] text-text-taupe">5 Enrolled Subjects</span>
+    </div>
+    <div class="bg-surface-ivory rounded-xl border border-border-beige shadow-sm divide-y divide-border-beige overflow-hidden">
+      <!-- Subject 1 -->
+      <div class="p-3 flex items-center justify-between cursor-pointer hover:bg-surface-container/40">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+            <span class="material-symbols-outlined text-base">calculate</span>
+          </div>
+          <div>
+            <span class="text-xs font-bold text-text-cocoa block">Mathematics</span>
+            <span class="text-[10px] text-text-taupe">Anita Desai • 24 of 25 sessions</span>
+          </div>
+        </div>
+        <div class="text-right">
+          <span class="font-headline-sm text-sm font-bold text-deep-espresso block">96.0%</span>
+          <span class="text-[9px] font-bold text-primary flex items-center justify-end">Details <span class="material-symbols-outlined text-[10px]">chevron_right</span></span>
+        </div>
+      </div>
+
+      <!-- Subject 2 -->
+      <div class="p-3 flex items-center justify-between cursor-pointer hover:bg-surface-container/40">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+            <span class="material-symbols-outlined text-base">menu_book</span>
+          </div>
+          <div>
+            <span class="text-xs font-bold text-text-cocoa block">English</span>
+            <span class="text-[10px] text-text-taupe">David Miller • 23 of 24 sessions</span>
+          </div>
+        </div>
+        <div class="text-right">
+          <span class="font-headline-sm text-sm font-bold text-deep-espresso block">94.0%</span>
+          <span class="text-[9px] font-bold text-primary flex items-center justify-end">Details <span class="material-symbols-outlined text-[10px]">chevron_right</span></span>
+        </div>
+      </div>
+
+      <!-- Subject 3 -->
+      <div class="p-3 flex items-center justify-between cursor-pointer hover:bg-surface-container/40">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+            <span class="material-symbols-outlined text-base">science</span>
+          </div>
+          <div>
+            <span class="text-xs font-bold text-text-cocoa block">Science</span>
+            <span class="text-[10px] text-text-taupe">Robert Chen • 22 of 24 sessions</span>
+          </div>
+        </div>
+        <div class="text-right">
+          <span class="font-headline-sm text-sm font-bold text-deep-espresso block">91.5%</span>
+          <span class="text-[9px] font-bold text-primary flex items-center justify-end">Details <span class="material-symbols-outlined text-[10px]">chevron_right</span></span>
+        </div>
+      </div>
+
+      <!-- Subject 4 -->
+      <div class="p-3 flex items-center justify-between cursor-pointer hover:bg-surface-container/40">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+            <span class="material-symbols-outlined text-base">public</span>
+          </div>
+          <div>
+            <span class="text-xs font-bold text-text-cocoa block">Social Studies</span>
+            <span class="text-[10px] text-text-taupe">Priya Nair • 23 of 24 sessions</span>
+          </div>
+        </div>
+        <div class="text-right">
+          <span class="font-headline-sm text-sm font-bold text-deep-espresso block">95.0%</span>
+          <span class="text-[9px] font-bold text-primary flex items-center justify-end">Details <span class="material-symbols-outlined text-[10px]">chevron_right</span></span>
+        </div>
+      </div>
+
+      <!-- Subject 5 -->
+      <div class="p-3 flex items-center justify-between cursor-pointer hover:bg-surface-container/40">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+            <span class="material-symbols-outlined text-base">translate</span>
+          </div>
+          <div>
+            <span class="text-xs font-bold text-text-cocoa block">Hindi</span>
+            <span class="text-[10px] text-text-taupe">Anita Desai • 24 of 24 sessions</span>
+          </div>
+        </div>
+        <div class="text-right">
+          <span class="font-headline-sm text-sm font-bold text-deep-espresso block">98.0%</span>
+          <span class="text-[9px] font-bold text-primary flex items-center justify-end">Details <span class="material-symbols-outlined text-[10px]">chevron_right</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. CHRONOLOGICAL ATTENDANCE HISTORY -->
+  <div class="flex flex-col gap-1.5">
+    <div class="flex items-center justify-between">
+      <span class="text-[11px] font-bold text-text-taupe tracking-wider uppercase">Attendance History Log</span>
+      <div class="flex items-center gap-1">
+        <button class="px-2 py-0.5 rounded text-[10px] font-bold bg-deep-espresso text-white">All</button>
+        <button class="px-2 py-0.5 rounded text-[10px] font-bold bg-surface-ivory border border-border-beige text-text-taupe">Present</button>
+        <button class="px-2 py-0.5 rounded text-[10px] font-bold bg-surface-ivory border border-border-beige text-text-taupe">Absent</button>
+        <button class="px-2 py-0.5 rounded text-[10px] font-bold bg-surface-ivory border border-border-beige text-text-taupe">Late</button>
+      </div>
+    </div>
+
+    <div class="bg-surface-ivory rounded-xl border border-border-beige shadow-sm divide-y divide-border-beige overflow-hidden">
+      <div class="p-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-success-forest/10 flex items-center justify-center text-success-forest shrink-0">
+            <span class="material-symbols-outlined text-base">check_circle</span>
+          </div>
+          <div>
+            <span class="text-xs font-bold text-text-cocoa block">2026-10-25</span>
+            <span class="text-[10px] text-text-taupe">Marked by Anita Desai at 08:35 AM</span>
+          </div>
+        </div>
+        <span class="bg-success-mint text-success-forest px-2 py-0.5 rounded text-[10px] font-bold">Present</span>
+      </div>
+
+      <div class="p-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-success-forest/10 flex items-center justify-center text-success-forest shrink-0">
+            <span class="material-symbols-outlined text-base">check_circle</span>
+          </div>
+          <div>
+            <span class="text-xs font-bold text-text-cocoa block">2026-10-24</span>
+            <span class="text-[10px] text-text-taupe">Marked by Anita Desai at 08:32 AM</span>
+          </div>
+        </div>
+        <span class="bg-success-mint text-success-forest px-2 py-0.5 rounded text-[10px] font-bold">Present</span>
+      </div>
+
+      <div class="p-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-warning-amber/10 flex items-center justify-center text-warning-amber shrink-0">
+            <span class="material-symbols-outlined text-base">schedule</span>
+          </div>
+          <div>
+            <span class="text-xs font-bold text-text-cocoa block">2026-10-23</span>
+            <span class="text-[10px] text-text-taupe">Marked by Anita Desai at 08:48 AM</span>
+          </div>
+        </div>
+        <span class="bg-warning-gold text-warning-amber px-2 py-0.5 rounded text-[10px] font-bold">Late (L)</span>
+      </div>
+
+      <div class="p-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-success-forest/10 flex items-center justify-center text-success-forest shrink-0">
+            <span class="material-symbols-outlined text-base">check_circle</span>
+          </div>
+          <div>
+            <span class="text-xs font-bold text-text-cocoa block">2026-10-22</span>
+            <span class="text-[10px] text-text-taupe">Marked by Anita Desai at 08:30 AM</span>
+          </div>
+        </div>
+        <span class="bg-success-mint text-success-forest px-2 py-0.5 rounded text-[10px] font-bold">Present</span>
+      </div>
+
+      <div class="p-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-danger-brick/10 flex items-center justify-center text-danger-brick shrink-0">
+            <span class="material-symbols-outlined text-base">highlight_off</span>
+          </div>
+          <div>
+            <span class="text-xs font-bold text-text-cocoa block">2026-10-21</span>
+            <span class="text-[10px] text-text-taupe">Recorded by Anita Desai at 08:35 AM</span>
+          </div>
+        </div>
+        <span class="bg-danger-blush text-danger-brick px-2 py-0.5 rounded text-[10px] font-bold">Absent</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. CBSE REGULATIONS ADVISORY -->
+  <div class="bg-surface-ivory rounded-xl p-space-md border border-border-beige shadow-sm flex flex-col gap-1.5">
+    <div class="flex items-center gap-2">
+      <span class="material-symbols-outlined text-primary text-base">rule</span>
+      <span class="text-[11px] font-bold text-text-cocoa uppercase tracking-wider">CBSE Attendance Regulations</span>
+    </div>
+    <p class="text-[11px] text-text-taupe leading-relaxed">
+      Per Central Board of Secondary Education (CBSE) guidelines, students must maintain a minimum 75% aggregate attendance across all terms to be eligible for terminal evaluations and annual class promotion. For medical leaves, parent submission of attested certificate within 3 days is required.
+    </p>
+  </div>
+</main>
+
+<!-- BOTTOM NAVIGATION (Portal, Academics, Attendance [ACTIVE], Fees, More) -->
+<nav class="fixed bottom-0 w-full z-40 bg-surface-ivory/95 backdrop-blur-xl border-t border-border-beige pb-safe">
+  <div class="h-16 flex items-center justify-around">
+    <!-- 1. Portal -->
+    <a href="../05_parent_portal_dashboard/code.html" class="flex-1 flex flex-col items-center justify-center text-text-taupe hover:text-deep-espresso">
+      <span class="material-symbols-outlined text-[22px]">dashboard</span>
+      <span class="text-[10px] font-semibold mt-0.5">Portal</span>
+    </a>
+
+    <!-- 2. Academics -->
+    <a href="../07_academic_report_card/code.html" class="flex-1 flex flex-col items-center justify-center text-text-taupe hover:text-deep-espresso">
+      <span class="material-symbols-outlined text-[22px]">menu_book</span>
+      <span class="text-[10px] font-semibold mt-0.5">Academics</span>
+    </a>
+
+    <!-- 3. Attendance (Active) -->
+    <a href="code.html" class="flex-1 flex flex-col items-center justify-center text-deep-espresso relative">
+      <span class="w-6 h-0.5 bg-deep-espresso rounded-full absolute top-1"></span>
+      <span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 1;">fact_check</span>
+      <span class="text-[10px] font-bold mt-0.5">Attendance</span>
+    </a>
+
+    <!-- 4. Fees -->
+    <a href="../09_fee_ledger_upi_payment/code.html" class="flex-1 flex flex-col items-center justify-center text-text-taupe hover:text-deep-espresso">
+      <span class="material-symbols-outlined text-[22px]">receipt_long</span>
+      <span class="text-[10px] font-semibold mt-0.5">Fees</span>
+    </a>
+
+    <!-- 5. More -->
+    <button class="flex-1 flex flex-col items-center justify-center text-text-taupe hover:text-deep-espresso">
+      <span class="material-symbols-outlined text-[22px]">apps</span>
+      <span class="text-[10px] font-semibold mt-0.5">More</span>
+    </button>
+  </div>
+</nav>
+
+</body>
+</html>

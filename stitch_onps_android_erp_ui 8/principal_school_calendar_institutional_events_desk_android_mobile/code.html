@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+
+<html class="" lang="en" style=""><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {background: "#fff8f6", "canvas-cream": "#F7F1E8", "surface-ivory": "#FFFDF9", "surface-card": "#FFFFFF", "deep-espresso": "#3E2A22", primary: "#432a1e", "primary-container": "#5c4033", "on-primary-container": "#d3ac9c", secondary: "#765844", "secondary-container": "#fed5bb", "on-secondary-container": "#795a46", tertiary: "#4c2700", "tertiary-fixed": "#ffdcc2", "on-tertiary-fixed": "#2e1500", "accent-caramel": "#C58B5A", "text-cocoa": "#2D211B", "text-taupe": "#8C7A6B", "border-beige": "#E5D8CA", "surface-container": "#fceae5", "surface-container-high": "#f6e5e0", "surface-container-highest": "#f0dfda", "surface-dim": "#e7d7d2", "success-forest": "#2E7D4F", "success-mint": "#EAF4ED", "warning-amber": "#A66A00", "warning-gold": "#FFF4D6", "danger-brick": "#B5443C", "danger-blush": "#FBEAE8", "info-marine": "#35758A", "info-ice": "#E8F3F6", "on-error-container": "#93000a", "surface-bright": "#fff8f6", "on-secondary": "#ffffff", "on-background": "#221a17", "on-surface": "#221a17", "inverse-primary": "#e6bead", "on-primary-fixed": "#2c160b", "tertiary-fixed-dim": "#fab984", "secondary-fixed": "#ffdcc6", "on-tertiary-fixed-variant": "#683c12", "on-primary-fixed-variant": "#5c4033", surface: "#fff8f6", "secondary-fixed-dim": "#e6bfa6", outline: "#82746f", "on-primary": "#ffffff", "on-tertiary-container": "#e6a874", "on-error": "#ffffff", "on-tertiary": "#ffffff", "outline-variant": "#d4c3bd", "surface-container-lowest": "#ffffff", "inverse-surface": "#382e2b", "on-secondary-fixed": "#2b1607", error: "#ba1a1a", "primary-fixed": "#ffdbcc", "surface-variant": "#f0dfda", "primary-fixed-dim": "#e6bead", "tertiary-container": "#683c12", "surface-tint": "#765749", "on-secondary-fixed-variant": "#5c412e", "surface-container-low": "#fff1ec", "inverse-on-surface": "#feede8", "error-container": "#ffdad6", "on-surface-variant": "#504440"}, fontFamily: {serif: ["Newsreader", "serif"], sans: ["Manrope", "sans-serif"], headline: ["Newsreader"], display: ["Newsreader"], body: ["Manrope"], label: ["Manrope"]}, fontSize: {}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}}}};</script>
+<style>
+    @layer base {
+      html, body {
+        width: 100%;
+        max-width: 100vw;
+        margin: 0;
+        padding: 0;
+        background-color: #27160F;
+      }
+      body {
+        -webkit-tap-highlight-color: transparent;
+        overscroll-behavior-y: contain;
+      }
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-sans antialiased text-text-cocoa flex justify-center min-h-screen">
+<!-- Mobile Viewport Shell (Portrait: 390px - 412px target) -->
+<div class="w-full max-w-[420px] bg-background min-h-screen flex flex-col relative shadow-2xl overflow-x-hidden">
+<!-- Android Native System Status Bar -->
+<div class="w-full bg-[#27160F] text-surface-ivory/80 px-5 pt-2 pb-1 flex items-center justify-between text-[11px] font-semibold tracking-tight select-none z-50">
+<div class="flex items-center gap-1">
+<span class="">09:41</span>
+<span class="text-[9px] font-bold text-accent-caramel tracking-wider ml-1">ERP•SYS</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[13px] leading-none">wifi</span>
+<span class="material-symbols-outlined text-[13px] leading-none">signal_cellular_4_bar</span>
+<div class="flex items-center gap-0.5">
+<span class="text-[10px]">98%</span>
+<span class="material-symbols-outlined text-[14px] leading-none">battery_full</span>
+</div>
+</div>
+</div>
+<!-- Mobile Top Chrome / Executive App Bar -->
+<header class="w-full bg-gradient-to-b from-[#27160F] via-[#331E15] to-[#3E2A22] text-surface-ivory px-4 pt-2.5 pb-4.5 rounded-b-2xl shadow-md z-40 relative border-b border-surface-ivory/10">
+<!-- Breadcrumb & Top Executive Status Row -->
+<div class="flex items-center justify-between gap-2 mb-3">
+<button class="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-full bg-surface-ivory/10 hover:bg-surface-ivory/20 active:scale-95 transition-all text-surface-ivory border border-surface-ivory/15" type="button">
+<span class="material-symbols-outlined text-[16px]">arrow_back</span>
+<span class="text-[11px] font-semibold tracking-wide">Command Hub</span>
+</button>
+<div class="flex items-center gap-1.5">
+<span class="text-[10px] px-2 py-0.5 rounded-full bg-surface-ivory/15 text-tertiary-fixed font-semibold tracking-tight">2026–27</span>
+<span class="text-[10px] px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-extrabold tracking-wider shadow-xs">CLEARANCE L0</span>
+<!-- Principal Profile Avatar -->
+<div class="w-7 h-7 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center text-[11px] font-extrabold shadow-sm ring-1 ring-white/30 ml-0.5">
+            MC
+          </div>
+</div>
+</div>
+<!-- App Title, Subtitle, & Badge Context -->
+<div class="flex items-end justify-between gap-2">
+<div>
+<div class="flex items-center gap-1.5 text-on-primary-container text-[10px] uppercase font-bold tracking-widest mb-0.5">
+<span class="">Academic Affairs</span>
+<span class="opacity-40">•</span>
+<span class="">Scholastic Timelines</span>
+</div>
+<h1 class="font-serif text-[26px] font-medium tracking-tight text-surface-ivory leading-tight">
+            School Calendar
+          </h1>
+</div>
+<div class="flex flex-col items-end gap-1">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-forest/30 text-success-mint text-[10px] font-semibold border border-success-forest/40">
+<span class="w-1.5 h-1.5 rounded-full bg-success-mint animate-pulse"></span>
+            CBSE Term 1
+          </span>
+<button class="text-[10px] text-tertiary-fixed flex items-center gap-0.5 hover:underline opacity-90" type="button">
+<span class="material-symbols-outlined text-[12px] text-accent-caramel">download</span>
+<span class="">PDF Export</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Scrollable Body Area -->
+<main class="flex-1 w-full px-3.5 pt-3 pb-28 space-y-4">
+<!-- 1. Quick Navigation / Scoping Chips (Horizontal scrollable pill row) -->
+<section class="w-full -mx-3.5 px-3.5 overflow-x-auto no-scrollbar flex items-center gap-2 pt-0.5 pb-1 select-none">
+<button class="shrink-0 px-3 py-1.5 rounded-full bg-deep-espresso text-surface-ivory text-xs font-semibold shadow-xs flex items-center gap-1.5 active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[15px] text-tertiary-fixed">calendar_month</span>
+<span class="">Month View</span>
+<span class="bg-surface-ivory/20 px-1.5 py-0.2 rounded-full text-[10px] text-tertiary-fixed font-bold">July</span>
+</button>
+<button class="shrink-0 px-3 py-1.5 rounded-full bg-surface-card text-deep-espresso text-xs font-semibold shadow-xs border border-border-beige flex items-center gap-1.5 active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[15px] text-accent-caramel">event</span>
+<span class="">Events</span>
+<span class="bg-canvas-cream text-accent-caramel px-1.5 py-0.2 rounded-full text-[10px] font-bold">14</span>
+</button>
+<button class="shrink-0 px-3 py-1.5 rounded-full bg-surface-card text-deep-espresso text-xs font-semibold shadow-xs border border-border-beige flex items-center gap-1.5 active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[15px] text-danger-brick">holiday_village</span>
+<span class="">All Holidays</span>
+<span class="bg-danger-blush text-danger-brick px-1.5 py-0.2 rounded-full text-[10px] font-bold">24</span>
+</button>
+<button class="shrink-0 px-3 py-1.5 rounded-full bg-surface-card text-deep-espresso text-xs font-semibold shadow-xs border border-border-beige flex items-center gap-1.5 active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[15px] text-info-marine">cake</span>
+<span class="">Birthdays</span>
+<span class="bg-info-ice text-info-marine px-1.5 py-0.2 rounded-full text-[10px] font-bold">6</span>
+</button>
+<button class="shrink-0 px-3 py-1.5 rounded-full bg-surface-card text-text-taupe text-xs font-semibold shadow-xs border border-border-beige flex items-center gap-1.5 active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[15px] text-secondary">school</span>
+<span class="">Academic Terms</span>
+</button>
+</section>
+<!-- 2. Compact Executive Telemetry Bento Row (3-col mobile grid) -->
+<section class="grid grid-cols-3 gap-2">
+<!-- Card 1: Working Days -->
+<div class="bg-surface-card p-2.5 rounded-xl border border-border-beige shadow-xs flex flex-col justify-between">
+<div class="flex items-center justify-between text-[10px] font-semibold text-text-taupe uppercase tracking-wider">
+<span class="">Working Days</span>
+<span class="material-symbols-outlined text-[13px] text-secondary">work_history</span>
+</div>
+<div class="mt-1.5">
+<div class="font-serif text-[19px] font-bold text-deep-espresso leading-none">
+              23 <span class="text-[11px] font-sans font-normal text-text-taupe">/26</span>
+</div>
+<div class="text-[10px] text-success-forest font-bold mt-1 flex items-center gap-0.5">
+<span class="">88.4% Open</span>
+</div>
+</div>
+</div>
+<!-- Card 2: CBSE Milestones -->
+<div class="bg-surface-card p-2.5 rounded-xl border border-border-beige shadow-xs flex flex-col justify-between">
+<div class="flex items-center justify-between text-[10px] font-semibold text-text-taupe uppercase tracking-wider">
+<span class="">CBSE Milestones</span>
+<span class="material-symbols-outlined text-[13px] text-accent-caramel">school</span>
+</div>
+<div class="mt-1.5">
+<div class="font-serif text-[19px] font-bold text-deep-espresso leading-none">
+              FA-2
+            </div>
+<div class="text-[10px] text-accent-caramel font-bold mt-1 truncate">
+              Starts 28 July
+            </div>
+</div>
+</div>
+<!-- Card 3: Upcoming Holiday -->
+<div class="bg-surface-card p-2.5 rounded-xl border border-border-beige shadow-xs flex flex-col justify-between">
+<div class="flex items-center justify-between text-[10px] font-semibold text-text-taupe uppercase tracking-wider">
+<span class="">Next Holiday</span>
+<span class="material-symbols-outlined text-[13px] text-danger-brick">beach_access</span>
+</div>
+<div class="mt-1.5">
+<div class="font-serif text-[17px] font-bold text-deep-espresso leading-none truncate">
+              Muharram
+            </div>
+<div class="text-[10px] text-danger-brick font-bold mt-1 truncate">
+              29 Jul (Wed)
+            </div>
+</div>
+</div>
+</section>
+<!-- 3. Mobile-Optimized Monthly Calendar Matrix -->
+<section class="bg-surface-card rounded-2xl border border-border-beige shadow-xs p-3.5 space-y-2.5">
+<!-- Month Header & Controls -->
+<div class="flex items-center justify-between">
+<div class="flex items-baseline gap-2">
+<h2 class="font-serif text-lg font-bold text-deep-espresso tracking-tight">July 2026</h2>
+<span class="text-[10px] px-2 py-0.5 rounded-full bg-surface-container text-secondary font-bold">Term 1 • Wk 4</span>
+</div>
+<div class="flex items-center gap-1">
+<button aria-label="Previous Month" class="w-7 h-7 rounded-lg bg-canvas-cream hover:bg-surface-container active:scale-95 flex items-center justify-center text-deep-espresso transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">chevron_left</span>
+</button>
+<button class="px-2 py-1 rounded-lg bg-canvas-cream hover:bg-surface-container text-[11px] font-bold text-deep-espresso active:scale-95 transition-colors" type="button">
+              Today
+            </button>
+<button aria-label="Next Month" class="w-7 h-7 rounded-lg bg-canvas-cream hover:bg-surface-container active:scale-95 flex items-center justify-center text-deep-espresso transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Days of Week Header -->
+<div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-text-taupe uppercase tracking-wider py-1 border-b border-border-beige/70">
+<span class="text-danger-brick">S</span>
+<span class="">M</span>
+<span class="">T</span>
+<span class="">W</span>
+<span class="">T</span>
+<span class="">F</span>
+<span class="text-danger-brick/80">S</span>
+</div>
+<!-- 7-Column Calendar Grid (July 2026) -->
+<div class="grid grid-cols-7 gap-1 text-center text-[12px] font-medium">
+<!-- Previous Month (June 28-30) -->
+<div class="h-8 flex items-center justify-center rounded-lg text-text-taupe/35 text-[11px]">28</div>
+<div class="h-8 flex items-center justify-center rounded-lg text-text-taupe/35 text-[11px]">29</div>
+<div class="h-8 flex items-center justify-center rounded-lg text-text-taupe/35 text-[11px]">30</div>
+<!-- July Row 1 -->
+<div class="h-8 flex items-center justify-center rounded-lg text-text-cocoa hover:bg-canvas-cream">1</div>
+<div class="h-8 flex items-center justify-center rounded-lg text-text-cocoa hover:bg-canvas-cream">2</div>
+<div class="h-8 flex items-center justify-center rounded-lg text-text-cocoa hover:bg-canvas-cream">3</div>
+<div class="h-8 flex items-center justify-center rounded-lg text-danger-brick/70 bg-canvas-cream/50">4</div>
+<!-- July Row 2 -->
+<div class="h-8 flex items-center justify-center rounded-lg text-danger-brick font-semibold">5</div>
+<div class="h-8 flex items-center justify-center rounded-lg text-text-cocoa hover:bg-canvas-cream">6</div>
+<div class="h-8 flex items-center justify-center rounded-lg text-text-cocoa hover:bg-canvas-cream">7</div>
+<div class="h-8 flex items-center justify-center rounded-lg text-text-cocoa hover:bg-canvas-cream">8</div>
+<div class="h-8 flex items-center justify-center rounded-lg text-text-cocoa hover:bg-canvas-cream">9</div>
+<div class="h-8 flex items-center justify-center rounded-lg text-text-cocoa hover:bg-canvas-cream">10</div>
+<div class="h-8 flex items-center justify-center rounded-lg text-danger-brick/70 bg-canvas-cream/50">11</div>
+<!-- July Row 3 -->
+<div class="h-8 flex items-center justify-center rounded-lg text-danger-brick font-semibold">12</div>
+<div class="h-8 flex items-center justify-center rounded-lg text-text-cocoa hover:bg-canvas-cream">13</div>
+<div class="h-8 flex items-center justify-center rounded-lg text-text-cocoa hover:bg-canvas-cream">14</div>
+<div class="h-8 flex items-center justify-center rounded-lg text-text-cocoa hover:bg-canvas-cream">15</div>
+<div class="h-8 flex items-center justify-center rounded-lg text-text-cocoa hover:bg-canvas-cream">16</div>
+<div class="h-8 flex items-center justify-center rounded-lg text-text-cocoa hover:bg-canvas-cream">17</div>
+<div class="h-8 flex items-center justify-center rounded-lg text-danger-brick/70 bg-canvas-cream/50">18</div>
+<!-- July Row 4 -->
+<div class="h-8 flex items-center justify-center rounded-lg text-danger-brick font-semibold">19</div>
+<div class="h-8 flex items-center justify-center rounded-lg text-text-cocoa hover:bg-canvas-cream">20</div>
+<div class="h-8 flex items-center justify-center rounded-lg text-text-cocoa hover:bg-canvas-cream">21</div>
+<!-- TODAY BADGE: 22nd July (Deep Espresso + Caramel Dot) -->
+<div class="h-8 flex flex-col items-center justify-center rounded-lg bg-deep-espresso text-surface-ivory font-extrabold shadow-sm relative ring-2 ring-accent-caramel/60">
+<span class="leading-none text-[12px]">22</span>
+<span class="w-1 h-1 rounded-full bg-accent-caramel mt-0.5"></span>
+</div>
+<!-- 23rd: Celebration / B'day indicator -->
+<div class="h-8 flex flex-col items-center justify-center rounded-lg text-text-cocoa hover:bg-canvas-cream relative">
+<span class="leading-none text-[12px]">23</span>
+<span class="w-1 h-1 rounded-full bg-info-marine mt-0.5"></span>
+</div>
+<!-- 24th: Event Dot -->
+<div class="h-8 flex flex-col items-center justify-center rounded-lg text-text-cocoa hover:bg-canvas-cream relative">
+<span class="leading-none text-[12px]">24</span>
+<span class="w-1 h-1 rounded-full bg-success-forest mt-0.5"></span>
+</div>
+<div class="h-8 flex items-center justify-center rounded-lg text-danger-brick/70 bg-canvas-cream/50">25</div>
+<!-- July Row 5 -->
+<div class="h-8 flex items-center justify-center rounded-lg text-danger-brick font-semibold">26</div>
+<div class="h-8 flex items-center justify-center rounded-lg text-text-cocoa hover:bg-canvas-cream">27</div>
+<!-- 28th: FA-2 Scholastic Tag / Amber Dot -->
+<div class="h-8 flex flex-col items-center justify-center rounded-lg bg-warning-gold/60 border border-warning-amber/40 text-warning-amber font-bold relative">
+<span class="leading-none text-[12px]">28</span>
+<span class="w-1 h-1 rounded-full bg-warning-amber mt-0.5"></span>
+</div>
+<!-- 29th: Gazetted Holiday: Muharram (Pink/Red Pill) -->
+<div class="h-8 flex flex-col items-center justify-center rounded-lg bg-danger-blush border border-danger-brick/40 text-danger-brick font-extrabold relative">
+<span class="leading-none text-[12px]">29</span>
+<span class="w-1 h-1 rounded-full bg-danger-brick mt-0.5"></span>
+</div>
+<div class="h-8 flex items-center justify-center rounded-lg text-text-cocoa hover:bg-canvas-cream">30</div>
+<div class="h-8 flex items-center justify-center rounded-lg text-text-cocoa hover:bg-canvas-cream">31</div>
+<div class="h-8 flex items-center justify-center rounded-lg text-text-taupe/35 text-[11px]">1</div>
+</div>
+<!-- Dot Legend -->
+<div class="pt-2 border-t border-border-beige/70 grid grid-cols-2 gap-x-2 gap-y-1 text-[10px] text-text-taupe font-medium">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-deep-espresso"></span>
+<span class="">Today (22 Jul)</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-danger-brick"></span>
+<span class="">Gazetted Holiday</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-warning-amber"></span>
+<span class="">Scholastic / Exam</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-info-marine"></span>
+<span class="">Birthday / Event</span>
+</div>
+</div>
+</section>
+<!-- 4. Today's Docket & Events (Mobile Card Stack) -->
+<section class="space-y-2">
+<div class="flex items-center justify-between px-0.5">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[17px] text-accent-caramel">today</span>
+<h3 class="font-serif text-[15px] font-bold text-deep-espresso">Today's Events</h3>
+</div>
+<span class="text-[11px] font-medium text-text-taupe">Wed, 22 July</span>
+</div>
+<!-- Event 1: Inter-House English Debate Prelims -->
+<div class="bg-surface-card rounded-xl p-3 border border-border-beige shadow-xs flex items-start justify-between gap-2.5">
+<div class="flex items-start gap-2.5 min-w-0">
+<div class="w-8 h-8 rounded-lg bg-warning-gold text-warning-amber flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">mic</span>
+</div>
+<div class="min-w-0">
+<div class="flex items-center gap-1.5 flex-wrap">
+<h4 class="font-serif text-[13px] font-bold text-deep-espresso truncate">Inter-House English Debate</h4>
+<span class="text-[9px] px-1.5 py-0.2 rounded bg-surface-container text-secondary font-bold">Grades 9–12</span>
+</div>
+<div class="text-[11px] text-text-taupe mt-0.5 flex items-center gap-1.5 flex-wrap">
+<span class="flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px] text-accent-caramel">schedule</span>
+                  10:30 AM – 12:45 PM
+                </span>
+<span class="">•</span>
+<span class="flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px] text-accent-caramel">location_on</span>
+                  Kalam Aud.
+                </span>
+</div>
+<p class="text-[10px] text-secondary font-medium mt-1 truncate">In-Charge: Mrs. Vihaan Kumar (PGT)</p>
+</div>
+</div>
+<span class="text-[9px] px-2 py-0.5 rounded-full bg-success-mint text-success-forest font-bold shrink-0 self-start">Ongoing</span>
+</div>
+<!-- Event 2: Principal & HOD Academic Council -->
+<div class="bg-surface-card rounded-xl p-3 border border-border-beige shadow-xs flex items-start justify-between gap-2.5">
+<div class="flex items-start gap-2.5 min-w-0">
+<div class="w-8 h-8 rounded-lg bg-surface-container text-deep-espresso flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">meeting_room</span>
+</div>
+<div class="min-w-0">
+<div class="flex items-center gap-1.5 flex-wrap">
+<h4 class="font-serif text-[13px] font-bold text-deep-espresso truncate">Principal &amp; HOD Council</h4>
+<span class="text-[9px] px-1.5 py-0.2 rounded bg-tertiary-fixed text-on-tertiary-fixed font-bold">Mandatory L0</span>
+</div>
+<div class="text-[11px] text-text-taupe mt-0.5 flex items-center gap-1.5 flex-wrap">
+<span class="flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px] text-secondary">schedule</span>
+                  03:00 PM – 04:15 PM
+                </span>
+<span class="">•</span>
+<span class="flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px] text-secondary">location_on</span>
+                  Conference Chamber
+                </span>
+</div>
+<p class="text-[10px] text-text-taupe mt-1 truncate">FA-2 Marks Entry Moderation &amp; CBSE Compliance</p>
+</div>
+</div>
+<span class="text-[9px] px-2 py-0.5 rounded-full bg-canvas-cream text-secondary font-bold shrink-0 self-start">Today 3 PM</span>
+</div>
+</section>
+<!-- 5. School Birthdays Card Stack (Carousel / Dual Stack) -->
+<section class="bg-surface-card rounded-2xl border border-border-beige shadow-xs p-3.5 space-y-2.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-info-ice text-info-marine flex items-center justify-center">
+<span class="material-symbols-outlined text-[14px]">cake</span>
+</div>
+<h3 class="font-serif text-[15px] font-bold text-deep-espresso">Today's Birthdays</h3>
+</div>
+<span class="text-[10px] px-2 py-0.5 rounded-full bg-info-ice text-info-marine font-extrabold">6 Celebrations</span>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<!-- Faculty Card: Suresh Verma -->
+<div class="p-2.5 rounded-xl bg-canvas-cream/60 border border-border-beige/70 flex flex-col justify-between">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-[11px] shrink-0">
+                SV
+              </div>
+<div class="min-w-0">
+<div class="font-bold text-[11px] text-deep-espresso truncate">Suresh Verma</div>
+<div class="text-[9px] text-text-taupe truncate">TGT Soc. Science</div>
+</div>
+</div>
+<button class="mt-2.5 w-full py-1 rounded-lg bg-surface-card hover:bg-surface-container border border-border-beige/80 text-[10px] text-secondary font-bold flex items-center justify-center gap-1 active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[12px] text-accent-caramel">send</span>
+<span class="">Wish Card</span>
+</button>
+</div>
+<!-- Student Card: Aanya Kapoor -->
+<div class="p-2.5 rounded-xl bg-canvas-cream/60 border border-border-beige/70 flex flex-col justify-between">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-full bg-info-ice text-info-marine flex items-center justify-center font-bold text-[11px] shrink-0">
+                AK
+              </div>
+<div class="min-w-0">
+<div class="font-bold text-[11px] text-deep-espresso truncate">Aanya Kapoor</div>
+<div class="text-[9px] text-text-taupe truncate">Class 5-B • Roll 08</div>
+</div>
+</div>
+<div class="mt-2.5 py-1 px-1.5 rounded-lg bg-success-mint/80 border border-success-forest/20 text-[9px] text-success-forest font-bold text-center truncate">
+              Morning Assembly Wish
+            </div>
+</div>
+</div>
+<div class="flex items-center justify-between text-[10px] text-text-taupe pt-0.5">
+<span class="">+4 Primary &amp; Middle Wing students</span>
+<button class="text-secondary font-bold hover:underline flex items-center gap-0.5" type="button">
+<span class="">View All</span>
+<span class="material-symbols-outlined text-[12px]">chevron_right</span>
+</button>
+</div>
+</section>
+<!-- 6. Gazetted Holidays & Breaks Ledger (Tear-sheet list items) -->
+<section class="space-y-2">
+<div class="flex items-center justify-between px-0.5">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[17px] text-danger-brick">beach_access</span>
+<h3 class="font-serif text-[15px] font-bold text-deep-espresso">Gazetted Holidays &amp; Breaks</h3>
+</div>
+<span class="text-[10px] text-secondary font-bold hover:underline">Official List</span>
+</div>
+<!-- Holiday 1: Muharram -->
+<div class="bg-surface-card rounded-xl p-2.5 border border-border-beige shadow-xs flex items-center justify-between gap-2">
+<div class="flex items-center gap-2.5 min-w-0">
+<div class="w-9 h-10 rounded-lg bg-danger-blush text-danger-brick flex flex-col items-center justify-center font-bold shrink-0 border border-danger-brick/20">
+<span class="text-[9px] uppercase leading-none font-sans">Jul</span>
+<span class="text-[15px] leading-tight font-serif">29</span>
+</div>
+<div class="min-w-0">
+<h4 class="font-serif text-[13px] font-bold text-deep-espresso truncate">Muharram</h4>
+<p class="text-[10px] text-text-taupe truncate">Gazetted Central Holiday • Campus Closed</p>
+</div>
+</div>
+<span class="text-[10px] font-bold text-danger-brick px-2 py-0.5 rounded-full bg-danger-blush shrink-0">Wednesday</span>
+</div>
+<!-- Holiday 2: Independence Day -->
+<div class="bg-surface-card rounded-xl p-2.5 border border-border-beige shadow-xs flex items-center justify-between gap-2">
+<div class="flex items-center gap-2.5 min-w-0">
+<div class="w-9 h-10 rounded-lg bg-warning-gold/70 text-warning-amber flex flex-col items-center justify-center font-bold shrink-0 border border-warning-amber/20">
+<span class="text-[9px] uppercase leading-none font-sans">Aug</span>
+<span class="text-[15px] leading-tight font-serif">15</span>
+</div>
+<div class="min-w-0">
+<h4 class="font-serif text-[13px] font-bold text-deep-espresso truncate">Independence Day (79th)</h4>
+<p class="text-[10px] text-text-taupe truncate">Flag Hoisting 8:00 AM Mandatory</p>
+</div>
+</div>
+<span class="text-[10px] font-bold text-accent-caramel px-2 py-0.5 rounded-full bg-warning-gold shrink-0">Saturday</span>
+</div>
+<!-- Holiday 3: Raksha Bandhan -->
+<div class="bg-surface-card rounded-xl p-2.5 border border-border-beige shadow-xs flex items-center justify-between gap-2">
+<div class="flex items-center gap-2.5 min-w-0">
+<div class="w-9 h-10 rounded-lg bg-canvas-cream text-text-cocoa flex flex-col items-center justify-center font-bold shrink-0 border border-border-beige">
+<span class="text-[9px] uppercase leading-none font-sans">Aug</span>
+<span class="text-[15px] leading-tight font-serif">28</span>
+</div>
+<div class="min-w-0">
+<h4 class="font-serif text-[13px] font-bold text-deep-espresso truncate">Raksha Bandhan</h4>
+<p class="text-[10px] text-text-taupe truncate">Restricted Holiday • Faculty Optional Roster</p>
+</div>
+</div>
+<span class="text-[10px] font-bold text-text-taupe px-2 py-0.5 rounded-full bg-canvas-cream shrink-0">Friday</span>
+</div>
+</section>
+<!-- Sync Status & Package ID Footer Microcopy -->
+</main>
+<!-- 7. Mobile Floating Action Dock / Bottom App Bar (Sticky Native Android Dock) -->
+<div class="fixed bottom-0 max-w-[420px] w-full px-3.5 pb-4 pt-2 bg-gradient-to-t from-background via-background/95 to-transparent z-40">
+<div class="w-full bg-deep-espresso/95 backdrop-blur-md p-2 rounded-2xl shadow-xl border border-surface-ivory/15 flex items-center gap-2">
+<!-- Secondary Scope Trigger -->
+<button class="py-2.5 px-3 rounded-xl bg-surface-ivory/10 hover:bg-surface-ivory/15 text-surface-ivory text-xs font-semibold flex items-center gap-1 active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[17px] text-tertiary-fixed">tune</span>
+<span class="text-[11px]">Filters</span>
+</button>
+<!-- Primary Action: + Add Event -->
+<button class="flex-1 py-2.5 px-4 rounded-xl bg-secondary-container text-on-secondary-container hover:bg-secondary-container/90 text-[13px] font-extrabold flex items-center justify-center gap-1.5 shadow-md active:scale-98 transition-all" type="button">
+<span class="material-symbols-outlined text-[19px] font-bold">add_circle</span>
+<span class="">Add Event</span>
+</button>
+<!-- More Actions Overflow -->
+<button aria-label="More options" class="w-10 h-10 rounded-xl bg-surface-ivory/10 hover:bg-surface-ivory/15 text-surface-ivory flex items-center justify-center active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[19px]">more_vert</span>
+</button>
+</div>
+<!-- Android Navigation Bar Gesture Pill -->
+<div class="w-full flex justify-center pt-2">
+<div class="w-32 h-1 rounded-full bg-text-cocoa/25"></div>
+</div>
+</div>
+</div>
+</body></html>

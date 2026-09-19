@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>ONPS ERP - Principal Notices &amp; Circulars</title>
+  <link href="https://fonts.googleapis.com" rel="preconnect"/>
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&amp;display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "border-beige": "#E5D8CA",
+            "canvas-cream": "#F7F1E8",
+            "deep-espresso": "#3E2A22",
+            "surface-ivory": "#FFFDF9",
+            "surface-tint": "#765749",
+            "text-cocoa": "#2D211B",
+            "text-taupe": "#8C7A6B",
+            "primary": "#432a1e",
+            "primary-dark": "#3E2A22",
+            "accent-gold": "#B38E5D",
+            "surface-container": "#F5ECE1",
+            "surface-container-high": "#EFE4D6",
+            "danger-brick": "#B5443C",
+            "danger-blush": "#FBEAE8"
+          },
+          "fontFamily": {
+            "headline-lg": ["Newsreader", "serif"],
+            "headline-sm": ["Newsreader", "serif"],
+            "body-md": ["Manrope", "sans-serif"],
+            "label-lg": ["Manrope", "sans-serif"],
+            "label-sm": ["Manrope", "sans-serif"]
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .material-symbols-filled {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-canvas-cream text-text-cocoa font-body-md antialiased min-h-screen flex justify-center">
+  <!-- Mobile Screen Wrapper (Max-w-md matching Android Flagship) -->
+  <main class="w-full max-w-md bg-canvas-cream flex flex-col min-h-screen border-x border-border-beige shadow-2xl relative pb-20">
+    
+    <!-- Top Status Bar & Principal Navigation Header -->
+    <header class="sticky top-0 z-30 bg-surface-ivory/95 backdrop-blur-md border-b border-border-beige px-4 pt-3 pb-3">
+      <!-- Android System Status Bar Simulation -->
+      <div class="flex items-center justify-between text-xs text-text-taupe pb-2 font-mono">
+        <span class="font-bold text-text-cocoa tracking-tight">09:41</span>
+        <div class="flex items-center gap-1.5 text-text-cocoa">
+          <span class="material-symbols-outlined text-sm">signal_cellular_4_bar</span>
+          <span class="material-symbols-outlined text-sm">wifi</span>
+          <span class="material-symbols-outlined text-sm">battery_full</span>
+        </div>
+      </div>
+
+      <!-- App Header Bar -->
+      <div class="flex items-center justify-between gap-2 pt-1">
+        <div class="flex-1 min-w-0">
+          <h1 class="font-headline-lg text-deep-espresso text-xl font-bold tracking-tight truncate">Notices</h1>
+          <p class="text-xs text-text-taupe truncate font-label-sm">One Numan Public School</p>
+        </div>
+        <div class="flex items-center gap-1">
+          <button aria-label="Search" class="size-10 flex items-center justify-center rounded-full text-deep-espresso hover:bg-surface-container active:scale-95 transition-all" type="button">
+            <span class="material-symbols-outlined text-xl">search</span>
+          </button>
+          <button aria-label="Notifications" class="size-10 flex items-center justify-center rounded-full text-deep-espresso hover:bg-surface-container active:scale-95 transition-all relative" type="button">
+            <span class="material-symbols-outlined text-xl">notifications</span>
+          </button>
+          <button aria-label="Profile" class="size-10 flex items-center justify-center rounded-full text-deep-espresso hover:bg-surface-container active:scale-95 transition-all" type="button">
+            <span class="material-symbols-outlined text-xl">more_vert</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Context Subheader -->
+    <section class="bg-surface-ivory px-4 pt-3 pb-2 border-b border-border-beige">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="font-headline-sm text-deep-espresso text-base font-bold">School Notices &amp; Circulars</h2>
+          <p class="text-xs text-text-taupe">Official Communications • Session 2026–27</p>
+        </div>
+        <span class="px-2.5 py-1 rounded-lg bg-surface-container text-deep-espresso text-xs font-bold border border-border-beige" id="noticeCountBadge">
+          5 Notices
+        </span>
+      </div>
+    </section>
+
+    <!-- Search & Category Filters Section -->
+    <section class="bg-surface-ivory px-4 py-3 border-b border-border-beige space-y-2.5 shadow-sm">
+      <!-- Search Field -->
+      <div class="relative">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-taupe text-lg">search</span>
+        <input class="w-full bg-canvas-cream rounded-xl border border-border-beige py-2.5 pl-9 pr-9 text-xs text-text-cocoa placeholder:text-text-taupe focus:border-deep-espresso focus:ring-1 focus:ring-deep-espresso outline-none transition-all" id="searchInput" placeholder="Search notices..." type="text"/>
+        <button aria-label="Clear search" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-taupe hover:text-text-cocoa hidden" id="clearSearchBtn" type="button">
+          <span class="material-symbols-outlined text-base">close</span>
+        </button>
+      </div>
+
+      <!-- Category Filter Chips Row -->
+      <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-1">
+        <button class="filter-chip px-3 py-1.5 rounded-full text-xs font-bold bg-deep-espresso text-surface-ivory shrink-0 active:scale-95 transition-all" data-category="All" onclick="filterCategory('All', this)">
+          All
+        </button>
+        <button class="filter-chip px-3 py-1.5 rounded-full text-xs font-semibold bg-canvas-cream border border-border-beige text-text-cocoa shrink-0 hover:bg-surface-container active:scale-95 transition-all" data-category="School" onclick="filterCategory('School', this)">
+          School
+        </button>
+        <button class="filter-chip px-3 py-1.5 rounded-full text-xs font-semibold bg-canvas-cream border border-border-beige text-text-cocoa shrink-0 hover:bg-surface-container active:scale-95 transition-all" data-category="Academic" onclick="filterCategory('Academic', this)">
+          Academic
+        </button>
+        <button class="filter-chip px-3 py-1.5 rounded-full text-xs font-semibold bg-canvas-cream border border-border-beige text-text-cocoa shrink-0 hover:bg-surface-container active:scale-95 transition-all" data-category="Examination" onclick="filterCategory('Examination', this)">
+          Examination
+        </button>
+        <button class="filter-chip px-3 py-1.5 rounded-full text-xs font-semibold bg-canvas-cream border border-border-beige text-text-cocoa shrink-0 hover:bg-surface-container active:scale-95 transition-all" data-category="Event" onclick="filterCategory('Event', this)">
+          Event
+        </button>
+        <button class="filter-chip px-3 py-1.5 rounded-full text-xs font-semibold bg-canvas-cream border border-border-beige text-text-cocoa shrink-0 hover:bg-surface-container active:scale-95 transition-all" data-category="Holiday" onclick="filterCategory('Holiday', this)">
+          Holiday
+        </button>
+      </div>
+    </section>
+
+    <!-- Notices Feed List -->
+    <section aria-label="Notices Feed" class="px-4 py-3 space-y-2.5 flex-1" id="noticesContainer">
+
+      <!-- Notice 1: Pinned Official Notice -->
+      <article class="bg-surface-ivory rounded-2xl border-1.5 border-accent-gold/60 p-4 shadow-xs hover:border-surface-tint active:scale-[0.99] transition-all cursor-pointer" onclick="openNoticeModal('modal-notice-1')">
+        <div class="flex items-center justify-between pb-1.5">
+          <div class="flex items-center gap-1.5">
+            <span class="material-symbols-filled text-accent-gold text-sm">push_pin</span>
+            <span class="px-2 py-0.5 rounded-md bg-canvas-cream border border-border-beige text-[10px] font-bold text-deep-espresso uppercase tracking-wider">
+              School
+            </span>
+          </div>
+          <span class="text-xs text-text-taupe font-medium">24 Oct 2026</span>
+        </div>
+        <h3 class="font-headline-sm text-base font-bold text-deep-espresso leading-snug mt-1">
+          Revised Morning Assembly Schedule
+        </h3>
+        <p class="text-xs text-text-cocoa line-clamp-2 mt-1 leading-relaxed">
+          Due to dense morning fog and cold wave conditions, morning assembly will be conducted indoors in respective classrooms starting Monday. School timing adjusted to 08:30 AM.
+        </p>
+        <div class="mt-3 flex items-center justify-between pt-1">
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-canvas-cream text-[11px] font-semibold text-text-taupe">
+            <span class="material-symbols-outlined text-xs">groups</span>
+            All School (K–12)
+          </span>
+          <span class="inline-flex items-center gap-1 text-xs font-bold text-deep-espresso">
+            <span class="material-symbols-outlined text-sm">attachment</span>
+            Attachment
+          </span>
+        </div>
+      </article>
+
+      <!-- Notice 2: Academic Circular -->
+      <article class="bg-surface-ivory rounded-2xl border border-border-beige p-4 shadow-xs hover:border-surface-tint active:scale-[0.99] transition-all cursor-pointer" onclick="openNoticeModal('modal-notice-2')">
+        <div class="flex items-center justify-between pb-1.5">
+          <span class="px-2 py-0.5 rounded-md bg-canvas-cream border border-border-beige text-[10px] font-bold text-deep-espresso uppercase tracking-wider">
+            Academic
+          </span>
+          <span class="text-xs text-text-taupe font-medium">20 Oct 2026</span>
+        </div>
+        <h3 class="font-headline-sm text-base font-bold text-deep-espresso leading-snug mt-1">
+          Second Assessment Schedule Published
+        </h3>
+        <p class="text-xs text-text-cocoa line-clamp-2 mt-1 leading-relaxed">
+          The date sheet for Second Assessment examinations has been finalized. Parents and teachers are requested to review subject schedules in the academic calendar.
+        </p>
+        <div class="mt-3 flex items-center justify-between pt-1">
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-canvas-cream text-[11px] font-semibold text-text-taupe">
+            <span class="material-symbols-outlined text-xs">groups</span>
+            Classes 5–10
+          </span>
+          <span class="inline-flex items-center gap-1 text-xs font-bold text-deep-espresso">
+            <span class="material-symbols-outlined text-sm">attachment</span>
+            Attachment
+          </span>
+        </div>
+      </article>
+
+      <!-- Notice 3: Examination Notice -->
+      <article class="bg-surface-ivory rounded-2xl border border-border-beige p-4 shadow-xs hover:border-surface-tint active:scale-[0.99] transition-all cursor-pointer" onclick="openNoticeModal('modal-notice-3')">
+        <div class="flex items-center justify-between pb-1.5">
+          <span class="px-2 py-0.5 rounded-md bg-canvas-cream border border-border-beige text-[10px] font-bold text-deep-espresso uppercase tracking-wider">
+            Examination
+          </span>
+          <span class="text-xs text-text-taupe font-medium">18 Oct 2026</span>
+        </div>
+        <h3 class="font-headline-sm text-base font-bold text-deep-espresso leading-snug mt-1">
+          Half-Yearly Examination Guidelines &amp; Admit Cards
+        </h3>
+        <p class="text-xs text-text-cocoa line-clamp-2 mt-1 leading-relaxed">
+          Physical admit cards stamped by the Registrar Desk will be distributed in homerooms on Friday. Students must bring original identity cards to examination halls.
+        </p>
+        <div class="mt-3 flex items-center justify-between pt-1">
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-canvas-cream text-[11px] font-semibold text-text-taupe">
+            <span class="material-symbols-outlined text-xs">groups</span>
+            Classes 9–12
+          </span>
+          <span class="inline-flex items-center gap-1 text-xs font-bold text-deep-espresso">
+            <span class="material-symbols-outlined text-sm">attachment</span>
+            Attachment
+          </span>
+        </div>
+      </article>
+
+      <!-- Notice 4: Event Circular -->
+      <article class="bg-surface-ivory rounded-2xl border border-border-beige p-4 shadow-xs hover:border-surface-tint active:scale-[0.99] transition-all cursor-pointer" onclick="openNoticeModal('modal-notice-4')">
+        <div class="flex items-center justify-between pb-1.5">
+          <span class="px-2 py-0.5 rounded-md bg-canvas-cream border border-border-beige text-[10px] font-bold text-deep-espresso uppercase tracking-wider">
+            Event
+          </span>
+          <span class="text-xs text-text-taupe font-medium">15 Oct 2026</span>
+        </div>
+        <h3 class="font-headline-sm text-base font-bold text-deep-espresso leading-snug mt-1">
+          Annual Sports Day 2026 Schedule &amp; House Heats
+        </h3>
+        <p class="text-xs text-text-cocoa line-clamp-2 mt-1 leading-relaxed">
+          Inter-house athletic heats begin next Wednesday on the central sports stadium. Morning assembly attendance will be marked at respective house assembly points.
+        </p>
+        <div class="mt-3 flex items-center justify-between pt-1">
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-canvas-cream text-[11px] font-semibold text-text-taupe">
+            <span class="material-symbols-outlined text-xs">groups</span>
+            Classes 4–12
+          </span>
+          <span class="inline-flex items-center gap-1 text-xs font-bold text-deep-espresso">
+            <span class="material-symbols-outlined text-sm">attachment</span>
+            Attachment
+          </span>
+        </div>
+      </article>
+
+      <!-- Notice 5: Holiday Notification -->
+      <article class="bg-surface-ivory rounded-2xl border border-border-beige p-4 shadow-xs hover:border-surface-tint active:scale-[0.99] transition-all cursor-pointer" onclick="openNoticeModal('modal-notice-5')">
+        <div class="flex items-center justify-between pb-1.5">
+          <span class="px-2 py-0.5 rounded-md bg-canvas-cream border border-border-beige text-[10px] font-bold text-deep-espresso uppercase tracking-wider">
+            Holiday
+          </span>
+          <span class="text-xs text-text-taupe font-medium">10 Oct 2026</span>
+        </div>
+        <h3 class="font-headline-sm text-base font-bold text-deep-espresso leading-snug mt-1">
+          Diwali &amp; Autumn Break Schedule
+        </h3>
+        <p class="text-xs text-text-cocoa line-clamp-2 mt-1 leading-relaxed">
+          The school will remain closed for Diwali and Autumn Break from 28 October 2026 to 02 November 2026. Regular classes will resume on Monday, 03 November 2026.
+        </p>
+        <div class="mt-3 flex items-center justify-between pt-1">
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-canvas-cream text-[11px] font-semibold text-text-taupe">
+            <span class="material-symbols-outlined text-xs">groups</span>
+            All School
+          </span>
+        </div>
+      </article>
+
+    </section>
+
+    <!-- Bottom Navigation Bar (Principal 5 Items: Portal, Academics, Students, Notices, More) -->
+    <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-40 bg-surface-ivory border-t border-border-beige shadow-lg">
+      <div class="grid grid-cols-5 h-15 items-center px-1">
+        <!-- 1. Portal -->
+        <a class="flex flex-col items-center justify-center py-1 text-text-taupe hover:text-deep-espresso" href="../24_principal_executive_command_erp_hub/code.html">
+          <span class="material-symbols-outlined text-xl">dashboard</span>
+          <span class="text-[10px] font-medium mt-0.5">Portal</span>
+        </a>
+
+        <!-- 2. Academics -->
+        <a class="flex flex-col items-center justify-center py-1 text-text-taupe hover:text-deep-espresso" href="../all_classes_academic_faculty_allocation_dashboard/code.html">
+          <span class="material-symbols-outlined text-xl">menu_book</span>
+          <span class="text-[10px] font-medium mt-0.5">Academics</span>
+        </a>
+
+        <!-- 3. Students -->
+        <a class="flex flex-col items-center justify-center py-1 text-text-taupe hover:text-deep-espresso" href="../student_see_all_students_ledger/code.html">
+          <span class="material-symbols-outlined text-xl">groups</span>
+          <span class="text-[10px] font-medium mt-0.5">Students</span>
+        </a>
+
+        <!-- 4. Notices (Active) -->
+        <a class="flex flex-col items-center justify-center py-1 text-deep-espresso relative" href="#">
+          <span class="absolute top-0 w-6 h-0.5 bg-deep-espresso rounded-full"></span>
+          <span class="material-symbols-filled text-xl text-deep-espresso">campaign</span>
+          <span class="text-[10px] font-bold mt-0.5 text-deep-espresso">Notices</span>
+        </a>
+
+        <!-- 5. More -->
+        <a class="flex flex-col items-center justify-center py-1 text-text-taupe hover:text-deep-espresso" href="../24b_all_erp_modules_directory_sheet/code.html">
+          <span class="material-symbols-outlined text-xl">apps</span>
+          <span class="text-[10px] font-medium mt-0.5">More</span>
+        </a>
+      </div>
+    </nav>
+
+    <!-- Modal Sheet: Notice Detail (Sample for Notice 1) -->
+    <div class="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex justify-end flex-col hidden" id="noticeModal">
+      <div class="bg-surface-ivory rounded-t-3xl border-t border-border-beige max-h-[85vh] flex flex-col w-full max-w-md mx-auto shadow-2xl">
+        <div class="p-4 border-b border-border-beige flex items-center justify-between">
+          <span class="px-2.5 py-1 rounded-full bg-canvas-cream border border-border-beige text-xs font-bold text-deep-espresso" id="modalCategoryBadge">
+            SCHOOL
+          </span>
+          <button class="size-8 flex items-center justify-center rounded-full hover:bg-surface-container text-text-taupe" onclick="closeNoticeModal()" type="button">
+            <span class="material-symbols-outlined text-lg">close</span>
+          </button>
+        </div>
+        <div class="overflow-y-auto p-5 space-y-4 text-sm">
+          <h2 class="font-headline-sm text-xl font-bold text-deep-espresso leading-snug" id="modalTitle">
+            Revised Morning Assembly Schedule
+          </h2>
+          
+          <div class="p-3 bg-canvas-cream rounded-xl border border-border-beige space-y-2 text-xs">
+            <div class="flex items-center gap-2 text-text-cocoa">
+              <span class="material-symbols-outlined text-sm text-text-taupe">calendar_today</span>
+              <span>Published: <strong id="modalDate">24 Oct 2026</strong></span>
+            </div>
+            <div class="flex items-center gap-2 text-text-cocoa">
+              <span class="material-symbols-outlined text-sm text-text-taupe">groups</span>
+              <span>Audience: <strong id="modalAudience">All School (K–12)</strong></span>
+            </div>
+            <div class="flex items-center gap-2 text-text-cocoa">
+              <span class="material-symbols-outlined text-sm text-accent-gold">verified_user</span>
+              <span>Issued By: <strong class="text-accent-gold" id="modalAuthor">Dr. Robert Chen (Principal)</strong></span>
+            </div>
+          </div>
+
+          <div class="text-text-cocoa text-sm leading-relaxed" id="modalBody">
+            Due to dense morning fog and cold wave conditions, morning assembly will be conducted indoors in respective classrooms starting Monday. School timing adjusted to 08:30 AM.
+          </div>
+
+          <!-- Attachment Box -->
+          <div class="pt-2" id="modalAttachmentBox">
+            <h4 class="font-headline-sm text-sm font-bold text-deep-espresso mb-2">Attached Document</h4>
+            <div class="p-3 rounded-xl bg-canvas-cream border border-border-beige flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="size-10 rounded-lg bg-danger-blush flex items-center justify-center text-danger-brick shrink-0">
+                  <span class="material-symbols-outlined text-xl">picture_as_pdf</span>
+                </div>
+                <div class="min-w-0">
+                  <p class="font-bold text-xs text-deep-espresso truncate" id="modalAttachmentName">winter_timing_schedule_2026.pdf</p>
+                  <p class="text-[11px] text-text-taupe" id="modalAttachmentMeta">PDF Document • 240 KB</p>
+                </div>
+              </div>
+              <button class="size-9 rounded-lg bg-deep-espresso text-surface-ivory flex items-center justify-center active:scale-95 shadow-xs" onclick="alert('Downloading attachment...')" type="button">
+                <span class="material-symbols-outlined text-base">download</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    const searchInput = document.getElementById('searchInput');
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
+    const noticeModal = document.getElementById('noticeModal');
+
+    searchInput.addEventListener('input', (e) => {
+      if (e.target.value.length > 0) {
+        clearSearchBtn.classList.remove('hidden');
+      } else {
+        clearSearchBtn.classList.add('hidden');
+      }
+    });
+
+    clearSearchBtn.addEventListener('click', () => {
+      searchInput.value = '';
+      clearSearchBtn.classList.add('hidden');
+    });
+
+    function filterCategory(cat, btn) {
+      document.querySelectorAll('.filter-chip').forEach(c => {
+        c.classList.remove('bg-deep-espresso', 'text-surface-ivory');
+        c.classList.add('bg-canvas-cream', 'border', 'border-border-beige', 'text-text-cocoa');
+      });
+      btn.classList.remove('bg-canvas-cream', 'border', 'border-border-beige', 'text-text-cocoa');
+      btn.classList.add('bg-deep-espresso', 'text-surface-ivory');
+    }
+
+    function openNoticeModal(id) {
+      noticeModal.classList.remove('hidden');
+    }
+
+    function closeNoticeModal() {
+      noticeModal.classList.add('hidden');
+    }
+  </script>
+</body>
+</html>

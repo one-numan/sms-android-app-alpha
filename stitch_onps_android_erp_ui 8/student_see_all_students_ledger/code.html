@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>ONPS ERP - Principal Student Directory</title>
+  <link href="https://fonts.googleapis.com" rel="preconnect"/>
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&amp;display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "border-beige": "#E5D8CA",
+            "canvas-cream": "#F7F1E8",
+            "deep-espresso": "#3E2A22",
+            "surface-ivory": "#FFFDF9",
+            "surface-tint": "#765749",
+            "text-cocoa": "#2D211B",
+            "text-taupe": "#8C7A6B",
+            "primary": "#432a1e",
+            "primary-dark": "#3E2A22",
+            "accent-gold": "#B38E5D",
+            "surface-container": "#F5ECE1",
+            "surface-container-high": "#EFE4D6",
+            "success-forest": "#2E7D4F",
+            "success-mint": "#EAF4ED"
+          },
+          "fontFamily": {
+            "headline-lg": ["Newsreader", "serif"],
+            "headline-sm": ["Newsreader", "serif"],
+            "body-md": ["Manrope", "sans-serif"],
+            "label-lg": ["Manrope", "sans-serif"],
+            "label-sm": ["Manrope", "sans-serif"]
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .material-symbols-filled {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-canvas-cream text-text-cocoa font-body-md antialiased min-h-screen flex justify-center">
+  <!-- Mobile Screen Wrapper (Max-w-md matching Android flagship viewport) -->
+  <main class="w-full max-w-md bg-canvas-cream flex flex-col min-h-screen border-x border-border-beige shadow-2xl relative pb-20">
+    
+    <!-- Top Status Bar & Principal Navigation Header -->
+    <header class="sticky top-0 z-30 bg-surface-ivory/95 backdrop-blur-md border-b border-border-beige px-4 pt-3 pb-3">
+      <!-- Android System Status Bar Simulation -->
+      <div class="flex items-center justify-between text-xs text-text-taupe pb-2 font-mono">
+        <span class="font-bold text-text-cocoa tracking-tight">09:41</span>
+        <div class="flex items-center gap-1.5 text-text-cocoa">
+          <span class="material-symbols-outlined text-sm">signal_cellular_4_bar</span>
+          <span class="material-symbols-outlined text-sm">wifi</span>
+          <span class="material-symbols-outlined text-sm">battery_full</span>
+        </div>
+      </div>
+
+      <!-- App Header Bar -->
+      <div class="flex items-center justify-between gap-2 pt-1">
+        <div class="flex-1 min-w-0">
+          <h1 class="font-headline-lg text-deep-espresso text-xl font-bold tracking-tight truncate">Students</h1>
+          <p class="text-xs text-text-taupe truncate font-label-sm">One Numan Public School</p>
+        </div>
+        <div class="flex items-center gap-1">
+          <button aria-label="Search" class="size-10 flex items-center justify-center rounded-full text-deep-espresso hover:bg-surface-container active:scale-95 transition-all" type="button">
+            <span class="material-symbols-outlined text-xl">search</span>
+          </button>
+          <button aria-label="Notifications" class="size-10 flex items-center justify-center rounded-full text-deep-espresso hover:bg-surface-container active:scale-95 transition-all relative" type="button">
+            <span class="material-symbols-outlined text-xl">notifications</span>
+          </button>
+          <button aria-label="Profile" class="size-10 flex items-center justify-center rounded-full text-deep-espresso hover:bg-surface-container active:scale-95 transition-all" type="button">
+            <span class="material-symbols-outlined text-xl">more_vert</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Context Header -->
+    <section class="bg-surface-ivory px-4 pt-3 pb-2 border-b border-border-beige">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="font-headline-sm text-deep-espresso text-base font-bold">Student Directory</h2>
+          <p class="text-xs text-text-taupe">Session 2026–27 • Institutional Roster</p>
+        </div>
+        <span class="px-2.5 py-1 rounded-lg bg-surface-container text-deep-espresso text-xs font-bold border border-border-beige" id="studentCountBadge">
+          32 Students
+        </span>
+      </div>
+    </section>
+
+    <!-- Search & Filter Controls -->
+    <section class="bg-surface-ivory px-4 py-3 border-b border-border-beige space-y-2.5 shadow-sm">
+      <!-- Search Field -->
+      <div class="relative">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-taupe text-lg">search</span>
+        <input class="w-full bg-canvas-cream rounded-xl border border-border-beige py-2.5 pl-9 pr-9 text-xs text-text-cocoa placeholder:text-text-taupe focus:border-deep-espresso focus:ring-1 focus:ring-deep-espresso outline-none transition-all" id="searchInput" placeholder="Search student..." type="text"/>
+        <button aria-label="Clear search input" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-taupe hover:text-text-cocoa hidden" id="clearSearchBtn" type="button">
+          <span class="material-symbols-outlined text-base">close</span>
+        </button>
+      </div>
+
+      <!-- Grade and Section Selectors -->
+      <div class="grid grid-cols-2 gap-2">
+        <!-- Grade Picker Button -->
+        <button class="flex items-center justify-between px-3 py-2 rounded-xl bg-canvas-cream border border-deep-espresso text-xs font-bold text-deep-espresso hover:bg-surface-container transition-all text-left" id="gradePickerBtn" type="button">
+          <span class="truncate" id="gradeLabel">Grade 5</span>
+          <span class="material-symbols-outlined text-base text-text-taupe shrink-0">arrow_drop_down</span>
+        </button>
+
+        <!-- Section Picker Button -->
+        <button class="flex items-center justify-between px-3 py-2 rounded-xl bg-canvas-cream border border-deep-espresso text-xs font-bold text-deep-espresso hover:bg-surface-container transition-all text-left" id="sectionPickerBtn" type="button">
+          <span class="truncate" id="sectionLabel">Section 5-C</span>
+          <span class="material-symbols-outlined text-base text-text-taupe shrink-0">arrow_drop_down</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Active Filter Summary & Sort Bar -->
+    <div class="px-4 py-2 bg-canvas-cream flex items-center justify-between text-xs text-text-taupe border-b border-border-beige">
+      <span class="font-bold text-text-cocoa" id="contextFilterText">Grade 5 · Section 5-C</span>
+      <button class="flex items-center gap-1 hover:text-deep-espresso transition-colors font-medium text-text-cocoa" id="sortBtn" type="button">
+        <span class="material-symbols-outlined text-sm">swap_vert</span>
+        <span id="sortLabel">Name A–Z</span>
+      </button>
+    </div>
+
+    <!-- Student Cards Roster List -->
+    <section aria-label="Student Directory List" class="px-4 py-3 space-y-2 flex-1" id="studentListContainer">
+      
+      <!-- Student Row 1: Diya Sharma -->
+      <article class="bg-surface-ivory rounded-xl border border-border-beige p-3 shadow-xs hover:border-surface-tint active:scale-[0.99] transition-all cursor-pointer flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="size-11 rounded-xl bg-deep-espresso flex items-center justify-center text-accent-gold font-headline-sm font-bold text-base shrink-0">
+            DS
+          </div>
+          <div class="min-w-0">
+            <h3 class="font-body-md text-sm font-bold text-deep-espresso truncate">Diya Sharma</h3>
+            <p class="text-xs text-text-taupe font-medium truncate">Roll No. 14 • Grade 5-C</p>
+          </div>
+        </div>
+        <span class="material-symbols-outlined text-text-taupe text-lg shrink-0">chevron_right</span>
+      </article>
+
+      <!-- Student Row 2: Aarav Sharma -->
+      <article class="bg-surface-ivory rounded-xl border border-border-beige p-3 shadow-xs hover:border-surface-tint active:scale-[0.99] transition-all cursor-pointer flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="size-11 rounded-xl bg-deep-espresso flex items-center justify-center text-accent-gold font-headline-sm font-bold text-base shrink-0">
+            AS
+          </div>
+          <div class="min-w-0">
+            <h3 class="font-body-md text-sm font-bold text-deep-espresso truncate">Aarav Sharma</h3>
+            <p class="text-xs text-text-taupe font-medium truncate">Roll No. 18 • Grade 5-C</p>
+          </div>
+        </div>
+        <span class="material-symbols-outlined text-text-taupe text-lg shrink-0">chevron_right</span>
+      </article>
+
+      <!-- Student Row 3: Ananya Sharma -->
+      <article class="bg-surface-ivory rounded-xl border border-border-beige p-3 shadow-xs hover:border-surface-tint active:scale-[0.99] transition-all cursor-pointer flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="size-11 rounded-xl bg-deep-espresso flex items-center justify-center text-accent-gold font-headline-sm font-bold text-base shrink-0">
+            AS
+          </div>
+          <div class="min-w-0">
+            <h3 class="font-body-md text-sm font-bold text-deep-espresso truncate">Ananya Sharma</h3>
+            <p class="text-xs text-text-taupe font-medium truncate">Roll No. 21 • Grade 5-C</p>
+          </div>
+        </div>
+        <span class="material-symbols-outlined text-text-taupe text-lg shrink-0">chevron_right</span>
+      </article>
+
+      <!-- Student Row 4: Vihaan Gupta -->
+      <article class="bg-surface-ivory rounded-xl border border-border-beige p-3 shadow-xs hover:border-surface-tint active:scale-[0.99] transition-all cursor-pointer flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="size-11 rounded-xl bg-deep-espresso flex items-center justify-center text-accent-gold font-headline-sm font-bold text-base shrink-0">
+            VG
+          </div>
+          <div class="min-w-0">
+            <h3 class="font-body-md text-sm font-bold text-deep-espresso truncate">Vihaan Gupta</h3>
+            <p class="text-xs text-text-taupe font-medium truncate">Roll No. 24 • Grade 5-C</p>
+          </div>
+        </div>
+        <span class="material-symbols-outlined text-text-taupe text-lg shrink-0">chevron_right</span>
+      </article>
+
+      <!-- Student Row 5: Myra Kapoor -->
+      <article class="bg-surface-ivory rounded-xl border border-border-beige p-3 shadow-xs hover:border-surface-tint active:scale-[0.99] transition-all cursor-pointer flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="size-11 rounded-xl bg-deep-espresso flex items-center justify-center text-accent-gold font-headline-sm font-bold text-base shrink-0">
+            MK
+          </div>
+          <div class="min-w-0">
+            <h3 class="font-body-md text-sm font-bold text-deep-espresso truncate">Myra Kapoor</h3>
+            <p class="text-xs text-text-taupe font-medium truncate">Roll No. 28 • Grade 5-C</p>
+          </div>
+        </div>
+        <span class="material-symbols-outlined text-text-taupe text-lg shrink-0">chevron_right</span>
+      </article>
+
+    </section>
+
+    <!-- Bottom Navigation Bar (Principal 5 Items: Portal, Academics, Students, Notices, More) -->
+    <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-40 bg-surface-ivory border-t border-border-beige shadow-lg">
+      <div class="grid grid-cols-5 h-15 items-center px-1">
+        <!-- 1. Portal -->
+        <a class="flex flex-col items-center justify-center py-1 text-text-taupe hover:text-deep-espresso" href="../24_principal_executive_command_erp_hub/code.html">
+          <span class="material-symbols-outlined text-xl">dashboard</span>
+          <span class="text-[10px] font-medium mt-0.5">Portal</span>
+        </a>
+
+        <!-- 2. Academics -->
+        <a class="flex flex-col items-center justify-center py-1 text-text-taupe hover:text-deep-espresso" href="../all_classes_academic_faculty_allocation_dashboard/code.html">
+          <span class="material-symbols-outlined text-xl">menu_book</span>
+          <span class="text-[10px] font-medium mt-0.5">Academics</span>
+        </a>
+
+        <!-- 3. Students (Active) -->
+        <a class="flex flex-col items-center justify-center py-1 text-deep-espresso relative" href="#">
+          <span class="absolute top-0 w-6 h-0.5 bg-deep-espresso rounded-full"></span>
+          <span class="material-symbols-filled text-xl text-deep-espresso">groups</span>
+          <span class="text-[10px] font-bold mt-0.5 text-deep-espresso">Students</span>
+        </a>
+
+        <!-- 4. Notices -->
+        <a class="flex flex-col items-center justify-center py-1 text-text-taupe hover:text-deep-espresso" href="../13_school_notice_board_moderated_circulars/code.html">
+          <span class="material-symbols-outlined text-xl">campaign</span>
+          <span class="text-[10px] font-medium mt-0.5">Notices</span>
+        </a>
+
+        <!-- 5. More -->
+        <a class="flex flex-col items-center justify-center py-1 text-text-taupe hover:text-deep-espresso" href="../24b_all_erp_modules_directory_sheet/code.html">
+          <span class="material-symbols-outlined text-xl">apps</span>
+          <span class="text-[10px] font-medium mt-0.5">More</span>
+        </a>
+      </div>
+    </nav>
+
+    <!-- Modal Sheet: Select Grade -->
+    <div class="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex justify-end flex-col hidden" id="gradeModal">
+      <div class="bg-surface-ivory rounded-t-2xl border-t border-border-beige max-h-[70vh] flex flex-col w-full max-w-md mx-auto shadow-2xl">
+        <div class="p-4 border-b border-border-beige flex items-center justify-between">
+          <h3 class="font-headline-sm text-base font-bold text-deep-espresso">Select Class</h3>
+          <button class="size-8 flex items-center justify-center rounded-full hover:bg-surface-container text-text-taupe" id="closeGradeModalBtn" type="button">
+            <span class="material-symbols-outlined text-lg">close</span>
+          </button>
+        </div>
+        <div class="overflow-y-auto p-2 space-y-1 text-sm">
+          <button class="w-full text-left px-4 py-2.5 rounded-lg hover:bg-surface-container text-text-cocoa font-medium flex items-center justify-between" onclick="selectGrade('All')">
+            <span>All Classes</span>
+          </button>
+          <button class="w-full text-left px-4 py-2.5 rounded-lg hover:bg-surface-container text-text-cocoa font-medium flex items-center justify-between" onclick="selectGrade('K')">
+            <span>Kindergarten</span>
+          </button>
+          <button class="w-full text-left px-4 py-2.5 rounded-lg hover:bg-surface-container text-text-cocoa font-medium flex items-center justify-between" onclick="selectGrade('1')">
+            <span>Grade 1</span>
+          </button>
+          <button class="w-full text-left px-4 py-2.5 rounded-lg hover:bg-surface-container text-text-cocoa font-medium flex items-center justify-between" onclick="selectGrade('2')">
+            <span>Grade 2</span>
+          </button>
+          <button class="w-full text-left px-4 py-2.5 rounded-lg hover:bg-surface-container text-text-cocoa font-medium flex items-center justify-between" onclick="selectGrade('3')">
+            <span>Grade 3</span>
+          </button>
+          <button class="w-full text-left px-4 py-2.5 rounded-lg hover:bg-surface-container text-text-cocoa font-medium flex items-center justify-between" onclick="selectGrade('4')">
+            <span>Grade 4</span>
+          </button>
+          <button class="w-full text-left px-4 py-2.5 rounded-lg bg-surface-container text-deep-espresso font-bold flex items-center justify-between" onclick="selectGrade('5')">
+            <span>Grade 5</span>
+            <span class="material-symbols-outlined text-base text-deep-espresso">check_circle</span>
+          </button>
+          <button class="w-full text-left px-4 py-2.5 rounded-lg hover:bg-surface-container text-text-cocoa font-medium flex items-center justify-between" onclick="selectGrade('6')">
+            <span>Grade 6</span>
+          </button>
+          <button class="w-full text-left px-4 py-2.5 rounded-lg hover:bg-surface-container text-text-cocoa font-medium flex items-center justify-between" onclick="selectGrade('7')">
+            <span>Grade 7</span>
+          </button>
+          <button class="w-full text-left px-4 py-2.5 rounded-lg hover:bg-surface-container text-text-cocoa font-medium flex items-center justify-between" onclick="selectGrade('8')">
+            <span>Grade 8</span>
+          </button>
+          <button class="w-full text-left px-4 py-2.5 rounded-lg hover:bg-surface-container text-text-cocoa font-medium flex items-center justify-between" onclick="selectGrade('9')">
+            <span>Grade 9</span>
+          </button>
+          <button class="w-full text-left px-4 py-2.5 rounded-lg hover:bg-surface-container text-text-cocoa font-medium flex items-center justify-between" onclick="selectGrade('10')">
+            <span>Grade 10</span>
+          </button>
+          <button class="w-full text-left px-4 py-2.5 rounded-lg hover:bg-surface-container text-text-cocoa font-medium flex items-center justify-between" onclick="selectGrade('11')">
+            <span>Grade 11</span>
+          </button>
+          <button class="w-full text-left px-4 py-2.5 rounded-lg hover:bg-surface-container text-text-cocoa font-medium flex items-center justify-between" onclick="selectGrade('12')">
+            <span>Grade 12</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Sheet: Select Section -->
+    <div class="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex justify-end flex-col hidden" id="sectionModal">
+      <div class="bg-surface-ivory rounded-t-2xl border-t border-border-beige max-h-[60vh] flex flex-col w-full max-w-md mx-auto shadow-2xl">
+        <div class="p-4 border-b border-border-beige flex items-center justify-between">
+          <h3 class="font-headline-sm text-base font-bold text-deep-espresso" id="sectionModalTitle">Select Section (Grade 5)</h3>
+          <button class="size-8 flex items-center justify-center rounded-full hover:bg-surface-container text-text-taupe" id="closeSectionModalBtn" type="button">
+            <span class="material-symbols-outlined text-lg">close</span>
+          </button>
+        </div>
+        <div class="overflow-y-auto p-2 space-y-1 text-sm">
+          <button class="w-full text-left px-4 py-2.5 rounded-lg hover:bg-surface-container text-text-cocoa font-medium flex items-center justify-between" onclick="selectSection('All')">
+            <span>All Sections</span>
+          </button>
+          <button class="w-full text-left px-4 py-2.5 rounded-lg hover:bg-surface-container text-text-cocoa font-medium flex items-center justify-between" onclick="selectSection('A')">
+            <span>Section 5-A</span>
+          </button>
+          <button class="w-full text-left px-4 py-2.5 rounded-lg hover:bg-surface-container text-text-cocoa font-medium flex items-center justify-between" onclick="selectSection('B')">
+            <span>Section 5-B</span>
+          </button>
+          <button class="w-full text-left px-4 py-2.5 rounded-lg bg-surface-container text-deep-espresso font-bold flex items-center justify-between" onclick="selectSection('C')">
+            <span>Section 5-C</span>
+            <span class="material-symbols-outlined text-base text-deep-espresso">check_circle</span>
+          </button>
+          <button class="w-full text-left px-4 py-2.5 rounded-lg hover:bg-surface-container text-text-cocoa font-medium flex items-center justify-between" onclick="selectSection('D')">
+            <span>Section 5-D</span>
+          </button>
+          <button class="w-full text-left px-4 py-2.5 rounded-lg hover:bg-surface-container text-text-cocoa font-medium flex items-center justify-between" onclick="selectSection('E')">
+            <span>Section 5-E</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    let currentGrade = '5';
+    let currentSection = 'C';
+
+    const gradeModal = document.getElementById('gradeModal');
+    const sectionModal = document.getElementById('sectionModal');
+    const gradePickerBtn = document.getElementById('gradePickerBtn');
+    const sectionPickerBtn = document.getElementById('sectionPickerBtn');
+    const closeGradeModalBtn = document.getElementById('closeGradeModalBtn');
+    const closeSectionModalBtn = document.getElementById('closeSectionModalBtn');
+    const searchInput = document.getElementById('searchInput');
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
+
+    gradePickerBtn.addEventListener('click', () => gradeModal.classList.remove('hidden'));
+    closeGradeModalBtn.addEventListener('click', () => gradeModal.classList.add('hidden'));
+
+    sectionPickerBtn.addEventListener('click', () => sectionModal.classList.remove('hidden'));
+    closeSectionModalBtn.addEventListener('click', () => sectionModal.classList.add('hidden'));
+
+    searchInput.addEventListener('input', (e) => {
+      if (e.target.value.length > 0) {
+        clearSearchBtn.classList.remove('hidden');
+      } else {
+        clearSearchBtn.classList.add('hidden');
+      }
+    });
+
+    clearSearchBtn.addEventListener('click', () => {
+      searchInput.value = '';
+      clearSearchBtn.classList.add('hidden');
+    });
+
+    function selectGrade(grade) {
+      currentGrade = grade;
+      document.getElementById('gradeLabel').textContent = grade === 'All' ? 'All Classes' : (grade === 'K' ? 'Kindergarten' : 'Grade ' + grade);
+      gradeModal.classList.add('hidden');
+      updateContext();
+    }
+
+    function selectSection(section) {
+      currentSection = section;
+      document.getElementById('sectionLabel').textContent = section === 'All' ? 'All Sections' : 'Section ' + currentGrade + '-' + section;
+      sectionModal.classList.add('hidden');
+      updateContext();
+    }
+
+    function updateContext() {
+      const countEl = document.getElementById('studentCountBadge');
+      const textEl = document.getElementById('contextFilterText');
+      if (currentGrade === 'All') {
+        countEl.textContent = '1,240 Students';
+        textEl.textContent = 'All Classes';
+      } else if (currentSection === 'All') {
+        countEl.textContent = '160 Students';
+        textEl.textContent = (currentGrade === 'K' ? 'Kindergarten' : 'Grade ' + currentGrade) + ' • All Sections';
+      } else {
+        countEl.textContent = '32 Students';
+        textEl.textContent = 'Grade ' + currentGrade + ' · Section ' + currentGrade + '-' + currentSection;
+      }
+    }
+  </script>
+</body>
+</html>
