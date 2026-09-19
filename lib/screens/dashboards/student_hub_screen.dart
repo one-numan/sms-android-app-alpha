@@ -58,15 +58,6 @@ class _StudentHubScreenState extends State<StudentHubScreen> {
     }
   }
 
-  static String _calculateGrade(double percentage) {
-    if (percentage >= 85) return 'A1';
-    if (percentage >= 75) return 'A2';
-    if (percentage >= 65) return 'B1';
-    if (percentage >= 55) return 'B2';
-    if (percentage >= 45) return 'C1';
-    if (percentage >= 35) return 'C2';
-    return 'D';
-  }
 
   @override
   Widget build(BuildContext context) {

@@ -67,7 +67,7 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
     final leaveDays = _attendanceData?['on_leave_days'] as int? ?? 0;
     final matrix = (_attendanceData?['matrix'] as Map<String, dynamic>?) ?? {};
 
-    final totalDays = presentDays + absentDays + lateDays + leaveDays;
+
 
     return Scaffold(
       backgroundColor: AcademicColors.canvas,
