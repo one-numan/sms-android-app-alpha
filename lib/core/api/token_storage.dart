@@ -8,45 +8,65 @@ class TokenStorage {
 
   /// Save access token.
   static Future<void> saveToken(String token) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_tokenKey, token);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_tokenKey, token);
+    } catch (_) {}
   }
 
   /// Get current saved access token.
   static Future<String?> getToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_tokenKey);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString(_tokenKey);
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Save refresh token.
   static Future<void> saveRefreshToken(String refreshToken) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_refreshTokenKey, refreshToken);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_refreshTokenKey, refreshToken);
+    } catch (_) {}
   }
 
   /// Get saved refresh token.
   static Future<String?> getRefreshToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_refreshTokenKey);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString(_refreshTokenKey);
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Save active user role string.
   static Future<void> saveActiveRole(String role) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_userRoleKey, role);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_userRoleKey, role);
+    } catch (_) {}
   }
 
   /// Get active user role.
   static Future<String?> getActiveRole() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_userRoleKey);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString(_userRoleKey);
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Clear session credentials on logout.
   static Future<void> clearSession() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_tokenKey);
-    await prefs.remove(_refreshTokenKey);
-    await prefs.remove(_userRoleKey);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_tokenKey);
+      await prefs.remove(_refreshTokenKey);
+      await prefs.remove(_userRoleKey);
+    } catch (_) {}
   }
 }

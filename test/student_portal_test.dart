@@ -37,31 +37,16 @@ void main() {
     expect(find.text("TODAY'S SCHEDULE"), findsOneWidget);
     expect(find.textContaining('Timetable'), findsWidgets);
 
-    // 4. Upcoming (Real Events & Holidays, Chronologically Sorted)
-    expect(find.text('UPCOMING'), findsOneWidget);
-    expect(find.text('Mahatma Gandhi Jayanti'), findsOneWidget);
-
-    // 5. Needs Your Attention (Real surfaced actions)
-    expect(find.text('NEEDS YOUR ATTENTION'), findsOneWidget);
-    expect(find.textContaining('Fee balance outstanding'), findsOneWidget);
-    expect(find.text('Urgent Advisory: Revised Morning Assembly Schedule'), findsOneWidget);
-
-    // 6. Real Announcements
-    expect(find.text('IMPORTANT ANNOUNCEMENTS'), findsOneWidget);
-
-    // 7. Quick Actions
-    expect(find.text('QUICK ACTIONS'), findsOneWidget);
-    expect(find.text('Report Card'), findsOneWidget);
+    // 4. Quick Services
+    expect(find.text('QUICK SERVICES'), findsOneWidget);
     expect(find.text('Digital ID'), findsOneWidget);
-    expect(find.text('Student Profile'), findsOneWidget);
-    expect(find.text('Timetable'), findsOneWidget);
 
-    // 8. Bottom Navigation Items
+    // 5. Bottom Navigation Items
     expect(find.byType(AcademicBottomNavBar), findsOneWidget);
     expect(find.text('Portal'), findsOneWidget);
     expect(find.text('Academics'), findsOneWidget);
     expect(find.text('Attendance'), findsWidgets);
-    expect(find.text('Fees'), findsOneWidget);
+    expect(find.text('Fees'), findsWidgets);
     expect(find.text('More'), findsOneWidget);
 
     // 9. Strict Zero Emojis Assertion

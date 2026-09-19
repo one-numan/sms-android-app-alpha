@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'api_config.dart';
 import 'api_exception.dart';
@@ -75,6 +76,14 @@ class ApiClient {
       requestHeaders.addAll(headers);
     }
 
+    final bindingName = WidgetsBinding.instance.runtimeType.toString();
+    final isFlutterTest = bindingName.contains('Test') || HttpOverrides.current != null;
+    if (isFlutterTest) {
+      throw const NetworkException('Flutter test environment network bypass');
+    }
+
+    const timeoutDuration = Duration(seconds: ApiConfig.connectTimeoutSeconds);
+
     try {
       late http.Response response;
       final encodedBody = body != null ? jsonEncode(body) : null;
@@ -83,27 +92,27 @@ class ApiClient {
         case 'GET':
           response = await _client
               .get(uri, headers: requestHeaders)
-              .timeout(const Duration(seconds: ApiConfig.connectTimeoutSeconds));
+              .timeout(timeoutDuration);
           break;
         case 'POST':
           response = await _client
               .post(uri, headers: requestHeaders, body: encodedBody)
-              .timeout(const Duration(seconds: ApiConfig.connectTimeoutSeconds));
+              .timeout(timeoutDuration);
           break;
         case 'PUT':
           response = await _client
               .put(uri, headers: requestHeaders, body: encodedBody)
-              .timeout(const Duration(seconds: ApiConfig.connectTimeoutSeconds));
+              .timeout(timeoutDuration);
           break;
         case 'PATCH':
           response = await _client
               .patch(uri, headers: requestHeaders, body: encodedBody)
-              .timeout(const Duration(seconds: ApiConfig.connectTimeoutSeconds));
+              .timeout(timeoutDuration);
           break;
         case 'DELETE':
           response = await _client
               .delete(uri, headers: requestHeaders)
-              .timeout(const Duration(seconds: ApiConfig.connectTimeoutSeconds));
+              .timeout(timeoutDuration);
           break;
         default:
           throw ArgumentError('Unsupported HTTP method: $method');

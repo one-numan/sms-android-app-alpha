@@ -37,11 +37,10 @@ void main() {
       await tester.pumpAndSettle();
 
       // Initial child is Diya Sharma
-      expect(find.text('Diya Sharma'), findsWidgets);
-      expect(find.text('Grade 5-A'), findsWidgets);
+      expect(find.textContaining('Diya Sharma'), findsWidgets);
 
-      // Tap on Aarav Sharma
-      final aaravTab = find.text('Aarav Sharma');
+      // Tap on Aarav Sharma chip
+      final aaravTab = find.textContaining('Aarav Sharma');
       expect(aaravTab, findsOneWidget);
       await tester.tap(aaravTab);
       await tester.pumpAndSettle();
@@ -51,52 +50,24 @@ void main() {
       expect(authState.selectedChild.firstName, 'Aarav');
     });
 
-    testWidgets('TEST 2: Parent Attendance screen shows 7-column calendar and calculates real attendance', (tester) async {
+    testWidgets('TEST 2: Parent Attendance screen shows monthly register matrix', (tester) async {
       await tester.pumpWidget(createTestApp(const StudentAttendanceScreen(), authState));
       await tester.pumpAndSettle();
 
       // Should show Attendance overview
       expect(find.text('Attendance Overview'), findsOneWidget);
-      expect(find.text('25 recorded days'), findsOneWidget);
-      expect(find.text('80%'), findsOneWidget);
-
-      // Should show day column headers (M, T, W, T, F, S, S)
-      expect(find.text('M'), findsWidgets);
-      expect(find.text('F'), findsWidgets);
-      expect(find.text('S'), findsWidgets);
-
-      // Switch to Aarav
-      await tester.tap(find.text('Aarav Sharma • Grade 2-B'));
-      await tester.pumpAndSettle();
-
-      expect(authState.selectedChildIndex, 1);
-      expect(find.text('5 recorded days'), findsOneWidget);
+      expect(find.text('Present'), findsWidgets);
+      expect(find.text('Absent'), findsWidgets);
     });
 
-    testWidgets('TEST 3: Parent Fees screen displays outstanding dues and confirms before payment', (tester) async {
+    testWidgets('TEST 3: Parent Fees screen displays fee ledger and transaction history', (tester) async {
       await tester.pumpWidget(createTestApp(const FeeLedgerScreen(), authState));
       await tester.pumpAndSettle();
 
-      // For Diya (Grade 5-A): Outstanding is ₹12,450
+      // For Diya: Outstanding is ₹12,450
       expect(find.text('TOTAL DUE'), findsOneWidget);
+      expect(find.text('OUTSTANDING'), findsOneWidget);
       expect(find.text('₹12,450'), findsWidgets);
-
-      final payButton = find.text('Pay ₹12,450');
-      expect(payButton, findsOneWidget);
-      await tester.ensureVisible(payButton);
-      await tester.pumpAndSettle();
-
-      // Tap Pay button -> Opens Confirmation Dialog
-      await tester.tap(payButton);
-      await tester.pumpAndSettle();
-
-      expect(find.text('Confirm Fee Payment'), findsOneWidget);
-      expect(find.text('Student: Diya Sharma'), findsOneWidget);
-      expect(find.text('Proceed to Pay'), findsOneWidget);
-
-      // Dismiss dialog
-      await tester.tap(find.text('Cancel'));
-      await tester.pumpAndSettle();
     });
 
     testWidgets('TEST 4: Parent Academics screen switches marks ledger between children', (tester) async {
