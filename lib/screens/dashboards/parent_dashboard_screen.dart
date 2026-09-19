@@ -83,7 +83,6 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
     final selectedChild = children.isNotEmpty ? children[selectedIndex] : null;
 
     final childName = selectedChild?['full_name'] ?? 'Child';
-    final childClass = selectedChild?['class_section'] ?? '-';
     final childAttendance = selectedChild?['attendance_percentage'] != null
         ? (selectedChild!['attendance_percentage'] as num).toDouble()
         : null;
