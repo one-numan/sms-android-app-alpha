@@ -120,8 +120,28 @@ Below are the explicit Request & Response JSON payloads, headers, parameters, er
 
 ### API-001: User Authentication Login
 - **Name**: User Login Endpoint
-- **HTTP Method**: `POST`
-- **Endpoint**: `/api/v1/auth/login/`
+---
+
+## 2. Auth APIs (`apps/accounts/api_views.py`)
+
+### Seeded Demo Credentials (`apps/core/management/commands/seed.py`)
+
+| Username | Password | Role | Account Scope & Description |
+| :--- | :--- | :--- | :--- |
+| `admin` | `admin12345` | Superuser | Full system & Django Admin access |
+| `staffadmin` | `staffadmin12345` | Staff Admin | Staff non-superuser administration |
+| `frontdesk` | `frontdesk12345` | Front Desk | Plain authenticated user |
+| `democlassteacher` | `demo12345` | Class Teacher | Designated Class Teacher of PG-A |
+| `demosubjectteacher` | `demo12345` | Subject Teacher | Subject Teacher (English, PG-A) |
+| `demoprincipal` | `demo12345` | Principal | Institutional Principal Executive Hub |
+| `demoviceprincipal` | `demo12345` | Vice Principal | Vice Principal Operations |
+| `demoaccountant` | `demo12345` | Accountant | Fee Collection & Accounts Ledger |
+| `demoreceptionist` | `demo12345` | Receptionist | Admissions Prospect Desk |
+| `demolibrarian` | `demo12345` | Librarian | Library Resource Circulation |
+| `demoparent` | `demo12345` | Parent | Parent account (guardian of `demostudent`) |
+| `demostudent` | `demo12345` | Student | Student self-service account |
+
+### `POST /api/v1/auth/login/`
 - **Auth / Role**: Public | All Roles
 - **Screen**: [`login_screen.dart`](file:///Users/onenuman/Documents/GitHub/sms-android-app-alpha/lib/screens/auth/login_screen.dart)
 
