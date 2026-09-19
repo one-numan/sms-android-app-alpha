@@ -19,19 +19,19 @@ void main() {
     expect(find.byType(StudentHubScreen), findsOneWidget);
 
     // 1. Identity Card (Real student data)
-    expect(find.text('Diya Sharma'), findsOneWidget);
-    expect(find.textContaining('Roll #14'), findsOneWidget);
+    expect(find.text('Bushra Malik'), findsOneWidget);
+    expect(find.textContaining('Roll #STU-9821'), findsOneWidget);
     expect(find.text('ID CARD'), findsOneWidget);
 
     // 2. Computed Summary Cards
     expect(find.text('Attendance'), findsWidgets);
-    expect(find.text('88.0%'), findsWidgets); // 22 attended / 25 total records
+    expect(find.text('90.0%'), findsWidgets);
     expect(find.text('Term Result'), findsOneWidget);
     expect(find.text('Grade A1'), findsOneWidget);
     expect(find.text('Outstanding'), findsOneWidget);
-    expect(find.text('₹12,450'), findsOneWidget);
+    expect(find.text('₹0'), findsOneWidget);
     expect(find.text('Books on Loan'), findsOneWidget);
-    expect(find.text('2'), findsOneWidget);
+    expect(find.text('0'), findsWidgets);
 
     // 3. Schedule (Dynamic - computed from today's timetable + current time)
     expect(find.text("TODAY'S SCHEDULE"), findsOneWidget);

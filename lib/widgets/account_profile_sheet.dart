@@ -92,14 +92,14 @@ class AccountProfileSheet extends StatelessWidget {
         );
       case UserRole.student:
         return const UserProfileInfo(
-          fullName: 'Diya Sharma',
-          initials: 'DS',
-          designation: 'Enrolled Student • Grade 5-A, Roll #14',
+          fullName: 'Bushra Malik',
+          initials: 'BM',
+          designation: 'Enrolled Student • Section PG-A, Roll #STU-9821',
           roleTitle: 'Student',
-          email: 'diya.sharma@example.com',
+          email: 'demostudent@onps.edu.in',
           phone: '+91 98765 43210',
           tier: 'Student Tier 4',
-          idBadge: 'ADM-2024-0412',
+          idBadge: 'STU-9821',
           joiningYear: 'Apr 2024',
         );
       case UserRole.accountant:

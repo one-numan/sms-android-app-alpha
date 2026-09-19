@@ -41,12 +41,12 @@ class _StudentHubScreenState extends State<StudentHubScreen> {
       if (mounted) {
         setState(() {
           _hubData ??= {
-            'student_name': 'Diya Sharma',
-            'class_section': 'Class 10-A',
-            'roll_no': 14,
-            'attendance_percentage': 88.0,
-            'dues': 12450.0,
-            'open_loans': 2,
+            'student_name': 'Bushra Malik',
+            'class_section': 'PG-A',
+            'roll_no': 'STU-9821',
+            'attendance_percentage': 90.0,
+            'dues': 0.0,
+            'open_loans': 0,
             'overdue_loans': 0,
           };
           _isLoading = false;
@@ -79,9 +79,9 @@ class _StudentHubScreenState extends State<StudentHubScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final studentName = _hubData?['student_name'] ?? 'Diya Sharma';
-    final classSection = _hubData?['class_section'] ?? 'Class 10-A';
-    final rollNo = _hubData?['roll_no']?.toString() ?? '14';
+    final studentName = _hubData?['student_name'] ?? 'Bushra Malik';
+    final classSection = _hubData?['class_section'] ?? 'PG-A';
+    final rollNo = _hubData?['roll_no']?.toString() ?? 'STU-9821';
     final double? attendancePct = _hubData?['attendance_percentage'] != null
         ? (_hubData!['attendance_percentage'] as num).toDouble()
         : null;
