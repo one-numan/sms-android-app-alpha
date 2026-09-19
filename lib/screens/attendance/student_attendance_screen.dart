@@ -10,7 +10,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../data/mock/auth_state.dart';
 import '../../data/services/attendance_api_service.dart';
-import '../../models/models.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/bottom_nav_bar.dart';
@@ -69,7 +68,6 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
     final matrix = (_attendanceData?['matrix'] as Map<String, dynamic>?) ?? {};
 
     final totalDays = presentDays + absentDays + lateDays + leaveDays;
-    final double attendancePct = totalDays > 0 ? (presentDays / totalDays) * 100.0 : 90.0;
 
     return Scaffold(
       backgroundColor: AcademicColors.canvas,
