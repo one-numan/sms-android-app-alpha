@@ -6,10 +6,19 @@ class StudentApiService {
 
   StudentApiService({ApiClient? apiClient}) : _apiClient = apiClient ?? ApiClient();
 
-  /// Fetch list of students in class/section.
+  /// Fetch Student Hub summary data (`GET /api/v1/student/hub/`).
+  Future<Map<String, dynamic>> getStudentHub() async {
+    final response = await _apiClient.get('/student/hub/');
+    if (response is Map<String, dynamic> && response.containsKey('data')) {
+      return response['data'] is Map<String, dynamic> ? response['data'] : response;
+    }
+    return response is Map<String, dynamic> ? response : {};
+  }
+
+  /// Fetch student list.
   Future<List<dynamic>> getStudents({String? classId, String? sectionId}) async {
     final response = await _apiClient.get(
-      '/students',
+      '/students/',
       queryParameters: {
         if (classId != null) 'class_id': classId,
         if (sectionId != null) 'section_id': sectionId,
@@ -17,19 +26,30 @@ class StudentApiService {
     );
 
     if (response is List) return response;
+    if (response is Map && response.containsKey('results') && response['results'] is List) {
+      return response['results'];
+    }
     if (response is Map && response.containsKey('data') && response['data'] is List) {
       return response['data'];
     }
     return [];
   }
 
-  /// Get student detailed profile dossier.
-  Future<Map<String, dynamic>> getStudentDossier(String studentId) async {
-    final response = await _apiClient.get('/students/$studentId/dossier');
+  /// Get student detailed report card (`GET /api/v1/academics/report-card/`).
+  Future<Map<String, dynamic>> getReportCard({String? studentId}) async {
+    final response = await _apiClient.get(
+      '/academics/report-card/',
+      queryParameters: {
+        if (studentId != null) 'student_id': studentId,
+      },
+    );
+    if (response is Map<String, dynamic> && response.containsKey('data')) {
+      return response['data'] is Map<String, dynamic> ? response['data'] : response;
+    }
     return response is Map<String, dynamic> ? response : {};
   }
 
-  /// Submit or update student examination marks.
+  /// Submit or update student examination marks (`POST /api/v1/academics/marks-entry/`).
   Future<Map<String, dynamic>> submitMarks({
     required String classId,
     required String subjectId,
@@ -37,7 +57,7 @@ class StudentApiService {
     required List<Map<String, dynamic>> marksList,
   }) async {
     final response = await _apiClient.post(
-      '/students/marks',
+      '/academics/marks-entry/',
       body: {
         'class_id': classId,
         'subject_id': subjectId,

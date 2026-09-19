@@ -7,6 +7,7 @@
 
 import 'package:flutter/material.dart';
 import '../../models/models.dart';
+import '../services/auth_api_service.dart';
 import 'mock_data.dart';
 
 class AuthState extends ChangeNotifier {
@@ -53,11 +54,28 @@ class AuthState extends ChangeNotifier {
     }
   }
 
-  void login({required UserRole role, required String username}) {
+  Future<bool> login({required UserRole role, required String username, String? password}) async {
     _currentRole = role;
     _currentUsername = username;
     _isAuthenticated = true;
     notifyListeners();
+
+    try {
+      final authService = AuthApiService();
+      final pwd = (password != null && password.isNotEmpty) ? password : 'demo12345';
+      final response = await authService.login(
+        username: username,
+        password: pwd,
+        role: role.name,
+      );
+      if (response.containsKey('access')) {
+        debugPrint('Successfully authenticated with backend server for $username');
+        return true;
+      }
+    } catch (e) {
+      debugPrint('Backend auth connection note: $e (using local persona)');
+    }
+    return true;
   }
 
   void switchRole(UserRole role) {

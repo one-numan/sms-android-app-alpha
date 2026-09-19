@@ -24,11 +24,11 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _identifierController = TextEditingController(text: '9876543210');
-  final _passwordController = TextEditingController(text: 'password123');
+  final _identifierController = TextEditingController(text: 'democlassteacher');
+  final _passwordController = TextEditingController(text: 'demo12345');
   bool _obscurePassword = true;
   bool _rememberDevice = true;
-  UserRole _selectedRole = UserRole.parent;
+  UserRole _selectedRole = UserRole.classTeacher;
 
   @override
   void dispose() {
