@@ -7,7 +7,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../data/mock/mock_data.dart';
+import 'package:provider/provider.dart';
+import '../../data/mock/auth_state.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/shared_widgets.dart';
@@ -24,7 +25,7 @@ class _AttendanceMatrixScreenState extends State<AttendanceMatrixScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final student = MockData.students.first; // Diya Sharma
+    final student = context.watch<AuthState>().selectedChild;
 
     return Scaffold(
       backgroundColor: AcademicColors.canvas,

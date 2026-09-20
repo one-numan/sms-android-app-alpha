@@ -18,15 +18,38 @@ class FeeReceiptScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final payment = MockData.feePayments.firstWhere(
-      (p) => p.receiptNumber == (receiptNo ?? 'REC-2026-0891'),
-      orElse: () => MockData.feePayments.first,
-    );
+    final payment = MockData.feePayments.where(
+      (p) => p.receiptNumber == receiptNo || p.id == receiptNo,
+    ).firstOrNull;
 
-    final student = MockData.students.firstWhere(
+    if (payment == null) {
+      return Scaffold(
+        backgroundColor: AcademicColors.canvas,
+        appBar: const AppTopBar(title: 'Official Fee Receipt'),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.receipt_long_outlined, size: 64, color: AcademicColors.textSecondary),
+              const SizedBox(height: 16),
+              Text(
+                'Fee Receipt Not Found',
+                style: GoogleFonts.newsreader(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'No valid receipt record matching ID "${receiptNo ?? 'N/A'}"',
+                style: GoogleFonts.inter(fontSize: 14, color: AcademicColors.textSecondary),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final student = MockData.students.where(
       (s) => s.id == payment.studentId,
-      orElse: () => MockData.students.first,
-    );
+    ).firstOrNull ?? MockData.students.first;
 
     return Scaffold(
       backgroundColor: AcademicColors.canvas,

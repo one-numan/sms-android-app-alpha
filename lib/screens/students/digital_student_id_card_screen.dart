@@ -8,6 +8,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../../data/mock/auth_state.dart';
 import '../../data/mock/mock_data.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/onps_logo.dart';
@@ -17,7 +19,8 @@ class DigitalStudentIdCardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final student = MockData.students.first; // Diya Sharma
+    final authState = context.watch<AuthState>();
+    final student = authState.selectedChild;
 
     return Scaffold(
       backgroundColor: AcademicColors.canvas,

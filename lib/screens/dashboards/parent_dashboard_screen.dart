@@ -69,6 +69,10 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
       }
     } catch (e) {
       if (mounted) {
+        if (e.toString().contains('401') || e.toString().contains('Unauthorized')) {
+          context.read<AuthState>().signOut();
+          return;
+        }
         setState(() {
           _errorMessage = e.toString();
           _isLoading = false;
@@ -96,6 +100,7 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
     final childrenCount = _dashboardData?['children_count'] as int? ?? children.length;
     final totalDues = (_dashboardData?['total_dues'] as num?)?.toDouble() ?? 0.0;
 
+    final parentName = _dashboardData?['parent_name'] ?? _dashboardData?['guardian_name'] ?? (context.watch<AuthState>().currentUsername.isNotEmpty ? context.watch<AuthState>().currentUsername : 'Parent');
     final selectedIndex = context.watch<AuthState>().selectedChildIndex.clamp(0, children.isNotEmpty ? children.length - 1 : 0);
     final selectedChild = children.isNotEmpty ? children[selectedIndex] : null;
 
@@ -126,19 +131,49 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
                     child: Center(child: CircularProgressIndicator()),
                   )
                 else if (_errorMessage != null)
-                  Container(
-                    width: double.infinity,
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AcademicColors.dangerContainer,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      'API Connection Note: $_errorMessage',
-                      style: GoogleFonts.manrope(
-                        fontSize: 12,
-                        color: AcademicColors.danger,
+                  InkWell(
+                    onTap: (_errorMessage!.contains('401') || _errorMessage!.contains('Unauthorized'))
+                        ? () => context.go('/login')
+                        : null,
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: AcademicColors.dangerContainer,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'API Connection Note: $_errorMessage',
+                              style: GoogleFonts.manrope(
+                                fontSize: 12,
+                                color: AcademicColors.danger,
+                              ),
+                            ),
+                          ),
+                          if (_errorMessage!.contains('401') || _errorMessage!.contains('Unauthorized')) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: AcademicColors.danger,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                'Sign In',
+                                style: GoogleFonts.manrope(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
                   ),
@@ -178,7 +213,7 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Good Morning, Rajesh Sharma',
+                                'Good Morning, $parentName',
                                 style: GoogleFonts.newsreader(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,

@@ -8,6 +8,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../../data/mock/auth_state.dart';
 import '../../data/services/student_api_service.dart';
 import '../../models/models.dart';
 import '../../theme/app_theme.dart';
@@ -41,9 +43,9 @@ class _StudentHubScreenState extends State<StudentHubScreen> {
       if (mounted) {
         setState(() {
           _hubData ??= {
-            'student_name': 'Bushra Malik',
-            'class_section': 'PG-A',
-            'roll_no': 'STU-9821',
+            'student_name': 'Diya Sharma',
+            'class_section': 'Class 8-A',
+            'roll_no': 'Roll #14',
             'attendance_percentage': 90.0,
             'dues': 0.0,
             'open_loans': 0,
@@ -68,6 +70,10 @@ class _StudentHubScreenState extends State<StudentHubScreen> {
       }
     } catch (e) {
       if (mounted) {
+        if (e.toString().contains('401') || e.toString().contains('Unauthorized')) {
+          context.read<AuthState>().signOut();
+          return;
+        }
         setState(() {
           _errorMessage = e.toString();
           _isLoading = false;
@@ -79,9 +85,10 @@ class _StudentHubScreenState extends State<StudentHubScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final studentName = _hubData?['student_name'] ?? 'Bushra Malik';
-    final classSection = _hubData?['class_section'] ?? 'PG-A';
-    final rollNo = _hubData?['roll_no']?.toString() ?? 'STU-9821';
+    final username = context.watch<AuthState>().currentUsername;
+    final studentName = _hubData?['student_name'] ?? (username.isNotEmpty ? username : 'Student');
+    final classSection = _hubData?['class_section'] ?? 'N/A';
+    final rollNo = _hubData?['roll_no']?.toString() ?? 'N/A';
     final double? attendancePct = _hubData?['attendance_percentage'] != null
         ? (_hubData!['attendance_percentage'] as num).toDouble()
         : null;
@@ -110,19 +117,49 @@ class _StudentHubScreenState extends State<StudentHubScreen> {
                     child: Center(child: CircularProgressIndicator()),
                   )
                 else if (_errorMessage != null)
-                  Container(
-                    width: double.infinity,
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AcademicColors.dangerContainer,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      'API Connection Error: $_errorMessage',
-                      style: GoogleFonts.manrope(
-                        fontSize: 12,
-                        color: AcademicColors.danger,
+                  InkWell(
+                    onTap: (_errorMessage!.contains('401') || _errorMessage!.contains('Unauthorized'))
+                        ? () => context.go('/login')
+                        : null,
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: AcademicColors.dangerContainer,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'API Connection Error: $_errorMessage',
+                              style: GoogleFonts.manrope(
+                                fontSize: 12,
+                                color: AcademicColors.danger,
+                              ),
+                            ),
+                          ),
+                          if (_errorMessage!.contains('401') || _errorMessage!.contains('Unauthorized')) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: AcademicColors.danger,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                'Sign In',
+                                style: GoogleFonts.manrope(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
                   ),

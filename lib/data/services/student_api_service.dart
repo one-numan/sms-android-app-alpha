@@ -18,10 +18,10 @@ class StudentApiService {
     } catch (_) {
       if (ApiConfig.useMockFallback) {
         return {
-          'student_name': 'Bushra Malik',
-          'roll_no': 'STU-9821',
-          'class_section': 'PG-A',
-          'attendance_percentage': 90.0,
+          'student_name': 'Test Student',
+          'roll_no': 'STU-000',
+          'class_section': 'Class 8-A',
+          'attendance_percentage': 0.0,
           'dues': 0.0,
           'open_loans': 0,
           'overdue_loans': 0,

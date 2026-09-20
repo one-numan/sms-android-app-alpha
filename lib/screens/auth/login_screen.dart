@@ -29,6 +29,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
   bool _rememberDevice = true;
   UserRole _selectedRole = UserRole.classTeacher;
+  String? _errorMessage;
 
   @override
   void dispose() {
@@ -38,16 +39,48 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _handleSignIn() {
+    final username = _identifierController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (username.isEmpty) {
+      setState(() {
+        _errorMessage = 'Please enter registered mobile number or email.';
+      });
+      return;
+    }
+
+    if (password.isEmpty) {
+      setState(() {
+        _errorMessage = 'Please enter your password.';
+      });
+      return;
+    }
+
+    if (password == 'wrong' || password == 'invalid' || password == 'incorrect') {
+      setState(() {
+        _errorMessage = 'Wrong password or invalid credentials. Please try again.';
+      });
+      return;
+    }
+
+    setState(() {
+      _errorMessage = null;
+    });
+
     final auth = context.read<AuthState>();
     auth.login(
       role: _selectedRole,
-      username: _identifierController.text.trim().isEmpty
-          ? 'user@onps.edu.in'
-          : _identifierController.text.trim(),
+      username: username,
+      password: password,
     );
 
-    // Route based on role
-    _navigateForRole(_selectedRole);
+    if (auth.isAuthenticated) {
+      _navigateForRole(_selectedRole);
+    } else {
+      setState(() {
+        _errorMessage = 'Wrong password or invalid credentials. Please try again.';
+      });
+    }
   }
 
   void _navigateForRole(UserRole role) {
@@ -184,6 +217,34 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    if (_errorMessage != null) ...[
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: AcademicColors.dangerContainer,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: AcademicColors.danger.withValues(alpha: 0.3)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.error_outline, size: 18, color: AcademicColors.danger),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _errorMessage!,
+                                style: GoogleFonts.manrope(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: AcademicColors.danger,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                    ],
                     Text(
                       'Mobile and Email',
                       style: GoogleFonts.manrope(

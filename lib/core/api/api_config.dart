@@ -1,9 +1,8 @@
 /// Configuration file for ONPS ERP Backend API integration.
 class ApiConfig {
   /// Base URL for the running backend server.
-  /// Live server running on: `http://127.0.0.1:8000/api/v1`
-  /// For Android Emulator testing, use `http://10.0.2.2:8000/api/v1`.
-  static String baseUrl = 'http://127.0.0.1:8000/api/v1';
+  /// Production server running on: `https://alpha.onenuman.com/api/v1`
+  static String baseUrl = 'https://alpha.onenuman.com/api/v1';
 
   /// Connection timeout in seconds.
   static const int connectTimeoutSeconds = 15;
@@ -12,7 +11,8 @@ class ApiConfig {
   static const int receiveTimeoutSeconds = 15;
 
   /// Whether to fall back to mock data if the backend server is unreachable.
-  static bool useMockFallback = true;
+  /// Set to false in production mode to prevent mock data leakage.
+  static bool useMockFallback = false;
 
   /// Default headers sent with JSON API requests.
   static Map<String, String> defaultHeaders({String? token}) {

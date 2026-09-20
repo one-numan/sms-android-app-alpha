@@ -19,8 +19,8 @@ void main() {
     expect(find.byType(StudentHubScreen), findsOneWidget);
 
     // 1. Identity Card (Real student data)
-    expect(find.text('Bushra Malik'), findsOneWidget);
-    expect(find.textContaining('Roll #STU-9821'), findsOneWidget);
+    expect(find.text('Diya Sharma'), findsOneWidget);
+    expect(find.textContaining('Roll #14'), findsOneWidget);
     expect(find.text('ID CARD'), findsOneWidget);
 
     // 2. Computed Summary Cards

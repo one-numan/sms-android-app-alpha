@@ -91,6 +91,20 @@ GoRouter createOnpsRouter(AuthState authState) {
   return GoRouter(
     initialLocation: '/splash',
     refreshListenable: authState,
+    redirect: (context, state) {
+      final isAuth = authState.isAuthenticated;
+      final loc = state.matchedLocation;
+      final isPublicRoute = loc == '/login' ||
+          loc == '/splash' ||
+          loc == '/security-lockout' ||
+          loc == '/password-reset' ||
+          loc == '/2fa-otp';
+
+      if (!isAuth && !isPublicRoute) {
+        return '/login';
+      }
+      return null;
+    },
     routes: [
       // AI Enabled Brand Splash Screen
       GoRoute(

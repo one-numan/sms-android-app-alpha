@@ -18,12 +18,9 @@ class ParentApiService {
     } catch (_) {
       if (ApiConfig.useMockFallback) {
         return {
-          'children_count': 2,
-          'children': [
-            {'id': 'ADM-2024-0412', 'full_name': 'Diya Sharma', 'class_section': '5-A', 'attendance_percentage': 96.5, 'dues': 12450.0},
-            {'id': 'ADM-2024-0890', 'full_name': 'Aarav Sharma', 'class_section': '2-B', 'attendance_percentage': 94.2, 'dues': 8950.0},
-          ],
-          'total_dues': 21400.0,
+          'children_count': 0,
+          'children': [],
+          'total_dues': 0.0,
         };
       }
       rethrow;

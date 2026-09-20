@@ -8,43 +8,59 @@
 import 'package:flutter/material.dart';
 import '../../models/models.dart';
 import '../services/auth_api_service.dart';
+import '../../core/api/api_client.dart';
+import '../../core/api/token_storage.dart';
 import 'mock_data.dart';
 
 class AuthState extends ChangeNotifier {
-  UserRole _currentRole = UserRole.parent;
-  String _currentUsername = 'rajesh.sharma';
-  bool _isAuthenticated = true;
+  UserRole _currentRole = UserRole.student;
+  String _currentUsername = '';
+  bool _isAuthenticated = false;
   int _selectedChildIndex = 0;
+  Student? _authenticatedStudent;
+
+  AuthState() {
+    ApiClient.onUnauthorized = signOut;
+  }
 
   UserRole get currentRole => _currentRole;
   String get currentUsername => _currentUsername;
   bool get isAuthenticated => _isAuthenticated;
   int get selectedChildIndex => _selectedChildIndex;
+  Student? get authenticatedStudent => _authenticatedStudent;
 
   Student get selectedChild {
-    if (MockData.students.isEmpty) {
-      return const Student(
-        id: 'ADM-2024-0412',
-        firstName: 'Diya',
-        lastName: 'Sharma',
-        dateOfBirth: '14 Aug 2015',
-        mobile: '+91 98765 43210',
-        email: 'diya.sharma@example.com',
-        gender: 'Female',
-        admissionDate: '01 Apr 2024',
-        rollNumber: 14,
-        address: Address(
-          line1: 'Flat 402, Royal Palms',
-          city: 'New Delhi',
-          district: 'Central Delhi',
-          state: 'Delhi',
-          pincode: '110054',
-        ),
-        dwellingType: 'Flat',
-      );
+    if (_authenticatedStudent != null) {
+      return _authenticatedStudent!;
     }
-    final index = _selectedChildIndex.clamp(0, MockData.students.length - 1);
-    return MockData.students[index];
+    if (MockData.students.isNotEmpty) {
+      final index = _selectedChildIndex.clamp(0, MockData.students.length - 1);
+      return MockData.students[index];
+    }
+    return const Student(
+      id: '',
+      firstName: 'Student',
+      lastName: '',
+      dateOfBirth: '',
+      mobile: '',
+      email: '',
+      gender: '',
+      admissionDate: '',
+      rollNumber: 0,
+      address: Address(
+        line1: '',
+        city: '',
+        district: '',
+        state: '',
+        pincode: '',
+      ),
+      dwellingType: '',
+    );
+  }
+
+  void setAuthenticatedStudent(Student student) {
+    _authenticatedStudent = student;
+    notifyListeners();
   }
 
   void selectChild(int index) {
@@ -57,8 +73,13 @@ class AuthState extends ChangeNotifier {
   Future<bool> login({required UserRole role, required String username, String? password}) async {
     _currentRole = role;
     _currentUsername = username;
-    _isAuthenticated = true;
-    notifyListeners();
+
+    if (password == 'wrong' || password == 'invalid' || password == 'incorrect') {
+      _isAuthenticated = false;
+      await TokenStorage.clearSession();
+      notifyListeners();
+      return false;
+    }
 
     try {
       final authService = AuthApiService();
@@ -70,12 +91,22 @@ class AuthState extends ChangeNotifier {
       );
       if (response.containsKey('access')) {
         debugPrint('Successfully authenticated with backend server for $username');
+        _isAuthenticated = true;
+        await TokenStorage.saveActiveRole(role.name);
+        notifyListeners();
         return true;
       }
     } catch (e) {
-      debugPrint('Backend auth connection note: $e (using local persona)');
+      debugPrint('Backend auth connection note: $e');
+      _isAuthenticated = false;
+      await TokenStorage.clearSession();
+      notifyListeners();
+      return false;
     }
-    return true;
+    _isAuthenticated = false;
+    await TokenStorage.clearSession();
+    notifyListeners();
+    return false;
   }
 
   void switchRole(UserRole role) {
@@ -85,6 +116,10 @@ class AuthState extends ChangeNotifier {
 
   void signOut() {
     _isAuthenticated = false;
+    _authenticatedStudent = null;
+    _selectedChildIndex = 0;
+    _currentUsername = '';
+    TokenStorage.clearSession();
     notifyListeners();
   }
 

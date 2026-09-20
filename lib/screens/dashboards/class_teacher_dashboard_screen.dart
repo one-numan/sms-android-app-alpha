@@ -9,6 +9,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../../data/mock/auth_state.dart';
 import '../../data/mock/mock_data.dart';
 import '../../models/models.dart';
 import '../../theme/app_theme.dart';
@@ -73,15 +75,49 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
 
   @override
   Widget build(BuildContext context) {
-    // 1. Resolve Teacher Persona (Default: Mrs. Anita Desai)
-    final Teacher teacher = widget.teacherOverride ?? MockData.teachers.first;
+    final auth = context.watch<AuthState>();
+    final String uname = auth.currentUsername.toLowerCase();
+    final String resolvedName = widget.teacherOverride?.name ??
+        (uname == 'washingtonsundar'
+            ? 'Washington Sundar'
+            : uname == 'shubmangill'
+                ? 'Shubman Gill'
+                : (uname.isEmpty || uname == 'class.teacher' || uname == 'rajesh.sharma' || uname == 'anita.desai')
+                    ? 'Anita Desai'
+                    : auth.currentUsername);
+
+    final Teacher teacher = widget.teacherOverride ??
+        MockData.teachers.where((t) => t.name.toLowerCase() == resolvedName.toLowerCase() || t.id.toLowerCase() == resolvedName.toLowerCase()).firstOrNull ??
+        Teacher(
+          id: 'TCH-$resolvedName',
+          name: resolvedName,
+          dateOfBirth: '12 May 1982',
+          mobile: '+91 98765 43210',
+          email: '$uname@school.example',
+          gender: 'Male',
+          joinDate: '01 Jul 2018',
+          address: const Address(
+            line1: 'School Campus Housing',
+            city: 'New Delhi',
+            district: 'Central Delhi',
+            state: 'Delhi',
+            pincode: '110054',
+          ),
+          subjectSpecialization: 'Primary Academics',
+        );
 
     // 2. Resolve Class Teacher Assignment
     // A teacher is a Class Teacher if their name matches SchoolClass.classTeacherName
     final SchoolClass? assignedClass = widget.classOverride ??
         MockData.classes.cast<SchoolClass?>().firstWhere(
-              (c) => c?.classTeacherName == teacher.name,
-              orElse: () => null,
+              (c) => c?.classTeacherName == teacher.name || (c?.classTeacherName != null && (teacher.name.contains(c!.classTeacherName.replaceAll('Mrs. ', '')) || c.classTeacherName.contains(teacher.name.replaceAll('Mrs. ', '')))) || c?.name == (teacher.name == 'Washington Sundar' ? 'Nursery A' : teacher.name == 'Shubman Gill' ? 'Nursery B' : (teacher.name == 'Anita Desai' || teacher.name == 'Mrs. Anita Desai') ? 'Grade 5-A' : null),
+              orElse: () => (widget.teacherOverride != null) ? null : SchoolClass(
+                id: 'CLS-${teacher.name}',
+                grade: teacher.name == 'Washington Sundar' ? 'Nursery' : 'Grade 5',
+                section: teacher.name == 'Washington Sundar' ? 'A' : 'A',
+                className: teacher.name == 'Washington Sundar' ? 'Nursery A' : '5-A',
+                classTeacherName: teacher.name,
+              ),
             );
 
     return Scaffold(
@@ -993,7 +1029,7 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Diya Sharma (Roll No. 14)',
+                        '${MockData.students.firstOrNull?.fullName ?? "Student"} (Roll No. 14)',
                         style: GoogleFonts.manrope(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,

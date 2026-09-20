@@ -8,6 +8,8 @@ import 'token_storage.dart';
 
 /// Core HTTP REST Client for ONPS ERP Alpha.
 class ApiClient {
+  static void Function()? onUnauthorized;
+
   final http.Client _client;
 
   ApiClient({http.Client? client}) : _client = client ?? http.Client();
@@ -151,6 +153,8 @@ class ApiClient {
           errorData: jsonResponse,
         );
       case 401:
+        TokenStorage.clearSession();
+        onUnauthorized?.call();
         throw const UnauthorizedException();
       case 403:
         throw const ForbiddenException();
