@@ -8,6 +8,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../../data/mock/auth_state.dart';
 import '../../data/mock/mock_data.dart';
 import '../../models/models.dart';
 import '../../theme/app_theme.dart';
@@ -21,18 +23,25 @@ class ClassInfoScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Resolve logged in teacher & class context
-    final teacher = MockData.teachers.first; // Anita Desai
-    final className = classNameOverride ?? '5-A';
+    // Resolve logged in teacher & class context dynamically
+    final auth = context.watch<AuthState>();
+    final teacherName = (auth.fullName.isNotEmpty && auth.fullName != 'User' && auth.fullName != 'Rajesh Sharma')
+        ? auth.fullName
+        : (auth.currentUsername == 'washingtonsundar'
+            ? 'Washington Sundar'
+            : auth.currentUsername == 'shubmangill'
+                ? 'Shubman Gill'
+                : 'Anita Desai');
+    final className = classNameOverride ?? (auth.currentUsername == 'washingtonsundar' ? 'Nursery A' : auth.currentUsername == 'shubmangill' ? 'Nursery B' : '5-A');
 
     final schoolClass = MockData.classes.firstWhere(
       (c) => c.className == className,
       orElse: () => SchoolClass(
-        id: 'C-5A',
-        grade: '5',
-        section: 'A',
-        className: '5-A',
-        classTeacherName: teacher.name,
+        id: 'C-$className',
+        grade: className.startsWith('Nursery') ? 'Nursery' : '5',
+        section: className.endsWith('B') ? 'B' : 'A',
+        className: className,
+        classTeacherName: teacherName,
       ),
     );
 
@@ -42,9 +51,9 @@ class ClassInfoScreen extends StatelessWidget {
           (s.section == schoolClass.section || s.section == 'A');
     }).toList();
 
-    // Subject assignments for Grade 5-A
+    // Subject assignments for assigned class
     final classSubjectAssignments = [
-      {'subject': 'Mathematics', 'teacher': teacher.name, 'type': 'Theory', 'periods': '6 / week', 'isLead': true},
+      {'subject': 'Mathematics', 'teacher': teacherName, 'type': 'Theory', 'periods': '6 / week', 'isLead': true},
       {'subject': 'General Science', 'teacher': 'Rahul Kumar', 'type': 'Theory + Lab', 'periods': '5 / week', 'isLead': false},
       {'subject': 'English Language', 'teacher': 'Meenakshi Sharma', 'type': 'Theory', 'periods': '5 / week', 'isLead': false},
       {'subject': 'Hindi Literature', 'teacher': 'Sunita Mehra', 'type': 'Theory', 'periods': '4 / week', 'isLead': false},

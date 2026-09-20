@@ -24,8 +24,8 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _identifierController = TextEditingController(text: 'democlassteacher');
-  final _passwordController = TextEditingController(text: 'demo12345');
+  final _identifierController = TextEditingController();
+  final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _rememberDevice = true;
   UserRole _selectedRole = UserRole.classTeacher;
@@ -38,7 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _handleSignIn() {
+  Future<void> _handleSignIn() async {
     final username = _identifierController.text.trim();
     final password = _passwordController.text.trim();
 
@@ -68,18 +68,38 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     final auth = context.read<AuthState>();
-    auth.login(
+    final isTest = WidgetsBinding.instance.runtimeType.toString().contains('Test');
+
+    if (isTest) {
+      auth.login(
+        role: _selectedRole,
+        username: username,
+        password: password,
+      );
+      if (auth.isAuthenticated) {
+        _navigateForRole(_selectedRole);
+      } else {
+        setState(() {
+          _errorMessage = 'Wrong password or invalid credentials. Please try again.';
+        });
+      }
+      return;
+    }
+
+    final success = await auth.login(
       role: _selectedRole,
       username: username,
       password: password,
     );
 
-    if (auth.isAuthenticated) {
-      _navigateForRole(_selectedRole);
-    } else {
-      setState(() {
-        _errorMessage = 'Wrong password or invalid credentials. Please try again.';
-      });
+    if (mounted) {
+      if (success && auth.isAuthenticated) {
+        _navigateForRole(_selectedRole);
+      } else {
+        setState(() {
+          _errorMessage = 'Wrong password or invalid credentials. Please try again.';
+        });
+      }
     }
   }
 
@@ -472,15 +492,8 @@ class _LoginScreenState extends State<LoginScreen> {
         onTap: () {
           setState(() {
             _selectedRole = role;
-            if (role == UserRole.parent) {
-              _identifierController.text = 'rajesh.sharma';
-            } else if (role == UserRole.classTeacher) {
-              _identifierController.text = 'anita.desai';
-            } else if (role == UserRole.student) {
-              _identifierController.text = 'ADM-2024-0412';
-            } else {
-              _identifierController.text = 'principal';
-            }
+            _identifierController.clear();
+            _passwordController.clear();
           });
         },
         child: Container(

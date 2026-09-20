@@ -44,8 +44,8 @@ class AccountProfileSheet extends StatelessWidget {
         );
       case UserRole.vicePrincipal:
         return const UserProfileInfo(
-          fullName: 'Priya Nair',
-          initials: 'PN',
+          fullName: 'Vice Principal Office',
+          initials: 'VP',
           designation: 'Vice Principal • Academic Dean',
           roleTitle: 'Vice Principal',
           email: 'vp@onps.edu.in',
@@ -56,11 +56,11 @@ class AccountProfileSheet extends StatelessWidget {
         );
       case UserRole.classTeacher:
         return const UserProfileInfo(
-          fullName: 'Anita Desai',
-          initials: 'AD',
-          designation: 'Class Teacher • Grade 5-A Lead',
+          fullName: 'Class Teacher Faculty',
+          initials: 'CT',
+          designation: 'Class Teacher Workspace',
           roleTitle: 'Class Teacher',
-          email: 'anita.desai@onps.edu.in',
+          email: 'teacher@onps.edu.in',
           phone: '+91 98222 33445',
           tier: 'Faculty Tier 2',
           idBadge: 'FAC-T1',
@@ -68,11 +68,11 @@ class AccountProfileSheet extends StatelessWidget {
         );
       case UserRole.subjectTeacher:
         return const UserProfileInfo(
-          fullName: 'Vikram Malhotra',
-          initials: 'VM',
-          designation: 'Subject Faculty • Mathematics Department',
+          fullName: 'Subject Faculty Member',
+          initials: 'ST',
+          designation: 'Subject Faculty • Academic Department',
           roleTitle: 'Subject Teacher',
-          email: 'vikram.m@onps.edu.in',
+          email: 'faculty@onps.edu.in',
           phone: '+91 98111 22334',
           tier: 'Faculty Tier 2',
           idBadge: 'FAC-T4',
@@ -80,44 +80,44 @@ class AccountProfileSheet extends StatelessWidget {
         );
       case UserRole.parent:
         return const UserProfileInfo(
-          fullName: 'Rajesh Sharma',
-          initials: 'RS',
-          designation: 'Guardian • Children: Diya (5-A), Aarav (2-B)',
-          roleTitle: 'Parent',
-          email: 'rajesh.sharma@example.com',
+          fullName: 'Parent / Guardian Account',
+          initials: 'PG',
+          designation: 'Parent Account • Family Portal',
+          roleTitle: 'Parent / Guardian',
+          email: 'parent@onps.edu.in',
           phone: '+91 98765 43210',
           tier: 'Guardian Tier 3',
-          idBadge: 'GRD-8821',
-          joiningYear: 'Apr 2024',
+          idBadge: 'PRNT-998',
+          joiningYear: 'Apr 2022',
         );
       case UserRole.student:
         return const UserProfileInfo(
-          fullName: 'Bushra Malik',
-          initials: 'BM',
-          designation: 'Enrolled Student • Section PG-A, Roll #STU-9821',
+          fullName: 'Enrolled Student Account',
+          initials: 'ST',
+          designation: 'Enrolled Student • Academic Portal',
           roleTitle: 'Student',
-          email: 'demostudent@onps.edu.in',
-          phone: '+91 98765 43210',
+          email: 'student@onps.edu.in',
+          phone: '+91 98765 00000',
           tier: 'Student Tier 4',
-          idBadge: 'STU-9821',
+          idBadge: 'STD-2024-001',
           joiningYear: 'Apr 2024',
         );
       case UserRole.accountant:
         return const UserProfileInfo(
-          fullName: 'Rajesh Verma',
-          initials: 'RV',
-          designation: 'Bursar & Accounts Officer',
+          fullName: 'Finance Officer',
+          initials: 'FO',
+          designation: 'Bursar • Accounts & Fee Operations',
           roleTitle: 'Accountant',
           email: 'accounts@onps.edu.in',
           phone: '+91 98000 33445',
-          tier: 'Finance Tier 1',
-          idBadge: 'ACC-03',
-          joiningYear: 'Apr 2019',
+          tier: 'Finance Tier 2',
+          idBadge: 'ACC-01',
+          joiningYear: 'Mar 2019',
         );
       case UserRole.librarian:
         return const UserProfileInfo(
-          fullName: 'Sunita Rao',
-          initials: 'SR',
+          fullName: 'Librarian Desk',
+          initials: 'LB',
           designation: 'Head Librarian • Resource Center',
           roleTitle: 'Librarian',
           email: 'library@onps.edu.in',
@@ -128,8 +128,8 @@ class AccountProfileSheet extends StatelessWidget {
         );
       case UserRole.receptionist:
         return const UserProfileInfo(
-          fullName: 'Meena Joshi',
-          initials: 'MJ',
+          fullName: 'Front Desk Officer',
+          initials: 'FD',
           designation: 'Admissions & Information Desk Officer',
           roleTitle: 'Receptionist',
           email: 'admissions@onps.edu.in',
@@ -156,7 +156,20 @@ class AccountProfileSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthState>();
-    final profile = getProfileForRole(auth.currentRole);
+    final baseProfile = getProfileForRole(auth.currentRole);
+    final profile = (auth.fullName.isNotEmpty && auth.fullName != 'User')
+        ? UserProfileInfo(
+            fullName: auth.fullName,
+            initials: auth.fullName.split(RegExp(r'\s+')).where((e) => e.isNotEmpty).map((e) => e[0].toUpperCase()).take(2).join(),
+            designation: baseProfile.designation,
+            roleTitle: baseProfile.roleTitle,
+            email: auth.userEmail.isNotEmpty ? auth.userEmail : baseProfile.email,
+            phone: auth.userMobile.isNotEmpty ? auth.userMobile : baseProfile.phone,
+            tier: baseProfile.tier,
+            idBadge: baseProfile.idBadge,
+            joiningYear: baseProfile.joiningYear,
+          )
+        : baseProfile;
 
     return Container(
       decoration: const BoxDecoration(
@@ -165,7 +178,7 @@ class AccountProfileSheet extends StatelessWidget {
       ),
       child: SafeArea(
         top: false,
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
           child: Column(
             mainAxisSize: MainAxisSize.min,

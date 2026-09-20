@@ -20,6 +20,10 @@ void main() {
     await tester.tap(teacherTab);
     await tester.pumpAndSettle();
 
+    // Enter credentials
+    await tester.enterText(find.byType(TextField).first, 'anita.desai');
+    await tester.enterText(find.byType(TextField).last, 'demo12345');
+
     // Tap Sign in
     final signInButton = find.textContaining('Sign in as Teacher');
     expect(signInButton, findsOneWidget);

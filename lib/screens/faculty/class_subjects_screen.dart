@@ -7,6 +7,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../../data/mock/auth_state.dart';
 import '../../models/models.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_top_bar.dart';
@@ -28,8 +30,8 @@ class _ClassSubjectsScreenState extends State<ClassSubjectsScreen> {
     {
       'code': 'SUB-501',
       'name': 'Mathematics',
-      'teacher': 'Anita Desai',
-      'designation': 'Class Teacher • Senior Math Faculty',
+      'teacher': 'Teacher Faculty',
+      'designation': 'Class Teacher • Math Faculty',
       'type': 'Theory',
       'periods': 6,
       'testWeight': 30,
@@ -49,9 +51,9 @@ class _ClassSubjectsScreenState extends State<ClassSubjectsScreen> {
     },
     {
       'code': 'SUB-503',
-      'name': 'English Language & Literature',
+      'name': 'English Language & Lit.',
       'teacher': 'Meenakshi Sharma',
-      'designation': 'Languages Faculty • English Lead',
+      'designation': 'English Faculty • Language Lead',
       'type': 'Theory',
       'periods': 5,
       'testWeight': 30,
@@ -62,7 +64,7 @@ class _ClassSubjectsScreenState extends State<ClassSubjectsScreen> {
       'code': 'SUB-504',
       'name': 'Hindi Literature',
       'teacher': 'Sunita Mehra',
-      'designation': 'Hindi Department Faculty',
+      'designation': 'Hindi Faculty • Vernacular Lead',
       'type': 'Theory',
       'periods': 4,
       'testWeight': 30,
@@ -71,7 +73,7 @@ class _ClassSubjectsScreenState extends State<ClassSubjectsScreen> {
     },
     {
       'code': 'SUB-505',
-      'name': 'Social Studies (History & Civics)',
+      'name': 'Social Studies & Civics',
       'teacher': 'Vikram Batra',
       'designation': 'Social Sciences Faculty',
       'type': 'Theory',
@@ -82,9 +84,9 @@ class _ClassSubjectsScreenState extends State<ClassSubjectsScreen> {
     },
     {
       'code': 'SUB-506',
-      'name': 'Computer Science',
+      'name': 'Computer Science & ICT',
       'teacher': 'Robert Chen',
-      'designation': 'IT & Computer Science Faculty',
+      'designation': 'ICT Faculty • Systems Specialist',
       'type': 'Practical',
       'periods': 3,
       'testWeight': 40,
@@ -93,9 +95,9 @@ class _ClassSubjectsScreenState extends State<ClassSubjectsScreen> {
     },
     {
       'code': 'SUB-507',
-      'name': 'Physical Education & Sports',
+      'name': 'Physical Education & Yoga',
       'teacher': 'Suresh Gupta',
-      'designation': 'Sports Director & Physical Trainer',
+      'designation': 'Sports & Physical Fitness Coach',
       'type': 'Activity',
       'periods': 2,
       'testWeight': 50,
@@ -117,6 +119,12 @@ class _ClassSubjectsScreenState extends State<ClassSubjectsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final auth = context.watch<AuthState>();
+    final teacherName = (auth.fullName.isNotEmpty && auth.fullName != 'User' && auth.fullName != 'Rajesh Sharma')
+        ? auth.fullName
+        : 'Shubman Gill';
+    _subjectsData[0]['teacher'] = teacherName;
+
     final className = widget.initialClass ?? '5-A';
 
     final filtered = _subjectsData.where((s) {

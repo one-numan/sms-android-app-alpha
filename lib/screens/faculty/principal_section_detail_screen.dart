@@ -240,7 +240,7 @@ class _PrincipalSectionDetailScreenState
 
     // Default subject roster with assigned teachers
     final subjectTeachers = [
-      cls.classTeacherName.isNotEmpty ? cls.classTeacherName : 'Anita Desai',
+      cls.classTeacherName.isNotEmpty ? cls.classTeacherName : 'Assigned Class Faculty',
       'Robert Chen',
       'David Miller',
       'Priya Nair',

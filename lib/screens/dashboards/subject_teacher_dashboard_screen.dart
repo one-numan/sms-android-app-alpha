@@ -9,6 +9,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../../data/mock/auth_state.dart';
 import '../../data/mock/mock_data.dart';
 import '../../models/models.dart';
 import '../../theme/app_theme.dart';
@@ -22,7 +24,10 @@ class SubjectTeacherDashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final teacher = MockData.teachers[1]; // Robert Chen (Science Faculty)
+    final auth = context.watch<AuthState>();
+    final teacher = MockData.teachers[1];
+    final teacherName = auth.fullName.isNotEmpty && auth.fullName != 'User' ? auth.fullName : teacher.name;
+    final initials = teacherName.split(' ').where((n) => n.isNotEmpty).map((n) => n[0].toUpperCase()).take(2).join();
 
     return Scaffold(
       backgroundColor: AcademicColors.canvas,
@@ -56,7 +61,7 @@ class SubjectTeacherDashboardScreen extends StatelessWidget {
                               ),
                               child: Center(
                                 child: Text(
-                                  teacher.name.split(' ').where((n) => n.isNotEmpty).map((n) => n[0]).take(2).join(),
+                                  initials.isEmpty ? 'T' : initials,
                                   style: GoogleFonts.newsreader(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
@@ -71,7 +76,7 @@ class SubjectTeacherDashboardScreen extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Good Morning, ${teacher.name}',
+                                    'Good Morning, $teacherName',
                                     style: GoogleFonts.newsreader(
                                       fontSize: 17,
                                       fontWeight: FontWeight.bold,

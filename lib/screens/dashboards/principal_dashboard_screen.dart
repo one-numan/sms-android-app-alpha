@@ -8,6 +8,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../../data/mock/auth_state.dart';
 import '../../models/models.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_top_bar.dart';
@@ -20,6 +22,11 @@ class PrincipalDashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final auth = context.watch<AuthState>();
+    final rawName = (auth.fullName.isNotEmpty && auth.fullName != 'User' && auth.fullName != 'Rajesh Sharma') ? auth.fullName : 'Numan Khan';
+    final principalName = rawName.startsWith('Principal') ? rawName : 'Principal $rawName';
+    final initials = principalName.split(' ').where((e) => e.isNotEmpty).map((e) => e[0].toUpperCase()).take(2).join();
+
     return Scaffold(
       backgroundColor: AcademicColors.canvas,
       appBar: const AppTopBar(showBrand: true),
@@ -51,7 +58,7 @@ class PrincipalDashboardScreen extends StatelessWidget {
                           ),
                           child: Center(
                             child: Text(
-                              'NK',
+                              initials.isEmpty ? 'NK' : initials,
                               style: GoogleFonts.newsreader(
                                 fontSize: 17,
                                 fontWeight: FontWeight.bold,
@@ -69,7 +76,7 @@ class PrincipalDashboardScreen extends StatelessWidget {
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      'Principal Numan Khan',
+                                      principalName,
                                       overflow: TextOverflow.ellipsis,
                                       style: GoogleFonts.newsreader(
                                         fontSize: 18,

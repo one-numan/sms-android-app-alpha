@@ -78,13 +78,13 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
     final auth = context.watch<AuthState>();
     final String uname = auth.currentUsername.toLowerCase();
     final String resolvedName = widget.teacherOverride?.name ??
-        (uname == 'washingtonsundar'
-            ? 'Washington Sundar'
-            : uname == 'shubmangill'
-                ? 'Shubman Gill'
-                : (uname.isEmpty || uname == 'class.teacher' || uname == 'rajesh.sharma' || uname == 'anita.desai')
-                    ? 'Anita Desai'
-                    : auth.currentUsername);
+        ((auth.fullName.isNotEmpty && auth.fullName != 'User' && auth.fullName != 'Rajesh Sharma')
+            ? auth.fullName
+            : (uname == 'washingtonsundar'
+                ? 'Washington Sundar'
+                : uname == 'shubmangill'
+                    ? 'Shubman Gill'
+                    : 'Anita Desai'));
 
     final Teacher teacher = widget.teacherOverride ??
         MockData.teachers.where((t) => t.name.toLowerCase() == resolvedName.toLowerCase() || t.id.toLowerCase() == resolvedName.toLowerCase()).firstOrNull ??
@@ -110,12 +110,12 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
     // A teacher is a Class Teacher if their name matches SchoolClass.classTeacherName
     final SchoolClass? assignedClass = widget.classOverride ??
         MockData.classes.cast<SchoolClass?>().firstWhere(
-              (c) => c?.classTeacherName == teacher.name || (c?.classTeacherName != null && (teacher.name.contains(c!.classTeacherName.replaceAll('Mrs. ', '')) || c.classTeacherName.contains(teacher.name.replaceAll('Mrs. ', '')))) || c?.name == (teacher.name == 'Washington Sundar' ? 'Nursery A' : teacher.name == 'Shubman Gill' ? 'Nursery B' : (teacher.name == 'Anita Desai' || teacher.name == 'Mrs. Anita Desai') ? 'Grade 5-A' : null),
+              (c) => c?.classTeacherName == teacher.name || (c?.classTeacherName != null && (teacher.name.contains(c!.classTeacherName.replaceAll('Mrs. ', '')) || c.classTeacherName.contains(teacher.name.replaceAll('Mrs. ', '')))) || c?.name == (teacher.name == 'Washington Sundar' ? 'Nursery A' : teacher.name == 'Shubman Gill' ? 'Nursery B' : null),
               orElse: () => (widget.teacherOverride != null) ? null : SchoolClass(
                 id: 'CLS-${teacher.name}',
-                grade: teacher.name == 'Washington Sundar' ? 'Nursery' : 'Grade 5',
-                section: teacher.name == 'Washington Sundar' ? 'A' : 'A',
-                className: teacher.name == 'Washington Sundar' ? 'Nursery A' : '5-A',
+                grade: teacher.name == 'Washington Sundar' ? 'Nursery' : (teacher.name == 'Shubman Gill' ? 'Nursery' : 'Grade 5'),
+                section: teacher.name == 'Washington Sundar' ? 'A' : (teacher.name == 'Shubman Gill' ? 'B' : 'A'),
+                className: teacher.name == 'Washington Sundar' ? 'Nursery A' : (teacher.name == 'Shubman Gill' ? 'Nursery B' : '5-A'),
                 classTeacherName: teacher.name,
               ),
             );

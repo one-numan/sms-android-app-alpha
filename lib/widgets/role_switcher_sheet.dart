@@ -91,7 +91,7 @@ class RoleSwitcherSheet extends StatelessWidget {
               children: [
                 _buildRoleItem(context, authState, UserRole.parent, 'Parent Portal', 'Diya & Aarav Sharma • Grades 5-A & 2-B', Icons.family_restroom),
                 _buildRoleItem(context, authState, UserRole.student, 'Student Hub', 'Diya Sharma • Grade 5-A', Icons.school),
-                _buildRoleItem(context, authState, UserRole.classTeacher, 'Class Teacher Workspace', 'Anita Desai • Class Teacher 5-A', Icons.assignment_ind),
+                _buildRoleItem(context, authState, UserRole.classTeacher, 'Class Teacher Workspace', '${(authState.fullName.isNotEmpty && authState.fullName != 'User' && authState.fullName != 'Rajesh Sharma') ? authState.fullName : 'Shubman Gill'} • Class Teacher', Icons.assignment_ind),
                 _buildRoleItem(context, authState, UserRole.subjectTeacher, 'Subject Teacher Desk', 'Robert Chen • Science Faculty', Icons.science),
                 _buildRoleItem(context, authState, UserRole.principal, 'Principal Executive Command', 'Numan Khan • Head of School', Icons.account_balance),
                 _buildRoleItem(context, authState, UserRole.vicePrincipal, 'Vice Principal Hub', 'Priya Nair • Academic Head', Icons.shield),
