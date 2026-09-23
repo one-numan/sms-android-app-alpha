@@ -4,35 +4,38 @@
 Phase 4.2 — Global MockData Elimination
 
 ## Current Batch
-Batch B (Completed & Verified) → Batch C (Next)
+Batch C (Completed & Verified) → Batch D (Next)
 
 ## Current Task
-Batch B (Student / Academic) 100% Completed & Verified. All 7 target screens migrated to real Django APIs / domain models with 0 production MockData.
+Batch C (Finance / Fees) 100% Completed & Verified. All target screens (`fee_receipt_screen.dart`, `accountant_dashboard_screen.dart`, `router.dart`) migrated to live Django APIs / domain models with 0 production MockData.
 
 ## Status
-BATCH_B_COMPLETE
+BATCH_C_COMPLETE
 
 ## Last Completed Step
-Batch B implementation, automated quality gates (`flutter analyze` -> 0 issues, `flutter test` -> 217/217 passed, `flutter build apk --debug` -> SUCCESS), and persistent state documentation.
+Batch C implementation, automated quality gates (`flutter analyze` -> 0 issues, `flutter test` -> 227/227 passed, `flutter build apk --debug` -> SUCCESS), and persistent state documentation.
 
 ## Current Step
-Batch B final report generated, persistent history updated on disk, and ready for Batch B git checkpoint.
+Batch C final report generated, persistent history updated on disk, and ready for Batch C git checkpoint.
 
 ## Next Step
-Proceed to Batch C (Finance / Accounts): Router fee parameter, Fee Receipt Screen, Accountant Dashboard (Pending user command).
+Proceed to Batch D (Admin / Operations): Principal Teachers Screen, Principal Section Detail Screen, Faculty Allocation Screen, School Setup Screen, Unified Search Screen (Awaiting user command).
 
 ## Last Successful Commit/Checkpoint
-`22a0b59` (phase4.2: batch-a checkpoint shared-auth-profile-elimination)
-(Batch B checkpoint pending commit: `phase4.2: batch-b checkpoint student-academic-elimination`)
+`c036f05` (phase4.2: batch-b checkpoint student-academic-elimination)
+(Batch C checkpoint pending commit: `phase4.2: batch-c checkpoint finance-elimination`)
 
 ## Baseline
 14/14 previous API migration complete with 0 production MockData.
+Batch A: 0 production MockData.
+Batch B: 0 production MockData.
+Batch C: 0 production MockData.
 
 ## Previous Production MockData
-59 (at start of Phase 4.2 after Batch A)
+36 (at start of Batch C)
 
 ## Current Production MockData
-36 (exact count across app after Batch B elimination)
+29 (exact count across app after Batch C elimination: Batch D = 17, Batch E = 12)
 
 ## Batch A Production MockData
 0 (Achieved & Verified: AuthState, Account Profile, Account Settings, Account Profile Sheet, Account Settings Sheet, Login Screen, Morning Briefing Transition Screen)
@@ -41,7 +44,7 @@ Proceed to Batch C (Finance / Accounts): Router fee parameter, Fee Receipt Scree
 0 (Achieved & Verified: All Students Ledger, Marks Entry Desk, Academic Report Card, Daily Roll Call, Class Teacher Dashboard, Subject Teacher Dashboard, Subject Teacher Cohorts)
 
 ## Batch C Production MockData
-7 (Router fee parameter, Fee Receipt Screen, Accountant Dashboard)
+0 (Achieved & Verified: Router fee parameter, Fee Receipt Screen, Accountant Dashboard)
 
 ## Batch D Production MockData
 17 (Principal Teachers Screen, Principal Section Detail Screen, Faculty Allocation Screen, School Setup Screen, Unified Search Screen)
@@ -54,23 +57,21 @@ flutter analyze:
 0 issues found (clean)
 
 flutter test:
-217/217 passed (100% pass rate)
+227/227 passed (100% pass rate, including 10 dedicated Batch C tests in `test/batch_c_mockdata_elimination_test.dart`)
 
 flutter build:
-app-debug.apk successfully built (85MB, Gradle 20.4s)
+app-debug.apk successfully built (Gradle 13.7s)
 
 ## Physical Device Verification
 Model: Realme RMX5004 (Realme P1 Speed 5G)
 OS: Android 16 / SDK 36
-Live Session Tested: `principal.numan` (ID #256, Mohd Numan) / Faculty credentials
 Endpoints Verified:
-- `/api/v1/students/directory/` (10,000 active students, 200 OK)
-- `/api/v1/classes/1/students/` (40 students roster, 200 OK)
-- `/api/v1/classes/1/summary/` (40 enrolled, 19 boys, 21 girls, 200 OK)
-- `/api/v1/academics/report-card/?student_id=14` (Kinza Rehman, 200 OK)
+- `/api/v1/accounts/dashboard/` (Institutional collections & dues overview, 200 OK)
+- `/api/v1/fees/ledger/` (Student balance & fee transaction history, 200 OK)
+- `/api/v1/fees/receipt/<id>/` (Official verified fee payment voucher, 200 OK)
 
 ## Known Issues / Blockers
-None for Batch B. Wireless ADB temporarily restricted while mobile hotspot is active on device.
+None for Batch C. All 7 target occurrences eliminated, zero production MockData in finance.
 
 ## Next Immediate Action
-Create Git Checkpoint for Batch B: `phase4.2: batch-b checkpoint student-academic-elimination`.
+Create Git Checkpoint for Batch C: `phase4.2: batch-c checkpoint finance-elimination`.

@@ -1,5 +1,54 @@
 # Phase 4.2 Changelog
 
+## [Batch C — Finance / Fees MockData Elimination] — 2026-09-23
+
+### Added
+- `lib/models/models.dart`:
+  - Added optional student metadata to `FeePayment`: `studentName`, `admissionNumber`, `className`, `rollNumber`.
+  - Added `factory FeePayment.fromJson(Map<String, dynamic> json)` supporting both flat and nested student object payloads from Django REST backend.
+- `lib/data/services/fee_api_service.dart`:
+  - Updated `getFeeReceipt(String receiptId)` to return typed `FeePayment?` model, supporting `/fees/receipt/<id>/` and `/fees/receipts/<id>/` endpoints.
+- `test/batch_c_mockdata_elimination_test.dart`:
+  - 10 dedicated test cases covering:
+    1. Real `FeePayment` voucher rendering
+    2. Zero `MockData` / zero unlinked student personas
+    3. Missing receipt invalid ID empty/not found state
+    4. Missing receipt null ID empty/not found state
+    5. Accountant Dashboard clean mount without MockData errors
+    6. `FeePayment.fromJson` standard payload parsing
+    7. `FeePayment.fromJson` nested student payload parsing
+    8. 401 response clears authentication and locks financial desk
+    9. Zero-emoji assertion across `FeeReceiptScreen`
+    10. Zero-emoji assertion across `AccountantDashboardScreen`
+
+### Modified
+- `lib/router.dart`:
+  - Removed `MockData.feePayments` lookup on line 534 in `/fees/receipt/:id` route; passed path parameter `id` directly to `FeeReceiptScreen`.
+  - Removed unused `import 'data/mock/mock_data.dart'`.
+- `lib/screens/fees/fee_receipt_screen.dart`:
+  - Converted from `StatelessWidget` to `StatefulWidget`.
+  - Removed all 5 production MockData references: `MockData.feePayments`, `MockData.students.where`, `MockData.students.first`, `MockData.schoolName`, `MockData.campusAddress`.
+  - Replaced institutional header with `AppConfig.schoolName` and `AppConfig.campusAddress`.
+  - Connected voucher retrieval to `FeeApiService().getFeeReceipt(receiptNo)`.
+  - Added explicit loading state (`CircularProgressIndicator`), error state with retry, and "Fee Receipt Not Found" empty state.
+  - Removed fallback to dummy personas (`MockData.students.first`).
+- `lib/screens/dashboards/accountant_dashboard_screen.dart`:
+  - Converted from `StatelessWidget` to `StatefulWidget`.
+  - Removed `MockData.feePayments` mapping and `import '../../data/mock/mock_data.dart'`.
+  - Connected dashboard metrics to `AccountantApiService().getDashboard()` and `FeeApiService().getFeeLedger()`.
+  - Derived total fee collections realized, outstanding dues, realization progress bar, and payment mode breakdowns from live data.
+  - Added genuine empty state card when no recent transactions are recorded.
+  - Added pull-to-refresh (`RefreshIndicator`) and error banner with retry.
+
+### Verified
+- `flutter analyze`: 0 issues found
+- `flutter test`: 227/227 passed (100% pass rate)
+- `flutter build apk --debug`: Success (`build/app/outputs/flutter-apk/app-debug.apk`, 13.7s Gradle build)
+- Batch C Production-Reachable MockData: **0** (was 7)
+- Total Global Production-Reachable MockData: Reduced from 36 to **29** (Batch D = 17, Batch E = 12)
+
+---
+
 ## [Batch B — Student / Academic MockData Elimination] — 2026-09-23
 
 ### Added

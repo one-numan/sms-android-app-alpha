@@ -555,6 +555,10 @@ class FeePayment {
   final String receiptNumber;
   final String receivedBy;
   final String remarks;
+  final String? studentName;
+  final String? admissionNumber;
+  final String? className;
+  final String? rollNumber;
 
   const FeePayment({
     required this.id,
@@ -567,11 +571,46 @@ class FeePayment {
     required this.receiptNumber,
     required this.receivedBy,
     required this.remarks,
+    this.studentName,
+    this.admissionNumber,
+    this.className,
+    this.rollNumber,
   });
 
   String get recordedBy => receivedBy;
   double get amountPaid => amount;
   PaymentMode get mode => paymentMode;
+
+  factory FeePayment.fromJson(Map<String, dynamic> json) {
+    PaymentMode parseMode(dynamic val) {
+      if (val == null) return PaymentMode.onlineTransfer;
+      final s = val.toString().toLowerCase().replaceAll('_', ' ');
+      if (s.contains('cash')) return PaymentMode.cash;
+      if (s.contains('cheque')) return PaymentMode.cheque;
+      if (s.contains('upi')) return PaymentMode.upi;
+      if (s.contains('card')) return PaymentMode.card;
+      return PaymentMode.onlineTransfer;
+    }
+
+    final student = json['student'] is Map<String, dynamic> ? json['student'] as Map<String, dynamic> : null;
+
+    return FeePayment(
+      id: json['id']?.toString() ?? json['receipt_no']?.toString() ?? '',
+      studentId: json['student_id']?.toString() ?? student?['id']?.toString() ?? json['admission_no']?.toString() ?? '',
+      session: json['session']?.toString() ?? json['academic_session']?.toString() ?? '2026-27',
+      feeHead: json['fee_head']?.toString() ?? json['particulars']?.toString() ?? 'Tuition Fee',
+      amount: (json['amount'] as num?)?.toDouble() ?? (json['amount_paid'] as num?)?.toDouble() ?? 0.0,
+      paymentMode: parseMode(json['payment_mode'] ?? json['mode']),
+      paymentDate: json['payment_date']?.toString() ?? json['date']?.toString() ?? '',
+      receiptNumber: json['receipt_no']?.toString() ?? json['receipt_number']?.toString() ?? json['id']?.toString() ?? '',
+      receivedBy: json['received_by']?.toString() ?? json['recorded_by']?.toString() ?? 'Accounts Officer',
+      remarks: json['remarks']?.toString() ?? '',
+      studentName: json['student_name']?.toString() ?? student?['name']?.toString(),
+      admissionNumber: json['admission_no']?.toString() ?? student?['admission_number']?.toString() ?? json['student_id']?.toString(),
+      className: json['class_name']?.toString() ?? json['class']?.toString() ?? student?['class_name']?.toString(),
+      rollNumber: json['roll_no']?.toString() ?? json['roll_number']?.toString() ?? student?['roll_number']?.toString(),
+    );
+  }
 }
 
 class Book {

@@ -9,7 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'data/mock/auth_state.dart';
-import 'data/mock/mock_data.dart';
 import 'models/models.dart';
 
 // Screens — Auth
@@ -531,8 +530,7 @@ GoRouter createOnpsRouter(AuthState authState) {
         path: '/fees/receipt/:id',
         builder: (context, state) {
           final id = state.pathParameters['id'];
-          final payment = MockData.feePayments.where((p) => p.id == id || p.receiptNumber == id).firstOrNull;
-          return FeeReceiptScreen(receiptNo: payment?.receiptNumber ?? id);
+          return FeeReceiptScreen(receiptNo: id);
         },
       ),
 

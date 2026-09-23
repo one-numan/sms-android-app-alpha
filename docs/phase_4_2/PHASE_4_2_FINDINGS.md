@@ -36,13 +36,17 @@
 - **Status**: **PASSED (0 production-reachable MockData)**
 
 ### Batch C: Finance / Fees (7 occurrences)
-1. `lib/router.dart:534` — `MockData.feePayments` route parameter lookup
-2. `lib/screens/fees/fee_receipt_screen.dart:21` — `MockData.feePayments` lookup
-3. `lib/screens/fees/fee_receipt_screen.dart:50` — `MockData.students.where`
-4. `lib/screens/fees/fee_receipt_screen.dart:52` — `MockData.students.first`
-5. `lib/screens/fees/fee_receipt_screen.dart:142` — `MockData.schoolName`
-6. `lib/screens/fees/fee_receipt_screen.dart:151` — `MockData.campusAddress`
-7. `lib/screens/dashboards/accountant_dashboard_screen.dart:231` — `MockData.feePayments.map`
+- **Target Files**:
+  1. `lib/router.dart:534` — `MockData.feePayments` route parameter lookup
+  2. `lib/screens/fees/fee_receipt_screen.dart:21` — `MockData.feePayments` lookup
+  3. `lib/screens/fees/fee_receipt_screen.dart:50` — `MockData.students.where`
+  4. `lib/screens/fees/fee_receipt_screen.dart:52` — `MockData.students.first`
+  5. `lib/screens/fees/fee_receipt_screen.dart:142` — `MockData.schoolName`
+  6. `lib/screens/fees/fee_receipt_screen.dart:151` — `MockData.campusAddress`
+  7. `lib/screens/dashboards/accountant_dashboard_screen.dart:231` — `MockData.feePayments.map`
+- **Initial Count**: 7
+- **Post-Batch C Count**: **0**
+- **Status**: **PASSED (0 production-reachable MockData)**
 
 ### Batch D: Admin / Operations (17 occurrences)
 1. `lib/screens/faculty/principal_teachers_screen.dart:37` — `MockData.teachers`

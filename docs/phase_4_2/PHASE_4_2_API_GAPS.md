@@ -21,3 +21,17 @@ For Batch B (Student / Academic), the following live production Django endpoints
    - Live report card API. Replaces static `MockData.studentMarks` in `academic_report_card_screen.dart`.
 5. `GET /api/v1/faculty/staff/` (`FacultyApiService.getStaffDirectory()`):
    - Live staff records. Replaces `MockData.teachers` lookups.
+
+## Batch C Endpoints Reused & Verified
+1. `GET /api/v1/fees/receipt/<id>/` / `GET /api/v1/fees/receipts/<id>/` (`FeeApiService.getFeeReceipt(id)`):
+   - Returns official signed receipt voucher payload (`receipt_no`, `student_name`, `admission_no`, `amount`, `payment_mode`, `date`, `fee_head`, `remarks`).
+   - Integrated into `FeeReceiptScreen` via `FeePayment` model with full empty / error state handling.
+2. `GET /api/v1/accounts/dashboard/` (`AccountantApiService.getDashboard()`):
+   - Returns institutional revenue metrics (`total_dues_collected`, `total_outstanding_dues`, `total_expected`, `recent_transactions`, payment mode breakdown).
+   - Integrated into `AccountantDashboardScreen`.
+3. `GET /api/v1/fees/ledger/` (`FeeApiService.getFeeLedger()`):
+   - Returns fee transactions list and student ledger summaries. Reused as a robust fallback for transaction history when needed.
+
+## Batch C Gaps
+- None. Backend contracts fully satisfy accountant overview and fee receipt generation requirements. Institutional branding cleanly references `AppConfig.schoolName` and `AppConfig.campusAddress`.
+
