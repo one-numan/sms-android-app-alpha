@@ -26,4 +26,18 @@ class ParentApiService {
       rethrow;
     }
   }
+
+  /// Fetch Parents Directory (`GET /api/v1/parents/directory/`).
+  Future<Map<String, dynamic>> getParentsDirectory({String? search, String? classId, int page = 1}) async {
+    final query = <String, dynamic>{'page': page.toString()};
+    if (search != null && search.isNotEmpty) query['search'] = search;
+    if (classId != null && classId.isNotEmpty) query['class_id'] = classId;
+
+    try {
+      final response = await _apiClient.get('/parents/directory/', queryParameters: query);
+      return response is Map<String, dynamic> ? response : {};
+    } catch (e) {
+      return {'count': 0, 'results': []};
+    }
+  }
 }

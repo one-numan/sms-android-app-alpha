@@ -5,10 +5,10 @@ class ApiConfig {
   static String baseUrl = 'https://alpha.onenuman.com/api/v1';
 
   /// Connection timeout in seconds.
-  static const int connectTimeoutSeconds = 15;
+  static const int connectTimeoutSeconds = 45;
 
   /// Receive timeout in seconds.
-  static const int receiveTimeoutSeconds = 15;
+  static const int receiveTimeoutSeconds = 45;
 
   /// Whether to fall back to mock data if the backend server is unreachable.
   /// Set to false in production mode to prevent mock data leakage.

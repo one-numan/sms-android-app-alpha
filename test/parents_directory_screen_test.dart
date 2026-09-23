@@ -14,6 +14,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sms_android_app_alpha/data/mock/auth_state.dart';
 import 'package:sms_android_app_alpha/models/models.dart';
 import 'package:sms_android_app_alpha/screens/admin/parents_directory_screen.dart';
@@ -33,6 +34,7 @@ void main() {
     late AuthState studentAuth;
 
     setUp(() {
+      SharedPreferences.setMockInitialValues({});
       staffAuth = AuthState();
       staffAuth.login(role: UserRole.principal, username: 'dr.sharma');
 

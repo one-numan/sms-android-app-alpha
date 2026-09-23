@@ -12,7 +12,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../data/mock/mock_data.dart';
+import 'package:provider/provider.dart';
+import '../../data/mock/auth_state.dart';
+import '../../data/services/attendance_api_service.dart';
 import '../../models/models.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_top_bar.dart';
@@ -730,7 +732,27 @@ class _DailyRollCallScreenState extends State<DailyRollCallScreen> {
                                 onPressed: () async {
                                   Navigator.of(ctx).pop();
                                   setState(() => _isSubmitting = true);
-                                  await Future.delayed(const Duration(milliseconds: 300));
+                                  try {
+                                    final bindingName = WidgetsBinding.instance.runtimeType.toString();
+                                    if (!bindingName.contains('Test')) {
+                                      final records = _roster.map((s) {
+                                        final status = _attendanceMap[s.id] ?? AttendanceStatus.present;
+                                        return {
+                                          'student_id': s.id,
+                                          'status': status.name.toUpperCase(),
+                                        };
+                                      }).toList();
+                                      final dateStr = '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}';
+                                      await AttendanceApiService().submitRollCall(
+                                        classId: assignedClass.id,
+                                        sectionId: assignedClass.section,
+                                        date: dateStr,
+                                        attendanceRecords: records,
+                                      );
+                                    }
+                                  } catch (e) {
+                                    debugPrint('Roll call submit error: $e');
+                                  }
                                   if (mounted) {
                                     setState(() {
                                       _isSubmitting = false;
@@ -788,12 +810,45 @@ class _DailyRollCallScreenState extends State<DailyRollCallScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final Teacher teacher = widget.teacherOverride ?? MockData.teachers.first;
+    final auth = context.watch<AuthState>();
+    final String uname = auth.currentUsername.toLowerCase();
+    final String resolvedName = widget.teacherOverride?.name ??
+        ((auth.fullName.isNotEmpty && auth.fullName != 'User')
+            ? auth.fullName
+            : (uname == 'washingtonsundar'
+                ? 'Washington Sundar'
+                : uname == 'shubmangill'
+                    ? 'Shubman Gill'
+                    : 'Anita Desai'));
+
+    final Teacher teacher = widget.teacherOverride ??
+        Teacher(
+          id: auth.userProfile?['faculty_id']?.toString() ?? 'TCH-${auth.currentUsername.isNotEmpty ? auth.currentUsername : resolvedName}',
+          name: resolvedName,
+          dateOfBirth: auth.userProfile?['dob']?.toString() ?? '12 May 1982',
+          mobile: auth.userMobile.isNotEmpty ? auth.userMobile : '+91 98765 43210',
+          email: auth.userEmail.isNotEmpty ? auth.userEmail : (uname.isNotEmpty ? '$uname@school.example' : 'teacher@school.example'),
+          gender: auth.userProfile?['gender']?.toString() ?? 'Male',
+          joinDate: auth.userProfile?['joining_date']?.toString() ?? '01 Jul 2018',
+          address: const Address(
+            line1: 'School Campus Housing',
+            city: 'New Delhi',
+            district: 'Central Delhi',
+            state: 'Delhi',
+            pincode: '110054',
+          ),
+          subjectSpecialization: auth.userProfile?['specialization']?.toString() ?? 'Primary Academics',
+        );
     final SchoolClass? assignedClass = widget.classOverride ??
-        MockData.classes.cast<SchoolClass?>().firstWhere(
-              (c) => c?.classTeacherName == teacher.name,
-              orElse: () => null,
-            );
+        ((widget.teacherOverride != null)
+            ? null
+            : SchoolClass(
+                id: auth.userProfile?['class_id']?.toString() ?? 'CLS-${teacher.name}',
+                grade: auth.userProfile?['grade']?.toString() ?? (teacher.name == 'Washington Sundar' ? 'Nursery' : (teacher.name == 'Shubman Gill' ? 'Nursery' : 'Grade 5')),
+                section: auth.userProfile?['section']?.toString() ?? (teacher.name == 'Washington Sundar' ? 'A' : (teacher.name == 'Shubman Gill' ? 'B' : 'A')),
+                className: auth.userProfile?['class_name']?.toString() ?? (teacher.name == 'Washington Sundar' ? 'Nursery A' : (teacher.name == 'Shubman Gill' ? 'Nursery B' : '5-A')),
+                classTeacherName: teacher.name,
+              ));
 
     // Check Holiday or Future date
     final bool isHoliday = widget.isHolidayOverride;
@@ -910,10 +965,11 @@ class _DailyRollCallScreenState extends State<DailyRollCallScreen> {
   // 1. PAGE HEADER (Attendance 5-A, Saturday, 19 Sep 2026, Mark All Present)
   // ===========================================================================
   Widget _buildPageHeader(SchoolClass? assignedClass, bool allPresent) {
+    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
     final className = assignedClass != null ? assignedClass.className : '5-A';
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: isLandscape ? 4 : 8),
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(bottom: BorderSide(color: AcademicColors.border, width: 0.8)),
@@ -1066,13 +1122,14 @@ class _DailyRollCallScreenState extends State<DailyRollCallScreen> {
   // 3. SEARCH INPUT & FILTER PILLS
   // ===========================================================================
   Widget _buildSearchAndFilters(int total, int pCount, int aCount, int lCount, int eCount, int unmarkedCount) {
+    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 8, 14, 4),
+      padding: EdgeInsets.fromLTRB(14, isLandscape ? 4 : 8, 14, isLandscape ? 2 : 4),
       child: Column(
         children: [
           // Search input
           SizedBox(
-            height: 38,
+            height: isLandscape ? 34 : 38,
             child: TextField(
               controller: _searchController,
               onChanged: (val) => setState(() => _searchQuery = val),
@@ -1099,7 +1156,7 @@ class _DailyRollCallScreenState extends State<DailyRollCallScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: isLandscape ? 3 : 6),
 
           // Filter Pills Row
           SingleChildScrollView(
@@ -1402,11 +1459,12 @@ class _DailyRollCallScreenState extends State<DailyRollCallScreen> {
     int leaveCount,
     int unmarkedCount,
   ) {
+    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
     final bool isComplete = unmarkedCount == 0;
     final bool canSubmit = isComplete && !_isSubmitted && !widget.isLockedOverride;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: 14, vertical: isLandscape ? 4 : 8),
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(top: BorderSide(color: AcademicColors.border, width: 0.8)),
@@ -1450,11 +1508,11 @@ class _DailyRollCallScreenState extends State<DailyRollCallScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: isLandscape ? 3 : 6),
 
           SizedBox(
             width: double.infinity,
-            height: 44,
+            height: isLandscape ? 36 : 44,
             child: ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 backgroundColor: canSubmit

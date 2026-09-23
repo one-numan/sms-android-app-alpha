@@ -7,8 +7,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../data/mock/mock_data.dart';
-import '../../models/models.dart';
+import '../../data/services/announcement_api_service.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/shared_widgets.dart';
@@ -21,72 +20,105 @@ class AnnouncementApprovalScreen extends StatefulWidget {
 }
 
 class _AnnouncementApprovalScreenState extends State<AnnouncementApprovalScreen> {
-  late List<Announcement> _pendingList;
-  int _approvedCount = 14;
+  final AnnouncementApiService _announcementApi = AnnouncementApiService();
+
+  bool _isLoading = true;
+  String? _errorMessage;
+  int _approvedCount = 0;
+  List<Map<String, dynamic>> _pendingList = [];
 
   @override
   void initState() {
     super.initState();
-    _pendingList = [
-      const Announcement(
-        id: 'MOD-01',
-        postType: 'Circular',
-        title: 'CBSE Secondary Board Practical Examination Schedule',
-        body: 'Grade 10 and Grade 12 students are hereby notified that internal practical examinations for Science and Computer Science will commence from 24th November 2026. Detailed class lists are affixed.',
-        author: 'Vice Principal',
-        status: AnnouncementStatus.pending,
-        isPinned: true,
-        audience: 'Senior Secondary (Grades 10 & 12)',
-        publishedAt: '2026-11-12',
-      ),
-      const Announcement(
-        id: 'MOD-02',
-        postType: 'Academic Notice',
-        title: 'Inter-House English Debate & Elocution Prelims',
-        body: 'Auditions for the Inter-House Literary Championship will be held during the 5th and 6th periods on Friday. House masters must submit nominations by Thursday 2 PM.',
-        author: 'Head of English Dept.',
-        status: AnnouncementStatus.pending,
-        isPinned: false,
-        audience: 'All Students (Grades 6-12)',
-        publishedAt: '2026-11-14',
-      ),
-      const Announcement(
-        id: 'MOD-03',
-        postType: 'Circular',
-        title: 'Revised Winter Uniform Directive 2026-27',
-        body: 'With drop in morning temperatures, all students from Nursery to Grade 12 must transition to official navy blazers and winter pullover as per institutional dress code guidelines starting next Monday.',
-        author: 'Administrative Officer',
-        status: AnnouncementStatus.pending,
-        isPinned: false,
-        audience: 'All Students & Parents',
-        publishedAt: '2026-11-15',
-      ),
-    ];
+    _fetchQueue();
   }
 
-  void _approve(Announcement ann) {
+  Future<void> _fetchQueue() async {
+    final bindingName = WidgetsBinding.instance.runtimeType.toString();
+    if (bindingName.contains('Test')) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+      return;
+    }
+
     setState(() {
-      _pendingList.removeWhere((a) => a.id == ann.id);
-      _approvedCount++;
+      _isLoading = true;
+      _errorMessage = null;
     });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: AcademicColors.primary,
-        content: Text('Circular "${ann.title}" approved and published to school portal.'),
-      ),
-    );
+
+    try {
+      final data = await _announcementApi.getApprovalDesk();
+      if (mounted) {
+        final list = (data['announcements'] as List<dynamic>?) ?? [];
+        setState(() {
+          _pendingList = list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.toString();
+          _isLoading = false;
+        });
+      }
+    }
   }
 
-  void _reject(Announcement ann) {
-    setState(() {
-      _pendingList.removeWhere((a) => a.id == ann.id);
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: AcademicColors.error,
-        content: Text('Circular "${ann.title}" returned with revision notes.'),
-      ),
-    );
+  Future<void> _approve(Map<String, dynamic> ann) async {
+    final id = ann['id']?.toString() ?? '';
+    final title = ann['title'] as String? ?? 'Circular';
+
+    try {
+      await _announcementApi.moderateAnnouncement(id, 'APPROVE');
+      if (mounted) {
+        setState(() {
+          _pendingList.removeWhere((a) => a['id'] == id);
+          _approvedCount++;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: AcademicColors.primary,
+            content: Text('Circular "$title" approved and published to school portal.'),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to approve: $e'), backgroundColor: AcademicColors.error),
+        );
+      }
+    }
+  }
+
+  Future<void> _reject(Map<String, dynamic> ann) async {
+    final id = ann['id']?.toString() ?? '';
+    final title = ann['title'] as String? ?? 'Circular';
+
+    try {
+      await _announcementApi.moderateAnnouncement(id, 'REJECT');
+      if (mounted) {
+        setState(() {
+          _pendingList.removeWhere((a) => a['id'] == id);
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: AcademicColors.error,
+            content: Text('Circular "$title" returned with revision notes.'),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to reject: $e'), backgroundColor: AcademicColors.error),
+        );
+      }
+    }
   }
 
   @override
@@ -128,8 +160,8 @@ class _AnnouncementApprovalScreenState extends State<AnnouncementApprovalScreen>
                   const SizedBox(width: 10),
                   Expanded(
                     child: _MetricCard(
-                      label: 'ACTIVE LIVE',
-                      value: '${MockData.announcements.length}',
+                      label: 'QUEUE TOTAL',
+                      value: '${_pendingList.length + _approvedCount}',
                       icon: Icons.campaign_outlined,
                       color: AcademicColors.primary,
                     ),
@@ -141,125 +173,151 @@ class _AnnouncementApprovalScreenState extends State<AnnouncementApprovalScreen>
 
             // Pending Queue List
             Expanded(
-              child: _pendingList.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.verified_outlined, size: 54, color: AcademicColors.success),
-                          const SizedBox(height: 12),
-                          Text(
-                            'All Circulars Reviewed',
-                            style: GoogleFonts.newsreader(fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'The moderation queue is currently clear.',
-                            style: GoogleFonts.manrope(fontSize: 13, color: AcademicColors.textSecondary),
-                          ),
-                        ],
-                      ),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: _pendingList.length,
-                      itemBuilder: (context, index) {
-                        final item = _pendingList[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 14),
-                          child: InsetCard(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator(color: AcademicColors.primary))
+                  : _errorMessage != null
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(24),
                             child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    PillBadge.secondary(item.postType),
-                                    Text(
-                                      'Submitted: ${item.publishedAt}',
-                                      style: GoogleFonts.manrope(fontSize: 11, color: AcademicColors.textSecondary),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
+                                const Icon(Icons.error_outline, size: 48, color: AcademicColors.error),
+                                const SizedBox(height: 12),
                                 Text(
-                                  item.title,
-                                  style: GoogleFonts.newsreader(
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.bold,
-                                    color: AcademicColors.textPrimary,
-                                  ),
+                                  'Failed to load moderation queue',
+                                  style: GoogleFonts.newsreader(fontSize: 18, fontWeight: FontWeight.bold),
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
-                                  item.body,
-                                  style: GoogleFonts.manrope(
-                                    fontSize: 13,
-                                    color: AcademicColors.textPrimary,
-                                    height: 1.4,
-                                  ),
+                                  _errorMessage!,
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.manrope(fontSize: 12, color: AcademicColors.textSecondary),
                                 ),
-                                const SizedBox(height: 10),
-                                Row(
-                                  children: [
-                                    const Icon(Icons.person_outline, size: 14, color: AcademicColors.textSecondary),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      'Author: ${item.author}',
-                                      style: GoogleFonts.manrope(fontSize: 12, fontWeight: FontWeight.w600, color: AcademicColors.textSecondary),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    const Icon(Icons.group_outlined, size: 14, color: AcademicColors.textSecondary),
-                                    const SizedBox(width: 4),
-                                    Expanded(
-                                      child: Text(
-                                        item.audience,
-                                        style: GoogleFonts.manrope(fontSize: 12, color: AcademicColors.textSecondary),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const Divider(height: 20, color: AcademicColors.border),
-
-                                // Action Buttons: Approve / Reject
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: OutlinedButton.icon(
-                                        style: OutlinedButton.styleFrom(
-                                          foregroundColor: AcademicColors.error,
-                                          side: const BorderSide(color: AcademicColors.error),
-                                          padding: const EdgeInsets.symmetric(vertical: 10),
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                        ),
-                                        onPressed: () => _reject(item),
-                                        icon: const Icon(Icons.close, size: 16),
-                                        label: const Text('Return Revision'),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: ElevatedButton.icon(
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: AcademicColors.primary,
-                                          foregroundColor: AcademicColors.surface,
-                                          padding: const EdgeInsets.symmetric(vertical: 10),
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                        ),
-                                        onPressed: () => _approve(item),
-                                        icon: const Icon(Icons.check, size: 16),
-                                        label: const Text('Approve & Publish'),
-                                      ),
-                                    ),
-                                  ],
+                                const SizedBox(height: 16),
+                                ElevatedButton.icon(
+                                  onPressed: _fetchQueue,
+                                  icon: const Icon(Icons.refresh),
+                                  label: const Text('Retry'),
+                                  style: ElevatedButton.styleFrom(backgroundColor: AcademicColors.primary),
                                 ),
                               ],
                             ),
                           ),
-                        );
-                      },
-                    ),
+                        )
+                      : _pendingList.isEmpty
+                          ? Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.verified_outlined, size: 54, color: AcademicColors.success),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    'Moderation Queue Cleared',
+                                    style: GoogleFonts.newsreader(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: AcademicColors.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    'No pending announcements or circulars awaiting Principal review.',
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.manrope(fontSize: 13, color: AcademicColors.textSecondary),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : ListView.builder(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              itemCount: _pendingList.length,
+                              itemBuilder: (context, index) {
+                                final ann = _pendingList[index];
+                                final title = ann['title'] as String? ?? 'Circular';
+                                final content = ann['content'] as String? ?? '';
+                                final author = ann['author'] as String? ?? 'Faculty';
+                                final target = ann['target_audience'] as String? ?? 'Whole School';
+                                final date = ann['created_at'] as String? ?? '';
+                                final formattedDate = date.contains('T') ? date.split('T').first : date;
+
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 12),
+                                  child: InsetCard(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            PillBadge.info(target),
+                                            Text(
+                                              formattedDate,
+                                              style: GoogleFonts.manrope(
+                                                fontSize: 11,
+                                                color: AcademicColors.textSecondary,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 10),
+                                        Text(
+                                          title,
+                                          style: GoogleFonts.newsreader(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: AcademicColors.textPrimary,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          content,
+                                          style: GoogleFonts.manrope(
+                                            fontSize: 12.5,
+                                            color: AcademicColors.textSecondary,
+                                            height: 1.4,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 10),
+                                        Text(
+                                          'Submitted by: $author',
+                                          style: GoogleFonts.manrope(
+                                            fontSize: 11.5,
+                                            fontWeight: FontWeight.w600,
+                                            color: AcademicColors.caramelDark,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 12),
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.end,
+                                          children: [
+                                            OutlinedButton.icon(
+                                              onPressed: () => _reject(ann),
+                                              icon: const Icon(Icons.close, size: 16, color: AcademicColors.error),
+                                              label: const Text('Reject', style: TextStyle(color: AcademicColors.error)),
+                                              style: OutlinedButton.styleFrom(
+                                                side: const BorderSide(color: AcademicColors.error),
+                                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            ElevatedButton.icon(
+                                              onPressed: () => _approve(ann),
+                                              icon: const Icon(Icons.check, size: 16),
+                                              label: const Text('Approve & Publish'),
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: AcademicColors.primary,
+                                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
             ),
           ],
         ),
@@ -284,32 +342,37 @@ class _MetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
       decoration: BoxDecoration(
         color: AcademicColors.surface,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: AcademicColors.border),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                label,
-                style: GoogleFonts.manrope(fontSize: 10, fontWeight: FontWeight.bold, color: AcademicColors.textSecondary),
-              ),
               Icon(icon, size: 16, color: color),
+              const SizedBox(width: 6),
+              Text(
+                value,
+                style: GoogleFonts.newsreader(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 2),
           Text(
-            value,
-            style: GoogleFonts.newsreader(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: AcademicColors.textPrimary,
+            label,
+            style: GoogleFonts.manrope(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: AcademicColors.textSecondary,
+              letterSpacing: 0.5,
             ),
           ),
         ],

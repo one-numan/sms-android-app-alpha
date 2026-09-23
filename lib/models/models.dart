@@ -192,6 +192,51 @@ class Student {
     this.section,
   });
 
+  factory Student.fromJson(Map<String, dynamic> json) {
+    final rawFullName = json['full_name'] as String? ?? json['name'] as String? ?? '';
+    final nameParts = rawFullName.trim().split(RegExp(r'\s+'));
+    final first = json['first_name'] as String? ?? (nameParts.isNotEmpty ? nameParts.first : '');
+    final last = json['last_name'] as String? ?? (nameParts.length > 1 ? nameParts.last : '');
+    final middle = json['middle_name'] as String? ?? (nameParts.length > 2 ? nameParts.sublist(1, nameParts.length - 1).join(' ') : null);
+
+    final rawClass = json['class_section'] as String? ?? json['class_name'] as String? ?? '';
+    String? g;
+    String? s;
+    if (rawClass.isNotEmpty) {
+      final parts = rawClass.replaceAll('Grade', '').trim().split(RegExp(r'[\s\-]+'));
+      if (parts.isNotEmpty) g = parts[0];
+      if (parts.length > 1) s = parts[1];
+    }
+
+    return Student(
+      id: json['id']?.toString() ?? '',
+      firstName: first,
+      middleName: middle,
+      lastName: last,
+      dateOfBirth: json['date_of_birth'] as String? ?? '',
+      mobile: json['mobile_number'] as String? ?? json['mobile'] as String? ?? '',
+      alternateMobile: json['alternate_mobile'] as String?,
+      email: json['email'] as String? ?? '',
+      gender: json['gender'] as String? ?? 'Not Specified',
+      admissionDate: json['admission_date'] as String? ?? '',
+      rollNumber: json['roll_number'] is int
+          ? json['roll_number'] as int
+          : int.tryParse(json['roll_number']?.toString() ?? '0') ?? 0,
+      address: json['address'] is Map
+          ? Address(
+              line1: json['address']['line1']?.toString() ?? '',
+              city: json['address']['city']?.toString() ?? '',
+              district: json['address']['district']?.toString() ?? '',
+              state: json['address']['state']?.toString() ?? '',
+              pincode: json['address']['pincode']?.toString() ?? '',
+            )
+          : const Address(line1: '', city: '', district: '', state: '', pincode: ''),
+      dwellingType: json['dwelling_type'] as String? ?? 'House/Apartment',
+      grade: json['grade'] as String? ?? g,
+      section: json['section'] as String? ?? s,
+    );
+  }
+
   String get fullName => middleName != null && middleName!.isNotEmpty
       ? '$firstName $middleName $lastName'
       : '$firstName $lastName';

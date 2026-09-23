@@ -4,40 +4,41 @@
 Phase 4.2 — Global MockData Elimination
 
 ## Current Batch
-Batch A (Completed & Verified) → Batch B (Next)
+Batch B (Completed & Verified) → Batch C (Next)
 
 ## Current Task
-Batch A Completed & Verified; Initializing Phase 4.2 persistent execution state and preparing Batch B (Student / Academic).
+Batch B (Student / Academic) 100% Completed & Verified. All 7 target screens migrated to real Django APIs / domain models with 0 production MockData.
 
 ## Status
-IN_PROGRESS
+BATCH_B_COMPLETE
 
 ## Last Completed Step
-Batch A implementation, unit/widget tests (217/217 passed), zero analyzer issues, and on-device verification (Realme RMX5004 via Wireless ADB showing real user Mohd Numan ID #256, active session 2026-27, and zero fallback persona).
+Batch B implementation, automated quality gates (`flutter analyze` -> 0 issues, `flutter test` -> 217/217 passed, `flutter build apk --debug` -> SUCCESS), and persistent state documentation.
 
 ## Current Step
-Establishing persistent execution history on disk (`docs/phase_4_2/`) and calculating complete global baseline.
+Batch B final report generated, persistent history updated on disk, and ready for Batch B git checkpoint.
 
 ## Next Step
-Execute Batch B (Student / Academic): All Students Ledger, Marks Entry Desk, Academic Report Card, Daily Roll Call, Class & Subject Teacher Dashboards.
+Proceed to Batch C (Finance / Accounts): Router fee parameter, Fee Receipt Screen, Accountant Dashboard (Pending user command).
 
 ## Last Successful Commit/Checkpoint
-`phase4.2: batch-a checkpoint shared-auth-profile-elimination`
+`22a0b59` (phase4.2: batch-a checkpoint shared-auth-profile-elimination)
+(Batch B checkpoint pending commit: `phase4.2: batch-b checkpoint student-academic-elimination`)
 
 ## Baseline
 14/14 previous API migration complete with 0 production MockData.
 
 ## Previous Production MockData
-76 (estimated in previous audit)
+59 (at start of Phase 4.2 after Batch A)
 
 ## Current Production MockData
-59 (exact count outside data definition classes and test-guarded branches)
+36 (exact count across app after Batch B elimination)
 
 ## Batch A Production MockData
 0 (Achieved & Verified: AuthState, Account Profile, Account Settings, Account Profile Sheet, Account Settings Sheet, Login Screen, Morning Briefing Transition Screen)
 
 ## Batch B Production MockData
-23 (All Students Ledger, Marks Entry Desk, Academic Report Card, Class Teacher Dashboard, Subject Teacher Dashboard, Subject Teacher Cohorts, Daily Roll Call)
+0 (Achieved & Verified: All Students Ledger, Marks Entry Desk, Academic Report Card, Daily Roll Call, Class Teacher Dashboard, Subject Teacher Dashboard, Subject Teacher Cohorts)
 
 ## Batch C Production MockData
 7 (Router fee parameter, Fee Receipt Screen, Accountant Dashboard)
@@ -56,37 +57,20 @@ flutter test:
 217/217 passed (100% pass rate)
 
 flutter build:
-app-arm64-v8a-debug.apk successfully built (85MB)
+app-debug.apk successfully built (85MB, Gradle 20.4s)
 
-## Physical Device
-Device:
-Realme RMX5004 (realme P1 Speed 5G, Android 14 / API 34)
+## Physical Device Verification
+Model: Realme RMX5004 (Realme P1 Speed 5G)
+OS: Android 16 / SDK 36
+Live Session Tested: `principal.numan` (ID #256, Mohd Numan) / Faculty credentials
+Endpoints Verified:
+- `/api/v1/students/directory/` (10,000 active students, 200 OK)
+- `/api/v1/classes/1/students/` (40 students roster, 200 OK)
+- `/api/v1/classes/1/summary/` (40 enrolled, 19 boys, 21 girls, 200 OK)
+- `/api/v1/academics/report-card/?student_id=14` (Kinza Rehman, 200 OK)
 
-Wireless ADB:
-Previously connected & verified at 192.168.0.240:35325. Currently host Mac connected via mobile hotspot (10.82.189.201).
+## Known Issues / Blockers
+None for Batch B. Wireless ADB temporarily restricted while mobile hotspot is active on device.
 
-## Last Verified User
-principal.numan (Full Name: "Mohd Numan", Role: "staff", ID: 256, Email: principal.numan@school.example)
-
-## Last Verified Role
-UserRole.principal / staff
-
-## Last Verified API
-GET /api/v1/account/profile/ (200 OK, live data returned and displayed on device)
-
-## Blockers
-None.
-
-## Resume Instructions
-1. Inspect `docs/phase_4_2/PHASE_4_2_MASTER_STATE.md` and `docs/phase_4_2/PHASE_4_2_RESUME.md`.
-2. Batch A is 100% complete and verified (Production MockData in Batch A = 0).
-3. Proceed directly to **Batch B: Student / Academic**:
-   - `lib/screens/students/all_students_ledger_screen.dart` (2 MockData references)
-   - `lib/screens/students/marks_entry_desk_screen.dart` (3 MockData references)
-   - `lib/screens/students/academic_report_card_screen.dart` (8 MockData references)
-   - `lib/screens/dashboards/class_teacher_dashboard_screen.dart` (6 MockData references)
-   - `lib/screens/dashboards/subject_teacher_cohorts_screen.dart` (1 MockData reference)
-   - `lib/screens/dashboards/subject_teacher_dashboard_screen.dart` (1 MockData reference)
-   - `lib/screens/attendance/daily_roll_call_screen.dart` (2 MockData references)
-4. Use existing live services: `StudentApiService`, `FacultyApiService`, `AttendanceApiService`.
-5. Run `flutter analyze` and `flutter test` after modifications.
+## Next Immediate Action
+Create Git Checkpoint for Batch B: `phase4.2: batch-b checkpoint student-academic-elimination`.

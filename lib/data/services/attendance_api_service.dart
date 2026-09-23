@@ -44,4 +44,19 @@ class AttendanceApiService {
     );
     return response is Map<String, dynamic> ? response : {'status': 'success'};
   }
+
+  /// Fetch faculty leave balances and history (`GET /api/v1/attendance/faculty-leave/`).
+  Future<Map<String, dynamic>> getFacultyLeave() async {
+    final response = await _apiClient.get('/attendance/faculty-leave/');
+    if (response is Map<String, dynamic> && response.containsKey('data') && response['data'] is Map<String, dynamic>) {
+      return response['data'] as Map<String, dynamic>;
+    }
+    return response is Map<String, dynamic> ? response : {};
+  }
+
+  /// Apply for faculty leave (`POST /api/v1/attendance/faculty-leave/`).
+  Future<Map<String, dynamic>> applyFacultyLeave(Map<String, dynamic> data) async {
+    final response = await _apiClient.post('/attendance/faculty-leave/', body: data);
+    return response is Map<String, dynamic> ? response : {'status': 'success'};
+  }
 }

@@ -23,29 +23,17 @@
 - **Status**: **PASSED (0 production-reachable MockData)**
 
 ### Batch B: Student / Academic (23 occurrences)
-1. `lib/screens/students/all_students_ledger_screen.dart:70` — `MockData.classes` filter
-2. `lib/screens/students/all_students_ledger_screen.dart:314` — `MockData.students` list
-3. `lib/screens/students/marks_entry_desk_screen.dart:38` — `MockData.students` loop
-4. `lib/screens/students/marks_entry_desk_screen.dart:165` — `MockData.students.length`
-5. `lib/screens/students/marks_entry_desk_screen.dart:167` — `MockData.students[index]`
-6. `lib/screens/students/academic_report_card_screen.dart:41` — `MockData.students.firstWhere`
-7. `lib/screens/students/academic_report_card_screen.dart:43` — `MockData.students.first`
-8. `lib/screens/students/academic_report_card_screen.dart:47` — `MockData.studentMarks`
-9. `lib/screens/students/academic_report_card_screen.dart:52` — `MockData.attendanceRecords`
-10. `lib/screens/students/academic_report_card_screen.dart:74` — `MockData.timetable`
-11. `lib/screens/students/academic_report_card_screen.dart:80` — `MockData.events`
-12. `lib/screens/students/academic_report_card_screen.dart:268` — `MockData.session`
-13. `lib/screens/students/academic_report_card_screen.dart:1225` — `MockData.session`
-14. `lib/screens/dashboards/class_teacher_dashboard_screen.dart:153` — `MockData.teachers.where`
-15. `lib/screens/dashboards/class_teacher_dashboard_screen.dart:184` — `MockData.classes.firstWhere`
-16. `lib/screens/dashboards/class_teacher_dashboard_screen.dart:378` — `MockData.students`
-17. `lib/screens/dashboards/class_teacher_dashboard_screen.dart:484` — `MockData.students.length`
-18. `lib/screens/dashboards/class_teacher_dashboard_screen.dart:1104` — `MockData.students.firstOrNull`
-19. `lib/screens/dashboards/class_teacher_dashboard_screen.dart:1146` — `MockData.announcements.first`
-20. `lib/screens/dashboards/subject_teacher_cohorts_screen.dart:118` — `MockData.classes.map`
-21. `lib/screens/dashboards/subject_teacher_dashboard_screen.dart:214` — `MockData.classes.take(2)`
-22. `lib/screens/attendance/daily_roll_call_screen.dart:826` — `MockData.teachers.where`
-23. `lib/screens/attendance/daily_roll_call_screen.dart:845` — `MockData.classes.firstWhere`
+- **Target Files**:
+  1. `lib/screens/students/all_students_ledger_screen.dart`
+  2. `lib/screens/students/marks_entry_desk_screen.dart`
+  3. `lib/screens/students/academic_report_card_screen.dart`
+  4. `lib/screens/attendance/daily_roll_call_screen.dart`
+  5. `lib/screens/dashboards/class_teacher_dashboard_screen.dart`
+  6. `lib/screens/dashboards/subject_teacher_dashboard_screen.dart`
+  7. `lib/screens/dashboards/subject_teacher_cohorts_screen.dart`
+- **Initial Count**: 23
+- **Post-Batch B Count**: **0**
+- **Status**: **PASSED (0 production-reachable MockData)**
 
 ### Batch C: Finance / Fees (7 occurrences)
 1. `lib/router.dart:534` — `MockData.feePayments` route parameter lookup

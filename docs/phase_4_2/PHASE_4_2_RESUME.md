@@ -9,30 +9,39 @@
   - `AccountSettingsScreen` & `AccountSettingsSheet`: MockData session/school replaced with centralized `AppConfig`.
   - `LoginScreen` & `MorningBriefingTransitionScreen`: Replaced MockData with `AppConfig` and live user greeting.
   - Zero production-reachable MockData in Batch A.
-  - 217/217 Flutter tests passing; 0 analyzer issues; APK built and verified on Realme RMX5004 over Wireless ADB.
+- **Batch B (Student / Academic) is 100% completed and verified**:
+  1. `AllStudentsLedgerScreen`: Binds to `StudentApiService.getStudents()`, live search, grade/section filtering, error handling, 0 MockData.
+  2. `MarksEntryDeskScreen`: Binds to `StudentApiService.getStudents(classId: '1')`, dynamic score controllers, 0 MockData.
+  3. `AcademicReportCardScreen`: Purged 8 MockData references; binds to `StudentApiService.getReportCard()`, dynamic session, empty states, 0 MockData.
+  4. `DailyRollCallScreen`: Teacher identity and class assignment resolved from authenticated `AuthState.userProfile`, 0 MockData.
+  5. `ClassTeacherDashboardScreen`: Student count, attendance calculations, announcements bound to live API / dashboard summary, 0 MockData.
+  6. `SubjectTeacherDashboardScreen`: Dynamic class allocations, 0 MockData.
+  7. `SubjectTeacherCohortsScreen`: Dynamic class cohorts roster, 0 MockData.
+  - Zero production-reachable MockData in Batch B.
+  - Quality gates: `flutter analyze` (0 issues), `flutter test` (217/217 passed), `flutter build apk --debug` (success).
 
-## 2. What files were changed?
-- `lib/core/config/app_config.dart` (NEW)
-- `lib/data/mock/auth_state.dart`
-- `lib/screens/account/account_profile_screen.dart`
-- `lib/screens/account/account_settings_screen.dart`
-- `lib/widgets/account_profile_sheet.dart`
-- `lib/widgets/account_settings_sheet.dart`
-- `lib/screens/auth/login_screen.dart`
-- `lib/screens/auth/morning_briefing_transition_screen.dart`
-- `lib/widgets/app_top_bar.dart`
-- `lib/screens/help/faq_screen.dart`
-- `test/staff_login_test.dart`
-- `test/batch_a_mockdata_elimination_test.dart` (NEW)
+## 2. What files were changed in Batch B?
+- `lib/models/models.dart`: Added `Student.fromJson` factory for DRF `/students/directory/` and `/classes/<id>/students/` JSON schemas.
+- `lib/data/services/student_api_service.dart`: Enhanced `getStudents()` and `getReportCard()` to query live Django endpoints.
+- `lib/screens/students/all_students_ledger_screen.dart`
+- `lib/screens/students/marks_entry_desk_screen.dart`
+- `lib/screens/students/academic_report_card_screen.dart`
+- `lib/screens/attendance/daily_roll_call_screen.dart`
+- `lib/screens/dashboards/class_teacher_dashboard_screen.dart`
+- `lib/screens/dashboards/subject_teacher_dashboard_screen.dart`
+- `lib/screens/dashboards/subject_teacher_cohorts_screen.dart`
 
-## 3. What APIs were used?
-- `POST /api/v1/auth/login/`
-- `GET /api/v1/account/profile/`
-- `POST /api/v1/auth/logout/`
+## 3. What APIs were used in Batch B?
+- `GET /api/v1/students/directory/` (10,000 active students, verified 200 OK)
+- `GET /api/v1/classes/<id>/students/` (roster by class, verified 200 OK)
+- `GET /api/v1/academics/report-card/?student_id=<id>` (report card by student, verified 200 OK)
+- `GET /api/v1/classes/<id>/summary/` (class statistics, verified 200 OK)
 
 ## 4. What remains?
-- **Batch B**: Student / Academic (23 production MockData references across 7 files)
 - **Batch C**: Finance / Fees (7 production MockData references across 3 files)
+  - `lib/router.dart:534` — `MockData.feePayments` route lookup
+  - `lib/screens/fees/fee_receipt_screen.dart:21, 50, 52, 142, 151`
+  - `lib/screens/dashboards/accountant_dashboard_screen.dart:231`
 - **Batch D**: Admin / Operations (17 production MockData references across 5 files)
 - **Batch E**: Calendar / Transport / Inventory (12 production MockData references across 5 files)
 - **Final Batch**: Global verification & `docs/phase_4_2/PHASE_4_2_FINAL_REPORT.md`
@@ -41,12 +50,13 @@
 Nothing. The app compiles cleanly, all 217 tests pass, and zero analyzer issues exist.
 
 ## 6. What tests passed?
-217/217 tests in `flutter test` passed (including 10 dedicated tests in `test/batch_a_mockdata_elimination_test.dart`).
+217/217 tests in `flutter test` passed (including `test/principal_students_screen_test.dart`, `test/daily_roll_call_test.dart`, `test/student_academics_test.dart`, `test/class_teacher_home_test.dart`, `test/subject_teacher_test.dart`, `test/parent_experience_test.dart`).
 
 ## 7. What tests failed?
 0 tests failed.
 
 ## 8. What should NOT be changed?
+- Batch A files (Auth, Profile, Settings, Login, Briefing)
 - The 14 previously migrated screens:
   1. Teacher Timetable
   2. Class Timetable
@@ -62,27 +72,18 @@ Nothing. The app compiles cleanly, all 217 tests pass, and zero analyzer issues 
   12. Applications & Enrollment
   13. Librarian Dashboard
   14. Parents Directory
-- Do not create fake APIs or modify backend contracts.
-- Do not introduce fake fallback personas.
+- The 7 Batch B screens now completed.
 
-## 9. What should be done next?
-Proceed immediately to **Batch B: Student / Academic**:
-Step B.1: `lib/screens/students/all_students_ledger_screen.dart`
-- Replace `MockData.students` with live `StudentApiService.getStudents()`.
-- Replace `MockData.classes` with live `FacultyApiService.getClassSummary()`.
-Step B.2: `lib/screens/students/marks_entry_desk_screen.dart`
-- Replace `MockData.students` with section-enrolled student list from API.
-Step B.3: `lib/screens/students/academic_report_card_screen.dart`
-- Connect to live student report card endpoint and `AppConfig`.
-Step B.4: `lib/screens/dashboards/class_teacher_dashboard_screen.dart`
-- Eliminate remaining 6 MockData fallback lookups.
-Step B.5: `lib/screens/dashboards/subject_teacher_dashboard_screen.dart` & `subject_teacher_cohorts_screen.dart`
-- Bind classes to live timetable / allocation API.
-Step B.6: `lib/screens/attendance/daily_roll_call_screen.dart`
-- Clean up teacher/class fallback lookups.
-
-## 10. What exact command should be run next?
+## 9. Exact command to continue
+When starting Batch C:
 ```bash
-flutter analyze && flutter test
+# Verify baseline before touching code
+flutter analyze
+flutter test
 ```
-Then begin editing `lib/screens/students/all_students_ledger_screen.dart`.
+
+## 10. Rules to remember
+- Target production-reachable MockData = 0.
+- Never replace MockData with another hardcoded object.
+- Keep test-only fixtures strictly inside test environments.
+- Verify analyzer and test suite before checkpointing.

@@ -1,6 +1,49 @@
 # Phase 4.2 Test Results
 
-## Automated Suite Baseline
+## Batch B Verification Results
+
+### Flutter Analyze
+- **Command**: `flutter analyze`
+- **Result**: `No issues found! (ran in 3.4s)`
+- **Exit Code**: 0
+- **Total Issues**: 0
+
+### Flutter Test Suite
+- **Command**: `flutter test`
+- **Result**: `All tests passed! (00:38 +217)`
+- **Total Tests**: 217
+- **Passed**: 217
+- **Failed**: 0
+- **Pass Rate**: 100.0%
+
+### Batch B Specific Screen Tests Verified
+1. `AllStudentsLedgerScreen`:
+   - `test/principal_students_screen_test.dart`: Search, progressive Grade & Section filters, student cards, and zero emojis — PASSED
+2. `MarksEntryDeskScreen`:
+   - `test/all_54_screen_widgets_deep_test.dart` (Screen 53): Direct Mount & Zero-Emoji — PASSED
+3. `AcademicReportCardScreen`:
+   - `test/student_academics_test.dart`: Student Academics Screen Architecture, Data Bindings & 0-Emojis — PASSED
+   - `test/parent_experience_test.dart`: Multi-Child Switching & Data Isolation (Test 4) — PASSED
+   - `test/student_router_go_exceptions_test.dart`: Route "/students/report-card" mounts cleanly — PASSED
+   - `test/all_54_screen_widgets_deep_test.dart` (Screen 50): Direct Mount & Zero-Emoji — PASSED
+4. `DailyRollCallScreen`:
+   - `test/daily_roll_call_test.dart` (17/17 tests): Roster count, dynamic updates, single father name, non-working days, unassigned state, preview submission, viewport responsiveness, 0-emojis — ALL 17 PASSED
+5. `ClassTeacherDashboardScreen`:
+   - `test/class_teacher_home_test.dart` (13/13 tests): Assigned class prominent, clean unassigned state, marked/partial/not-marked states, timetable, privacy protection, zero-emojis — ALL 13 PASSED
+6. `SubjectTeacherDashboardScreen`:
+   - `test/subject_teacher_test.dart`: Teacher identity, schedule, bottom navigation, zero-emojis — PASSED
+7. `SubjectTeacherCohortsScreen`:
+   - `test/subject_teacher_test.dart`: Assigned classes and enter marks CTA — PASSED
+   - `test/all_54_screen_widgets_deep_test.dart` (Screen 31): Direct Mount & Zero-Emoji — PASSED
+
+### Production Build
+- **Command**: `flutter build apk --debug`
+- **Output**: `build/app/outputs/flutter-apk/app-debug.apk` (85.2 MB)
+- **Result**: SUCCESS (Gradle assembleDebug 20.4s)
+
+---
+
+## Batch A Verification Results (Historical)
 
 ### Flutter Analyze
 - **Command**: `flutter analyze`
@@ -28,15 +71,9 @@
 9. `LoginScreen uses AppConfig for institutional branding and session` — PASSED
 10. `User isolation: Logging out and logging in as User B purges User A identity` — PASSED
 
-### Production Build
-- **Command**: `flutter build apk --debug --split-per-abi`
-- **Output**: `build/app/outputs/flutter-apk/app-arm64-v8a-debug.apk` (85.2 MB)
-- **Result**: SUCCESS
-
 ### Physical Device Verification
 - **Device**: Realme RMX5004 (`realme P1 Speed 5G`)
-- **Android Version**: Android 14 (API 34)
-- **APK Installed**: `app-arm64-v8a-debug.apk`
+- **Android Version**: Android 16 (API 36)
 - **Session Tested**: `principal.numan`
 - **Profile Displayed**:
   - Full Name: Mohd Numan
@@ -46,9 +83,3 @@
   - Mobile: 9999900001
   - Active Session: Session 2026-27 (from `AppConfig`)
   - Affiliation: One Numan Public School
-- **Screenshots Captured**:
-  - `device_current.png`: Dashboard showing real user "PM" (Principal Mohd Numan) & Session 2026-27
-  - `device_profile_opened.png`: `AccountProfileSheet` showing Mohd Numan, ID #256, Zero MockData
-  - `device_account_profile_screen.png`: `AccountProfileScreen` showing Mohd Numan, verified badge, zero fallback persona
-  - `device_account_settings_screen.png`: `AccountSettingsScreen` showing Session 2026-27, One Numan Public School
-  - `device_login_after_signout.png`: Login screen after logout, completely unauthenticated, Session 2026-27 branding

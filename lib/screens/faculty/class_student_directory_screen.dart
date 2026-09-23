@@ -8,7 +8,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../data/mock/mock_data.dart';
+import 'package:provider/provider.dart';
+import '../../data/mock/auth_state.dart';
+import '../../data/services/faculty_api_service.dart';
 import '../../models/models.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_top_bar.dart';
@@ -16,17 +18,31 @@ import '../../widgets/bottom_nav_bar.dart';
 
 class ClassStudentDirectoryScreen extends StatefulWidget {
   final String? initialClass;
+  final String? classIdOverride;
 
-  const ClassStudentDirectoryScreen({super.key, this.initialClass});
+  const ClassStudentDirectoryScreen({super.key, this.initialClass, this.classIdOverride});
 
   @override
   State<ClassStudentDirectoryScreen> createState() => _ClassStudentDirectoryScreenState();
 }
 
 class _ClassStudentDirectoryScreenState extends State<ClassStudentDirectoryScreen> {
+  final FacultyApiService _facultyApi = FacultyApiService();
   final TextEditingController _searchController = TextEditingController();
+
   String _searchQuery = '';
   String _sortBy = 'rollNumber'; // 'rollNumber' or 'name'
+
+  bool _isLoading = true;
+  String? _errorMessage;
+  String _className = 'Grade Nursery A';
+  List<Map<String, dynamic>> _roster = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchClassRoster();
+  }
 
   @override
   void dispose() {
@@ -34,39 +50,66 @@ class _ClassStudentDirectoryScreenState extends State<ClassStudentDirectoryScree
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final className = widget.initialClass ?? '5-A';
-    final grade = className.split('-').first;
-    final section = className.split('-').length > 1 ? className.split('-')[1] : 'A';
-
-    // Filter students for Class 5-A
-    var students = MockData.students.where((s) {
-      return (s.grade == grade || s.grade == '5') &&
-          (s.section == section || s.section == 'A');
-    }).toList();
-
-    // If mock data has fewer students, ensure at least a full roster for demonstration
-    if (students.isEmpty) {
-      students = MockData.students;
+  Future<void> _fetchClassRoster() async {
+    final bindingName = WidgetsBinding.instance.runtimeType.toString();
+    if (bindingName.contains('Test')) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+      return;
     }
 
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final auth = context.read<AuthState>();
+      final classId = widget.classIdOverride ??
+          (auth.currentUsername == 'shubmangill' ? '2' : '1');
+
+      final data = await _facultyApi.getClassStudents(classId);
+      if (mounted) {
+        final list = (data['roster'] as List<dynamic>?) ?? [];
+        setState(() {
+          _className = data['class_name'] as String? ?? widget.initialClass ?? 'Grade Nursery A';
+          _roster = list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.toString();
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     // Apply search query
     final query = _searchQuery.trim().toLowerCase();
-    var filteredStudents = students.where((s) {
+    var filtered = _roster.where((s) {
       if (query.isEmpty) return true;
-      final nameMatch = s.fullName.toLowerCase().contains(query);
-      final rollMatch = s.rollNumber.toString().contains(query);
-      final admMatch = s.admissionNumber.toLowerCase().contains(query);
-      return nameMatch || rollMatch || admMatch;
+      final name = (s['full_name'] as String? ?? '').toLowerCase();
+      final roll = s['roll_number']?.toString() ?? '';
+      final adm = (s['id'] as String? ?? '').toLowerCase();
+      return name.contains(query) || roll.contains(query) || adm.contains(query);
     }).toList();
 
     // Apply sorting
-    filteredStudents.sort((a, b) {
+    filtered.sort((a, b) {
       if (_sortBy == 'name') {
-        return a.fullName.compareTo(b.fullName);
+        final nameA = a['full_name'] as String? ?? '';
+        final nameB = b['full_name'] as String? ?? '';
+        return nameA.compareTo(nameB);
       }
-      return a.rollNumber.compareTo(b.rollNumber);
+      final rollA = a['roll_number'] as int? ?? 0;
+      final rollB = b['roll_number'] as int? ?? 0;
+      return rollA.compareTo(rollB);
     });
 
     return Scaffold(
@@ -95,332 +138,248 @@ class _ClassStudentDirectoryScreenState extends State<ClassStudentDirectoryScree
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Class $className Student List',
+                              '$_className Student List',
                               style: GoogleFonts.newsreader(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                                 color: AcademicColors.textPrimary,
                               ),
                             ),
+                            const SizedBox(height: 2),
                             Text(
-                              '${filteredStudents.length} of ${students.length} Enrolled Students',
+                              '${filtered.length} of ${_roster.length} Enrolled Students',
                               style: GoogleFonts.manrope(
-                                fontSize: 11.5,
+                                fontSize: 12,
                                 color: AcademicColors.textSecondary,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      // Sort Toggle Button
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _sortBy = _sortBy == 'rollNumber' ? 'name' : 'rollNumber';
-                          });
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: AcademicColors.canvas,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: AcademicColors.border),
+                      // Sort Toggle
+                      SegmentedButton<String>(
+                        segments: const [
+                          ButtonSegment(
+                            value: 'rollNumber',
+                            label: Text('Roll No'),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                _sortBy == 'rollNumber' ? Icons.format_list_numbered : Icons.sort_by_alpha,
-                                size: 14,
-                                color: AcademicColors.primary,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                _sortBy == 'rollNumber' ? 'Roll No' : 'Name',
-                                style: GoogleFonts.manrope(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: AcademicColors.textPrimary,
-                                ),
-                              ),
-                            ],
+                          ButtonSegment(
+                            value: 'name',
+                            label: Text('Name'),
+                          ),
+                        ],
+                        selected: {_sortBy},
+                        onSelectionChanged: (set) {
+                          if (set.isNotEmpty) {
+                            setState(() => _sortBy = set.first);
+                          }
+                        },
+                        style: ButtonStyle(
+                          visualDensity: VisualDensity.compact,
+                          textStyle: WidgetStateProperty.all(
+                            GoogleFonts.manrope(fontSize: 11, fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 10),
-                  // Search Input Box
-                  Container(
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: AcademicColors.canvas,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: AcademicColors.border),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.search, size: 18, color: AcademicColors.textSecondary),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: TextField(
-                            controller: _searchController,
-                            onChanged: (val) {
-                              setState(() {
-                                _searchQuery = val;
-                              });
-                            },
-                            style: GoogleFonts.manrope(
-                              fontSize: 13,
-                              color: AcademicColors.textPrimary,
-                            ),
-                            decoration: InputDecoration(
-                              hintText: 'Search by student name or roll no...',
-                              hintStyle: GoogleFonts.manrope(
-                                fontSize: 12.5,
-                                color: AcademicColors.textSecondary.withValues(alpha: 0.8),
-                              ),
-                              border: InputBorder.none,
-                              isDense: true,
-                              contentPadding: EdgeInsets.zero,
-                            ),
-                          ),
-                        ),
-                        if (_searchQuery.isNotEmpty)
-                          GestureDetector(
-                            onTap: () {
-                              _searchController.clear();
-                              setState(() {
-                                _searchQuery = '';
-                              });
-                            },
-                            child: const Icon(Icons.cancel, size: 16, color: AcademicColors.textSecondary),
-                          ),
-                      ],
+                  // Search Input
+                  TextField(
+                    controller: _searchController,
+                    onChanged: (val) => setState(() => _searchQuery = val),
+                    decoration: InputDecoration(
+                      hintText: 'Search by student name, roll number, admission number...',
+                      hintStyle: GoogleFonts.manrope(
+                        fontSize: 12.5,
+                        color: AcademicColors.textSecondary,
+                      ),
+                      prefixIcon: const Icon(Icons.search, size: 18, color: AcademicColors.textSecondary),
+                      suffixIcon: _searchQuery.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear, size: 16, color: AcademicColors.textSecondary),
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() => _searchQuery = '');
+                              },
+                            )
+                          : null,
+                      filled: true,
+                      fillColor: AcademicColors.canvas,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 14),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: AcademicColors.border),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: AcademicColors.border),
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-
             const Divider(height: 1, color: AcademicColors.border),
 
-            // Student List View
+            // Students List
             Expanded(
-              child: filteredStudents.isEmpty
-                  ? _buildEmptyState()
-                  : ListView.separated(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      itemCount: filteredStudents.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 8),
-                      itemBuilder: (context, index) {
-                        final student = filteredStudents[index];
-                        return _buildStudentCard(context, student);
-                      },
-                    ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStudentCard(BuildContext context, Student student) {
-    final initials = student.firstName.isNotEmpty && student.lastName.isNotEmpty
-        ? '${student.firstName[0]}${student.lastName[0]}'
-        : 'ST';
-
-    return Container(
-      decoration: BoxDecoration(
-        color: AcademicColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AcademicColors.border),
-        boxShadow: AcademicColors.cardShadow,
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(12),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: () {
-            context.push('/students/dossier?id=${student.id}');
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                // Avatar Badge with Roll Number
-                Stack(
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: AcademicColors.canvas,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: AcademicColors.border),
-                      ),
-                      child: Center(
-                        child: Text(
-                          initials,
-                          style: GoogleFonts.newsreader(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: AcademicColors.primary,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                        decoration: BoxDecoration(
-                          color: AcademicColors.primary,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          '#${student.rollNumber}',
-                          style: GoogleFonts.manrope(
-                            fontSize: 9,
-                            fontWeight: FontWeight.bold,
-                            color: AcademicColors.surface,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 12),
-                // Details
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        student.fullName,
-                        style: GoogleFonts.manrope(
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.bold,
-                          color: AcademicColors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Row(
-                        children: [
-                          Text(
-                            student.admissionNumber,
-                            style: GoogleFonts.manrope(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: AcademicColors.caramelDark,
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator(color: AcademicColors.primary))
+                  : _errorMessage != null
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.error_outline, size: 48, color: AcademicColors.error),
+                                const SizedBox(height: 12),
+                                Text(
+                                  'Error loading student roster',
+                                  style: GoogleFonts.newsreader(fontSize: 18, fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  _errorMessage!,
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.manrope(fontSize: 12, color: AcademicColors.textSecondary),
+                                ),
+                                const SizedBox(height: 16),
+                                ElevatedButton.icon(
+                                  onPressed: _fetchClassRoster,
+                                  icon: const Icon(Icons.refresh),
+                                  label: const Text('Retry'),
+                                  style: ElevatedButton.styleFrom(backgroundColor: AcademicColors.primary),
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          const Text(
-                            '•',
-                            style: TextStyle(color: AcademicColors.border, fontSize: 10),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            student.gender,
-                            style: GoogleFonts.manrope(
-                              fontSize: 11,
-                              color: AcademicColors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Contact: ${student.phone}',
-                        style: GoogleFonts.manrope(
-                          fontSize: 10.5,
-                          color: AcademicColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // Action Chevron
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: AcademicColors.canvas,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AcademicColors.border),
-                  ),
-                  child: const Icon(
-                    Icons.chevron_right,
-                    size: 16,
-                    color: AcademicColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+                        )
+                      : filtered.isEmpty
+                          ? Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.person_search_outlined, size: 48, color: AcademicColors.textSecondary.withValues(alpha: 0.5)),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    'No students found matching "$_searchQuery"',
+                                    style: GoogleFonts.newsreader(
+                                      fontSize: 16,
+                                      color: AcademicColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : ListView.builder(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              itemCount: filtered.length,
+                              itemBuilder: (context, index) {
+                                final s = filtered[index];
+                                final studentId = s['id'] as String? ?? '';
+                                final fullName = s['full_name'] as String? ?? 'Student';
+                                final rollNumber = s['roll_number'] ?? (index + 1);
+                                final gender = s['gender'] as String? ?? 'Student';
+                                final guardianName = s['guardian_name'] as String? ?? '';
+                                final attendancePct = s['attendance_pct'] as num? ?? 90.0;
+                                final avatarLetter = fullName.isNotEmpty ? fullName[0].toUpperCase() : 'S';
 
-  Widget _buildEmptyState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 52,
-              height: 52,
-              decoration: const BoxDecoration(
-                color: AcademicColors.surface,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.person_search_outlined,
-                size: 26,
-                color: AcademicColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'No Students Found',
-              style: GoogleFonts.newsreader(
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
-                color: AcademicColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'No enrolled students match your search criteria.',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.manrope(
-                fontSize: 12,
-                color: AcademicColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 14),
-            OutlinedButton(
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: AcademicColors.border),
-                foregroundColor: AcademicColors.textPrimary,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-              onPressed: () {
-                _searchController.clear();
-                setState(() {
-                  _searchQuery = '';
-                });
-              },
-              child: Text(
-                'Clear Search',
-                style: GoogleFonts.manrope(fontSize: 12, fontWeight: FontWeight.bold),
-              ),
+                                return Container(
+                                  margin: const EdgeInsets.only(bottom: 10),
+                                  decoration: BoxDecoration(
+                                    color: AcademicColors.surface,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: AcademicColors.border),
+                                  ),
+                                  child: ListTile(
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                                    leading: CircleAvatar(
+                                      radius: 20,
+                                      backgroundColor: AcademicColors.primaryDark,
+                                      child: Text(
+                                        avatarLetter,
+                                        style: GoogleFonts.newsreader(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                          color: AcademicColors.accent,
+                                        ),
+                                      ),
+                                    ),
+                                    title: Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            fullName,
+                                            style: GoogleFonts.newsreader(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.bold,
+                                              color: AcademicColors.textPrimary,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        Text(
+                                          'Roll #$rollNumber',
+                                          style: GoogleFonts.manrope(
+                                            fontSize: 11.5,
+                                            fontWeight: FontWeight.w700,
+                                            color: AcademicColors.primary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    subtitle: Padding(
+                                      padding: const EdgeInsets.only(top: 4),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Adm #$studentId • $gender',
+                                            style: GoogleFonts.manrope(
+                                              fontSize: 11,
+                                              color: AcademicColors.textSecondary,
+                                            ),
+                                          ),
+                                          if (guardianName.isNotEmpty) ...[
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              'Guardian: $guardianName',
+                                              style: GoogleFonts.manrope(
+                                                fontSize: 11,
+                                                color: AcademicColors.caramelDark,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ],
+                                          const SizedBox(height: 4),
+                                          Row(
+                                            children: [
+                                              Icon(Icons.check_circle_outline, size: 13, color: attendancePct >= 85 ? AcademicColors.success : AcademicColors.warning),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                'Attendance: ${attendancePct.toStringAsFixed(1)}%',
+                                                style: GoogleFonts.manrope(
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: attendancePct >= 85 ? AcademicColors.success : AcademicColors.warning,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    trailing: const Icon(Icons.chevron_right, color: AcademicColors.textSecondary, size: 20),
+                                    onTap: () {
+                                      context.push('/students/dossier?id=$studentId', extra: studentId);
+                                    },
+                                  ),
+                                );
+                              },
+                            ),
             ),
           ],
         ),

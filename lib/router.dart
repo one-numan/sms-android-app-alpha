@@ -327,14 +327,14 @@ GoRouter createOnpsRouter(AuthState authState) {
       GoRoute(
         path: '/students/dossier',
         builder: (context, state) {
-          final studentId = state.uri.queryParameters['id'] ?? 'ADM-2024-0412';
+          final studentId = (state.extra as String?) ?? state.uri.queryParameters['id'] ?? '1';
           return StudentDossierScreen(studentId: studentId);
         },
       ),
       GoRoute(
         path: '/students/report-card',
         builder: (context, state) {
-          final studentId = state.uri.queryParameters['id'] ?? 'ADM-2024-0412';
+          final studentId = (state.extra as String?) ?? state.uri.queryParameters['id'] ?? '1';
           return AcademicReportCardScreen(studentId: studentId);
         },
       ),
@@ -348,7 +348,10 @@ GoRouter createOnpsRouter(AuthState authState) {
       ),
       GoRoute(
         path: '/students/id-card',
-        builder: (context, state) => const DigitalStudentIdCardScreen(),
+        builder: (context, state) {
+          final studentId = (state.extra as String?) ?? state.uri.queryParameters['id'] ?? '1';
+          return DigitalStudentIdCardScreen(studentId: studentId);
+        },
       ),
 
       // Attendance
@@ -633,6 +636,10 @@ GoRouter createOnpsRouter(AuthState authState) {
         builder: (context, state) => const AnnouncementApprovalScreen(),
       ),
       GoRoute(
+        path: '/announcements/approval',
+        builder: (context, state) => const AnnouncementApprovalScreen(),
+      ),
+      GoRoute(
         path: '/attendance/student/matrix',
         builder: (context, state) => const AttendanceMatrixScreen(),
       ),
@@ -642,6 +649,10 @@ GoRouter createOnpsRouter(AuthState authState) {
       ),
       GoRoute(
         path: '/parents/directory',
+        builder: (context, state) => const ParentsDirectoryScreen(),
+      ),
+      GoRoute(
+        path: '/admin/parents',
         builder: (context, state) => const ParentsDirectoryScreen(),
       ),
       GoRoute(

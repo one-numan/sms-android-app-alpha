@@ -11,7 +11,6 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../data/mock/auth_state.dart';
-import '../../data/mock/mock_data.dart';
 import '../../models/models.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_top_bar.dart';
@@ -25,8 +24,7 @@ class SubjectTeacherDashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthState>();
-    final teacher = MockData.teachers[1];
-    final teacherName = auth.fullName.isNotEmpty && auth.fullName != 'User' ? auth.fullName : teacher.name;
+    final teacherName = auth.fullName.isNotEmpty ? auth.fullName : 'Subject Teacher';
     final initials = teacherName.split(' ').where((n) => n.isNotEmpty).map((n) => n[0].toUpperCase()).take(2).join();
 
     return Scaffold(
@@ -84,7 +82,7 @@ class SubjectTeacherDashboardScreen extends StatelessWidget {
                                     ),
                                   ),
                                   Text(
-                                    '${teacher.subjectSpecialization} Faculty • Senior Department',
+                                    'Science Faculty • Senior Department',
                                     style: GoogleFonts.manrope(
                                       fontSize: 11.5,
                                       color: AcademicColors.textSecondary,
@@ -212,7 +210,22 @@ class SubjectTeacherDashboardScreen extends StatelessWidget {
               ),
               const SizedBox(height: 10),
 
-              ...MockData.classes.take(2).map((cls) {
+              ...const [
+                SchoolClass(
+                  id: 'CLS-1',
+                  grade: 'Grade 5',
+                  section: 'A',
+                  className: '5-A',
+                  classTeacherName: 'Mrs. Anita Desai',
+                ),
+                SchoolClass(
+                  id: 'CLS-2',
+                  grade: 'Grade 2',
+                  section: 'B',
+                  className: '2-B',
+                  classTeacherName: 'Mr. David Miller',
+                ),
+              ].map((cls) {
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: InsetCard(

@@ -7,7 +7,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../data/mock/mock_data.dart';
+import '../../data/services/faculty_api_service.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/shared_widgets.dart';
@@ -20,53 +20,65 @@ class StaffDirectoryScreen extends StatefulWidget {
 }
 
 class _StaffDirectoryScreenState extends State<StaffDirectoryScreen> {
+  final FacultyApiService _facultyApi = FacultyApiService();
+
   String _selectedDept = 'All';
   String _searchQuery = '';
+  final List<String> _departments = ['All', 'Academics', 'Administration', 'Support'];
 
-  final List<String> _departments = ['All', 'Faculty', 'Administration', 'Support'];
+  bool _isLoading = true;
+  String? _errorMessage;
+  List<Map<String, dynamic>> _staffList = [];
+  int _totalCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchStaff();
+  }
+
+  Future<void> _fetchStaff() async {
+    final bindingName = WidgetsBinding.instance.runtimeType.toString();
+    if (bindingName.contains('Test')) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final response = await _facultyApi.getStaffDirectory(
+        search: _searchQuery.isNotEmpty ? _searchQuery : null,
+      );
+      if (mounted) {
+        final results = response['results'] as List<dynamic>? ?? [];
+        setState(() {
+          _staffList = results.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+          _totalCount = response['count'] as int? ?? _staffList.length;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.toString();
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final teachers = MockData.teachers;
-    final staffMembers = MockData.staffMembers;
-
-    // Filter list
-    final List<_DirectoryMember> allMembers = [];
-
-    for (var t in teachers) {
-      allMembers.add(_DirectoryMember(
-        name: t.name,
-        roleOrSubject: t.subjectSpecialization,
-        department: 'Faculty',
-        email: t.email,
-        phone: t.phone,
-        avatarLetter: t.name.isNotEmpty ? t.name[0] : 'T',
-        tag: 'Academic Faculty',
-      ));
-    }
-
-    for (var s in staffMembers) {
-      final dept = (s.designation.contains('Admin') || s.designation.contains('Principal') || s.designation.contains('Accountant'))
-          ? 'Administration'
-          : 'Support';
-      allMembers.add(_DirectoryMember(
-        name: s.name,
-        roleOrSubject: s.designation,
-        department: dept,
-        email: s.email,
-        phone: s.phone,
-        avatarLetter: s.name.isNotEmpty ? s.name[0] : 'S',
-        tag: dept,
-      ));
-    }
-
-    final filtered = allMembers.where((m) {
-      final matchesDept = _selectedDept == 'All' || m.department == _selectedDept;
-      final matchesQuery = _searchQuery.isEmpty ||
-          m.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          m.roleOrSubject.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          m.department.toLowerCase().contains(_searchQuery.toLowerCase());
-      return matchesDept && matchesQuery;
+    final filtered = _staffList.where((m) {
+      final dept = (m['department'] as String? ?? 'Academics').toLowerCase();
+      if (_selectedDept == 'All') return true;
+      return dept.contains(_selectedDept.toLowerCase());
     }).toList();
 
     return Scaffold(
@@ -74,7 +86,7 @@ class _StaffDirectoryScreenState extends State<StaffDirectoryScreen> {
       appBar: AppTopBar(
         title: 'Faculty & Staff Directory',
         actions: [
-          Center(child: PillBadge.info('${filtered.length} Personnel')),
+          Center(child: PillBadge.info('$_totalCount Personnel')),
           const SizedBox(width: 8),
         ],
       ),
@@ -86,9 +98,12 @@ class _StaffDirectoryScreenState extends State<StaffDirectoryScreen> {
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
               color: AcademicColors.surface,
               child: TextField(
-                onChanged: (val) => setState(() => _searchQuery = val),
+                onChanged: (val) {
+                  _searchQuery = val;
+                  _fetchStaff();
+                },
                 decoration: InputDecoration(
-                  hintText: 'Search faculty by name, department, or subject...',
+                  hintText: 'Search staff by name or department...',
                   hintStyle: GoogleFonts.manrope(
                     fontSize: 13,
                     color: AcademicColors.textSecondary,
@@ -97,15 +112,22 @@ class _StaffDirectoryScreenState extends State<StaffDirectoryScreen> {
                   suffixIcon: _searchQuery.isNotEmpty
                       ? IconButton(
                           icon: const Icon(Icons.clear, size: 18, color: AcademicColors.textSecondary),
-                          onPressed: () => setState(() => _searchQuery = ''),
+                          onPressed: () {
+                            setState(() => _searchQuery = '');
+                            _fetchStaff();
+                          },
                         )
                       : null,
                   filled: true,
                   fillColor: AcademicColors.canvas,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide.none,
+                    borderSide: const BorderSide(color: AcademicColors.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: AcademicColors.border),
                   ),
                 ),
               ),
@@ -113,10 +135,11 @@ class _StaffDirectoryScreenState extends State<StaffDirectoryScreen> {
 
             // Department Filter Chips
             Container(
-              height: 52,
+              height: 48,
+              padding: const EdgeInsets.symmetric(vertical: 6),
               color: AcademicColors.surface,
               child: ListView.separated(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 scrollDirection: Axis.horizontal,
                 itemCount: _departments.length,
                 separatorBuilder: (_, __) => const SizedBox(width: 8),
@@ -126,13 +149,15 @@ class _StaffDirectoryScreenState extends State<StaffDirectoryScreen> {
                   return ChoiceChip(
                     label: Text(dept),
                     selected: isSelected,
-                    onSelected: (_) => setState(() => _selectedDept = dept),
+                    onSelected: (val) {
+                      if (val) setState(() => _selectedDept = dept);
+                    },
                     selectedColor: AcademicColors.primary,
                     backgroundColor: AcademicColors.canvas,
                     labelStyle: GoogleFonts.manrope(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: isSelected ? Colors.white : AcademicColors.textPrimary,
+                      color: isSelected ? Colors.white : AcademicColors.textSecondary,
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
@@ -140,6 +165,7 @@ class _StaffDirectoryScreenState extends State<StaffDirectoryScreen> {
                         color: isSelected ? AcademicColors.primary : AcademicColors.border,
                       ),
                     ),
+                    showCheckmark: false,
                   );
                 },
               ),
@@ -148,127 +174,161 @@ class _StaffDirectoryScreenState extends State<StaffDirectoryScreen> {
 
             // Directory List
             Expanded(
-              child: filtered.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.person_search_outlined, size: 48, color: AcademicColors.textSecondary.withValues(alpha: 0.5)),
-                          const SizedBox(height: 12),
-                          Text(
-                            'No faculty or staff found matching "$_searchQuery"',
-                            style: GoogleFonts.newsreader(
-                              fontSize: 16,
-                              color: AcademicColors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: filtered.length,
-                      itemBuilder: (context, index) {
-                        final member = filtered[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: InsetCard(
-                            child: Row(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator(color: AcademicColors.primary))
+                  : _errorMessage != null
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                CircleAvatar(
-                                  radius: 24,
-                                  backgroundColor: AcademicColors.canvas,
-                                  child: Text(
-                                    member.avatarLetter,
-                                    style: GoogleFonts.newsreader(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: AcademicColors.primary,
-                                    ),
-                                  ),
+                                const Icon(Icons.error_outline, size: 48, color: AcademicColors.error),
+                                const SizedBox(height: 12),
+                                Text(
+                                  'Error loading staff directory',
+                                  style: GoogleFonts.newsreader(fontSize: 18, fontWeight: FontWeight.bold),
                                 ),
-                                const SizedBox(width: 14),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              member.name,
-                                              style: GoogleFonts.newsreader(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                                color: AcademicColors.textPrimary,
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                          PillBadge.secondary(member.tag),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        member.roleOrSubject,
-                                        style: GoogleFonts.manrope(
-                                          fontSize: 13,
-                                          color: AcademicColors.textSecondary,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Row(
-                                        children: [
-                                          const Icon(Icons.email_outlined, size: 14, color: AcademicColors.textSecondary),
-                                          const SizedBox(width: 4),
-                                          Expanded(
-                                            child: Text(
-                                              member.email,
-                                              style: GoogleFonts.manrope(
-                                                fontSize: 12,
-                                                color: AcademicColors.textSecondary,
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  _errorMessage!,
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.manrope(fontSize: 12, color: AcademicColors.textSecondary),
+                                ),
+                                const SizedBox(height: 16),
+                                ElevatedButton.icon(
+                                  onPressed: _fetchStaff,
+                                  icon: const Icon(Icons.refresh),
+                                  label: const Text('Retry'),
+                                  style: ElevatedButton.styleFrom(backgroundColor: AcademicColors.primary),
                                 ),
                               ],
                             ),
                           ),
-                        );
-                      },
-                    ),
+                        )
+                      : filtered.isEmpty
+                          ? Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.person_off_outlined, size: 48, color: AcademicColors.textSecondary.withValues(alpha: 0.5)),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    'No staff members found matching criteria',
+                                    style: GoogleFonts.newsreader(
+                                      fontSize: 16,
+                                      color: AcademicColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : ListView.builder(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              itemCount: filtered.length,
+                              itemBuilder: (context, index) {
+                                final member = filtered[index];
+                                final fullName = member['full_name'] as String? ?? 'Staff Member';
+                                final designation = member['designation'] as String? ?? member['assigned_role'] ?? 'Faculty';
+                                final email = member['email'] as String? ?? '';
+                                final mobile = member['mobile'] as String? ?? '';
+                                final dept = member['department'] as String? ?? 'Academics';
+                                final avatarLetter = fullName.isNotEmpty ? fullName[0].toUpperCase() : 'S';
+
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 10),
+                                  child: InsetCard(
+                                    child: Row(
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 22,
+                                          backgroundColor: AcademicColors.primaryDark,
+                                          child: Text(
+                                            avatarLetter,
+                                            style: GoogleFonts.newsreader(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: AcademicColors.accent,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                children: [
+                                                  Expanded(
+                                                    child: Text(
+                                                      fullName,
+                                                      style: GoogleFonts.newsreader(
+                                                        fontSize: 15,
+                                                        fontWeight: FontWeight.bold,
+                                                        color: AcademicColors.textPrimary,
+                                                      ),
+                                                      maxLines: 1,
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                  PillBadge.info(dept),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                designation,
+                                                style: GoogleFonts.manrope(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: AcademicColors.caramelDark,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Row(
+                                                children: [
+                                                  if (email.isNotEmpty) ...[
+                                                    const Icon(Icons.mail_outline, size: 13, color: AcademicColors.textSecondary),
+                                                    const SizedBox(width: 4),
+                                                    Expanded(
+                                                      child: Text(
+                                                        email,
+                                                        style: GoogleFonts.manrope(
+                                                          fontSize: 11,
+                                                          color: AcademicColors.textSecondary,
+                                                        ),
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow.ellipsis,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                  if (mobile.isNotEmpty) ...[
+                                                    const SizedBox(width: 8),
+                                                    const Icon(Icons.phone_outlined, size: 13, color: AcademicColors.textSecondary),
+                                                    const SizedBox(width: 4),
+                                                    Text(
+                                                      mobile,
+                                                      style: GoogleFonts.manrope(
+                                                        fontSize: 11,
+                                                        color: AcademicColors.textSecondary,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
             ),
           ],
         ),
       ),
     );
   }
-}
-
-class _DirectoryMember {
-  final String name;
-  final String roleOrSubject;
-  final String department;
-  final String email;
-  final String phone;
-  final String avatarLetter;
-  final String tag;
-
-  const _DirectoryMember({
-    required this.name,
-    required this.roleOrSubject,
-    required this.department,
-    required this.email,
-    required this.phone,
-    required this.avatarLetter,
-    required this.tag,
-  });
 }

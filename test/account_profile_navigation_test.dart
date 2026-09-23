@@ -12,6 +12,9 @@ import 'package:sms_android_app_alpha/screens/dashboards/subject_teacher_dashboa
 Widget _buildWrapper(Widget child, [UserRole role = UserRole.parent]) {
   final authState = AuthState();
   authState.switchRole(role);
+  if (role == UserRole.parent) {
+    authState.login(role: UserRole.parent, username: 'rajesh.sharma');
+  }
   return ChangeNotifierProvider<AuthState>.value(
     value: authState,
     child: MaterialApp(

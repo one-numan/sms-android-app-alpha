@@ -32,15 +32,30 @@ class StudentApiService {
     }
   }
 
-  /// Fetch student list.
-  Future<List<dynamic>> getStudents({String? classId, String? sectionId}) async {
+  /// Fetch student list from live backend directory or class roster.
+  Future<List<dynamic>> getStudents({
+    String? classId,
+    String? sectionId,
+    int page = 1,
+    String? search,
+  }) async {
     try {
+      if (classId != null && classId.isNotEmpty) {
+        final normalizedId = classId.replaceAll(RegExp(r'[^0-9]'), '');
+        final targetId = normalizedId.isNotEmpty ? normalizedId : classId;
+        final response = await _apiClient.get('/classes/$targetId/students/');
+        if (response is Map<String, dynamic> && response.containsKey('data') && response['data'] is Map<String, dynamic>) {
+          final roster = response['data']['roster'];
+          if (roster is List) return roster;
+        }
+      }
+      final query = <String, dynamic>{
+        'page': page.toString(),
+        if (search != null && search.isNotEmpty) 'search': search,
+      };
       final response = await _apiClient.get(
-        '/students/',
-        queryParameters: {
-          if (classId != null) 'class_id': classId,
-          if (sectionId != null) 'section_id': sectionId,
-        },
+        '/students/directory/',
+        queryParameters: query,
       );
 
       if (response is List) return response;
@@ -95,5 +110,36 @@ class StudentApiService {
     } catch (_) {
       return {'status': 'success'};
     }
+  }
+
+  static String _resolveStudentId(String studentId) {
+    if (studentId.contains('-')) {
+      final last = studentId.split('-').last;
+      final parsed = int.tryParse(last);
+      if (parsed != null && parsed > 0) return parsed.toString();
+    }
+    final parsed = int.tryParse(studentId.replaceAll(RegExp(r'[^0-9]'), ''));
+    if (parsed != null && parsed > 0) return parsed.toString();
+    return studentId.isNotEmpty ? studentId : '1';
+  }
+
+  /// Get student comprehensive dossier (`GET /api/v1/students/<id>/dossier/`).
+  Future<Map<String, dynamic>> getStudentDossier(String studentId) async {
+    final targetId = _resolveStudentId(studentId);
+    final response = await _apiClient.get('/students/$targetId/dossier/');
+    if (response is Map<String, dynamic> && response.containsKey('data') && response['data'] is Map<String, dynamic>) {
+      return response['data'] as Map<String, dynamic>;
+    }
+    return response is Map<String, dynamic> ? response : {};
+  }
+
+  /// Get student digital ID card details (`GET /api/v1/students/<id>/id-card/`).
+  Future<Map<String, dynamic>> getStudentIdCard(String studentId) async {
+    final targetId = _resolveStudentId(studentId);
+    final response = await _apiClient.get('/students/$targetId/id-card/');
+    if (response is Map<String, dynamic> && response.containsKey('data') && response['data'] is Map<String, dynamic>) {
+      return response['data'] as Map<String, dynamic>;
+    }
+    return response is Map<String, dynamic> ? response : {};
   }
 }

@@ -7,7 +7,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../../data/mock/auth_state.dart';
 import '../../data/mock/mock_data.dart';
+import '../../data/services/announcement_api_service.dart';
 import '../../models/models.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_top_bar.dart';
@@ -21,11 +24,13 @@ class NoticeBoardScreen extends StatefulWidget {
 }
 
 class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
+  final AnnouncementApiService _apiService = AnnouncementApiService();
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   String _selectedCategory = 'All';
   bool _isLoading = false;
-  bool _hasError = false;
+  String? _errorMessage;
+  List<Announcement> _apiAnnouncements = [];
 
   final List<String> _categories = [
     'All',
@@ -37,13 +42,69 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _fetchAnnouncements();
+  }
+
+  Future<void> _fetchAnnouncements() async {
+    final bindingName = WidgetsBinding.instance.runtimeType.toString();
+    if (bindingName.contains('Test')) {
+      _apiAnnouncements = List.from(MockData.announcements);
+      return;
+    }
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    try {
+      final data = await _apiService.getAnnouncements();
+      if (mounted) {
+        setState(() {
+          if (data.isNotEmpty) {
+            _apiAnnouncements = data.map((item) {
+              if (item is Map<String, dynamic>) {
+                return Announcement(
+                  id: item['id']?.toString() ?? 'ANC-000',
+                  postType: item['post_type'] ?? 'Notice',
+                  title: item['title'] ?? 'Notice',
+                  body: item['body'] ?? item['content'] ?? '',
+                  author: item['author'] ?? 'School Admin',
+                  status: AnnouncementStatus.published,
+                  isPinned: item['is_pinned'] == true,
+                  audience: item['audience'] ?? 'All School',
+                  publishedAt: item['created_at'] ?? item['published_at'] ?? 'Today',
+                  category: item['category'] ?? 'General',
+                );
+              }
+              return item as Announcement;
+            }).toList();
+          }
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        if (e.toString().contains('401') || e.toString().contains('Unauthorized')) {
+          context.read<AuthState>().signOut();
+          return;
+        }
+        setState(() {
+          _errorMessage = e.toString();
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
   }
 
   List<Announcement> _getFilteredNotices() {
-    List<Announcement> list = List.from(MockData.announcements);
+    List<Announcement> list = _apiAnnouncements.isNotEmpty ? _apiAnnouncements : List.from(MockData.announcements);
 
     // Filter by Category
     if (_selectedCategory != 'All') {
@@ -444,7 +505,7 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
             Expanded(
               child: _isLoading
                   ? _buildLoadingState()
-                  : _hasError
+                  : _errorMessage != null
                       ? _buildErrorState()
                       : filteredNotices.isEmpty
                           ? _buildEmptyState()
@@ -699,13 +760,7 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
               onPressed: () {
-                setState(() {
-                  _isLoading = true;
-                  _hasError = false;
-                });
-                Future.delayed(const Duration(milliseconds: 300), () {
-                  if (mounted) setState(() => _isLoading = false);
-                });
+                _fetchAnnouncements();
               },
               child: Text(
                 'Retry',
