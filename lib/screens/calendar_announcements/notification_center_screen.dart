@@ -30,7 +30,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
       _NotificationItem(
         id: '1',
         title: 'Daily Attendance Recorded',
-        body: 'Your child Diya Sharma was marked PRESENT in morning roll call for Grade 5-A today.',
+        body: 'Your child was marked PRESENT in morning roll call for their assigned class today.',
         timestamp: '10 mins ago',
         category: 'Attendance',
         isRead: false,

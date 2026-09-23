@@ -97,9 +97,9 @@ class _DigitalStudentIdCardScreenState extends State<DigitalStudentIdCardScreen>
         (_idCardData['emergency_contact_relation'] != null
             ? 'EMERGENCY CONTACT (${(_idCardData['emergency_contact_relation'] as String).toUpperCase()})'
             : 'EMERGENCY CONTACT (FATHER)');
-    final emergencyName = _idCardData['emergency_contact_name'] as String? ?? 'Rajesh Sharma';
+    final emergencyName = _idCardData['emergency_contact_name'] as String? ?? 'Not Provided';
     final emergencyPhone = _idCardData['emergency_contact_phone'] as String? ??
-        _idCardData['emergency_contact'] as String? ?? '+91 98765 43210';
+        _idCardData['emergency_contact'] as String? ?? 'N/A';
 
     final initials = fullName.split(' ').where((w) => w.isNotEmpty).map((w) => w[0]).take(2).join().toUpperCase();
 
