@@ -1,0 +1,88 @@
+lib//router.dart:534:          final payment = MockData.feePayments.where((p) => p.id == id || p.receiptNumber == id).firstOrNull;
+lib//screens/attendance/daily_roll_call_screen.dart:826:        MockData.teachers.where((t) => t.name.toLowerCase() == resolvedName.toLowerCase() || t.id.toLowerCase() == resolvedName.toLowerCase()).firstOrNull ??
+lib//screens/attendance/daily_roll_call_screen.dart:845:        MockData.classes.cast<SchoolClass?>().firstWhere(
+lib//screens/library_transport_inventory/inventory_desk_screen.dart:39:    _items = List.from(MockData.inventory);
+lib//screens/library_transport_inventory/bus_transit_screen.dart:33:    _selectedRoute = MockData.routes.isNotEmpty
+lib//screens/library_transport_inventory/bus_transit_screen.dart:34:        ? MockData.routes.first
+lib//screens/library_transport_inventory/bus_transit_screen.dart:48:    final student = MockData.students.firstWhere(
+lib//screens/library_transport_inventory/bus_transit_screen.dart:50:      orElse: () => MockData.students.first,
+lib//screens/library_transport_inventory/bus_transit_screen.dart:355:              if (MockData.routes.length > 1) ...[
+lib//screens/library_transport_inventory/bus_transit_screen.dart:376:                      items: MockData.routes.map((r) {
+lib//screens/faculty/principal_teachers_screen.dart:37:    _teachersList = List<Teacher>.from(MockData.teachers);
+lib//screens/faculty/principal_teachers_screen.dart:55:    return MockData.classes.where((c) {
+lib//screens/faculty/principal_teachers_screen.dart:67:    for (final cls in MockData.classes) {
+lib//screens/faculty/principal_section_detail_screen.dart:64:    return MockData.classes
+lib//screens/faculty/principal_section_detail_screen.dart:91:    return MockData.teachers.firstWhere(
+lib//screens/faculty/principal_section_detail_screen.dart:124:    final matching = MockData.students.where((s) {
+lib//screens/faculty/principal_section_detail_screen.dart:222:    final slots = MockData.timetable.where((t) => t.className == cls.className).toList();
+lib//screens/faculty/faculty_allocation_screen.dart:61:      return MockData.classes;
+lib//screens/fees/fee_receipt_screen.dart:21:    final payment = MockData.feePayments.where(
+lib//screens/fees/fee_receipt_screen.dart:50:    final student = MockData.students.where(
+lib//screens/fees/fee_receipt_screen.dart:52:    ).firstOrNull ?? MockData.students.first;
+lib//screens/fees/fee_receipt_screen.dart:142:                            MockData.schoolName,
+lib//screens/fees/fee_receipt_screen.dart:151:                            MockData.campusAddress,
+lib//screens/admin/school_setup_screen.dart:56:                          MockData.schoolAbbr,
+lib//screens/admin/school_setup_screen.dart:69:                      MockData.schoolName,
+lib//screens/admin/school_setup_screen.dart:78:                      MockData.campusAddress,
+lib//screens/admin/school_setup_screen.dart:98:                    _ConfigRow(label: 'Active Academic Session', value: MockData.session),
+lib//screens/admin/unified_search_screen.dart:44:        : MockData.students.where((s) {
+lib//screens/admin/unified_search_screen.dart:53:        : MockData.teachers.where((t) {
+lib//screens/admin/unified_search_screen.dart:62:        : MockData.classes.where((c) {
+lib//screens/admin/unified_search_screen.dart:71:        : MockData.books.where((b) {
+lib//screens/admin/unified_search_screen.dart:80:        : MockData.announcements.where((a) {
+lib//screens/calendar_announcements/notice_board_screen.dart:53:      _apiAnnouncements = List.from(MockData.announcements);
+lib//screens/calendar_announcements/notice_board_screen.dart:107:    List<Announcement> list = _apiAnnouncements.isNotEmpty ? _apiAnnouncements : List.from(MockData.announcements);
+lib//screens/calendar_announcements/events_desk_screen.dart:33:    _events = List.from(MockData.events);
+lib//screens/calendar_announcements/academic_calendar_screen.dart:28:    final holidays = MockData.holidays;
+lib//screens/calendar_announcements/academic_calendar_screen.dart:29:    final events = MockData.events;
+lib//screens/students/all_students_ledger_screen.dart:70:    final matchingClasses = MockData.classes.where((c) => c.grade == grade).toList();
+lib//screens/students/all_students_ledger_screen.dart:314:    List<Student> list = List.from(MockData.students);
+lib//screens/students/marks_entry_desk_screen.dart:38:    for (final s in MockData.students) {
+lib//screens/students/marks_entry_desk_screen.dart:165:                itemCount: MockData.students.length,
+lib//screens/students/marks_entry_desk_screen.dart:167:                  final student = MockData.students[index];
+lib//screens/students/academic_report_card_screen.dart:41:        : MockData.students.firstWhere(
+lib//screens/students/academic_report_card_screen.dart:43:            orElse: () => MockData.students.first,
+lib//screens/students/academic_report_card_screen.dart:47:    final marksList = MockData.studentMarks
+lib//screens/students/academic_report_card_screen.dart:52:    final attendanceRecords = MockData.attendanceRecords
+lib//screens/students/academic_report_card_screen.dart:74:    final daySlots = MockData.timetable
+lib//screens/students/academic_report_card_screen.dart:80:    final examEvents = MockData.events
+lib//screens/students/academic_report_card_screen.dart:268:                  'Class $gradeName • ${MockData.session} • Roll #${student.rollNumber}',
+lib//screens/students/academic_report_card_screen.dart:1225:                      MockData.session,
+lib//screens/dashboards/class_teacher_dashboard_screen.dart:153:        MockData.teachers.where((t) => t.name.toLowerCase() == resolvedName.toLowerCase() || t.id.toLowerCase() == resolvedName.toLowerCase()).firstOrNull ??
+lib//screens/dashboards/class_teacher_dashboard_screen.dart:184:            : MockData.classes.cast<SchoolClass?>().firstWhere(
+lib//screens/dashboards/class_teacher_dashboard_screen.dart:378:    final classStudents = MockData.students;
+lib//screens/dashboards/class_teacher_dashboard_screen.dart:484:    final int totalCount = MockData.students.length;
+lib//screens/dashboards/class_teacher_dashboard_screen.dart:1104:                        '${MockData.students.firstOrNull?.fullName ?? "Student"} (Roll No. 14)',
+lib//screens/dashboards/class_teacher_dashboard_screen.dart:1146:    final notice = _liveAnnouncements.isNotEmpty ? _liveAnnouncements.first : MockData.announcements.first;
+lib//screens/dashboards/subject_teacher_cohorts_screen.dart:118:              ...MockData.classes.map((cls) {
+lib//screens/dashboards/accountant_dashboard_screen.dart:231:              ...MockData.feePayments.map((p) {
+lib//screens/dashboards/subject_teacher_dashboard_screen.dart:214:              ...MockData.classes.take(2).map((cls) {
+lib//data/mock/mock_data.dart:10:class MockData {
+lib//data/mock/mock_data.dart:1158:  Future<List<Student>> getAllStudents() async => MockData.students;
+lib//data/mock/mock_data.dart:1162:    return MockData.students.firstWhere(
+lib//data/mock/mock_data.dart:1164:      orElse: () => MockData.students.first,
+lib//data/mock/mock_data.dart:1170:    return MockData.studentMarks.where((m) => m.studentId == studentId).toList();
+lib//data/mock/mock_data.dart:1175:    return MockData.attendanceRecords.where((a) => a.studentId == studentId).toList();
+lib//data/mock/mock_data.dart:1181:  Future<List<Teacher>> getAllTeachers() async => MockData.teachers;
+lib//data/mock/mock_data.dart:1184:  Future<List<Staff>> getAllStaff() async => MockData.staffMembers;
+lib//data/mock/mock_data.dart:1187:  Future<List<SchoolClass>> getAllClasses() async => MockData.classes;
+lib//data/mock/mock_data.dart:1190:  Future<List<Subject>> getAllSubjects() async => MockData.subjects;
+lib//data/mock/mock_data.dart:1194:    return MockData.timetable.where((t) => t.className == className).toList();
+lib//data/mock/mock_data.dart:1199:    return MockData.timetable.where((t) => t.teacherName == teacherName).toList();
+lib//data/mock/mock_data.dart:1204:    return MockData.leaveRequests;
+lib//data/mock/mock_data.dart:1209:    MockData.leaveRequests.insert(0, request);
+lib//data/mock/mock_data.dart:1215:  Future<List<FeeStructure>> getFeeStructures() async => MockData.feeStructures;
+lib//data/mock/mock_data.dart:1219:    return MockData.feePayments.where((p) => p.studentId == studentId).toList();
+lib//data/mock/mock_data.dart:1225:  Future<List<Book>> getLibraryCatalog() async => MockData.books;
+lib//data/mock/mock_data.dart:1228:  Future<List<BookIssue>> getBookCirculations() async => MockData.bookIssues;
+lib//data/mock/mock_data.dart:1231:  Future<List<TransportRoute>> getTransportRoutes() async => MockData.routes;
+lib//data/mock/mock_data.dart:1235:    return MockData.studentTransport;
+lib//data/mock/mock_data.dart:1239:  Future<List<InventoryItem>> getInventoryItems() async => MockData.inventory;
+lib//data/mock/mock_data.dart:1244:  Future<List<Holiday>> getHolidays() async => MockData.holidays;
+lib//data/mock/mock_data.dart:1247:  Future<List<SchoolEvent>> getEvents() async => MockData.events;
+lib//data/mock/mock_data.dart:1250:  Future<List<Announcement>> getAnnouncements() async => MockData.announcements;
+lib//data/mock/mock_data.dart:1253:  Future<List<AdmissionsEnquiry>> getEnquiries() async => MockData.enquiries;
+lib//data/mock/mock_data.dart:1256:  Future<List<AdmissionsApplication>> getApplications() async => MockData.applications;
+lib//data/mock/auth_state.dart:68:    if (isTest && MockData.students.isNotEmpty) {
+lib//data/mock/auth_state.dart:69:      final index = _selectedChildIndex.clamp(0, MockData.students.length - 1);
+lib//data/mock/auth_state.dart:70:      return MockData.students[index];

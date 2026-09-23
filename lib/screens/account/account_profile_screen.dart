@@ -11,8 +11,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../data/mock/auth_state.dart';
 import '../../data/services/account_api_service.dart';
+import '../../models/models.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/account_profile_sheet.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/role_switcher_sheet.dart';
 import '../../widgets/shared_widgets.dart';
@@ -67,16 +67,47 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
     );
   }
 
+  static String _getRoleTier(UserRole role) {
+    switch (role) {
+      case UserRole.superAdmin:
+      case UserRole.principal:
+        return 'Executive Tier 0';
+      case UserRole.vicePrincipal:
+        return 'Administrative Tier 1';
+      case UserRole.classTeacher:
+      case UserRole.subjectTeacher:
+        return 'Faculty Tier 2';
+      case UserRole.accountant:
+      case UserRole.librarian:
+      case UserRole.receptionist:
+        return 'Operational Tier 3';
+      case UserRole.parent:
+      case UserRole.student:
+        return 'Community Tier 4';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthState>();
-    final fallbackProfile = AccountProfileSheet.getProfileForRole(auth.currentRole);
+    final userProfile = _profileData ?? auth.userProfile;
 
-    final fullName = _profileData?['full_name'] ?? _profileData?['username'] ?? fallbackProfile.fullName;
-    final email = _profileData?['email'] ?? fallbackProfile.email;
-    final role = _profileData?['role'] ?? fallbackProfile.roleTitle;
-    final designation = _profileData?['designation'] ?? fallbackProfile.designation;
-    final initials = fullName.isNotEmpty ? fullName.split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join() : 'U';
+    final fullName = (userProfile?['full_name'] as String?)?.trim().isNotEmpty == true
+        ? (userProfile!['full_name'] as String).trim()
+        : (auth.fullName.isNotEmpty ? auth.fullName : (auth.currentUsername.isNotEmpty ? auth.currentUsername : 'Not available'));
+    final email = (userProfile?['email'] as String?)?.trim().isNotEmpty == true
+        ? (userProfile!['email'] as String).trim()
+        : (auth.userEmail.isNotEmpty ? auth.userEmail : 'Not available');
+    final role = (userProfile?['role'] as String?)?.trim().isNotEmpty == true
+        ? (userProfile!['role'] as String).toUpperCase()
+        : AuthState.roleTitle(auth.currentRole).toUpperCase();
+    final designation = (userProfile?['designation'] as String?)?.trim().isNotEmpty == true
+        ? (userProfile!['designation'] as String).trim()
+        : AuthState.roleTitle(auth.currentRole);
+    final tier = _getRoleTier(auth.currentRole);
+    final initials = fullName != 'Not available' && fullName.isNotEmpty
+        ? fullName.split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join()
+        : (auth.currentUsername.isNotEmpty ? auth.currentUsername[0].toUpperCase() : 'U');
 
     return Scaffold(
       backgroundColor: AcademicColors.canvas,
@@ -174,7 +205,7 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
                       runSpacing: 6,
                       children: [
                         PillBadge.info(role.toString().toUpperCase()),
-                        PillBadge.neutral(fallbackProfile.tier),
+                        PillBadge.neutral(tier),
                       ],
                     ),
                   ],
@@ -199,7 +230,7 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
                     _buildDetailTile(
                       icon: Icons.person_outline,
                       title: 'Username Identity',
-                      subtitle: _profileData?['username'] ?? auth.currentUsername,
+                      subtitle: (userProfile?['username'] as String?) ?? (auth.currentUsername.isNotEmpty ? auth.currentUsername : 'Not available'),
                     ),
                   ],
                 ),

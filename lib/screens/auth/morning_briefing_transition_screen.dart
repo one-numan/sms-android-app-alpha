@@ -10,7 +10,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../data/mock/mock_data.dart';
+import 'package:provider/provider.dart';
+import '../../core/config/app_config.dart';
+import '../../data/mock/auth_state.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/onps_logo.dart';
 import '../../widgets/shared_widgets.dart';
@@ -84,6 +86,19 @@ class _MorningBriefingTransitionScreenState
 
   @override
   Widget build(BuildContext context) {
+    final auth = context.watch<AuthState>();
+    final userProfile = auth.userProfile;
+    final roleTitle = AuthState.roleTitle(auth.currentRole);
+    final fullName = (userProfile?['full_name'] as String?)?.trim().isNotEmpty == true
+        ? (userProfile!['full_name'] as String).trim()
+        : (auth.fullName.isNotEmpty ? auth.fullName : (auth.currentUsername.isNotEmpty ? auth.currentUsername : 'User'));
+    final initials = fullName != 'User' && fullName.isNotEmpty
+        ? fullName.split(RegExp(r'\s+')).where((e) => e.isNotEmpty).map((e) => e[0].toUpperCase()).take(2).join()
+        : (auth.currentUsername.isNotEmpty ? auth.currentUsername[0].toUpperCase() : 'U');
+    final designation = (userProfile?['designation'] as String?)?.trim().isNotEmpty == true
+        ? (userProfile!['designation'] as String).trim()
+        : '$roleTitle & Institutional Member';
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
@@ -128,7 +143,7 @@ class _MorningBriefingTransitionScreenState
 
                     // School Identity
                     Text(
-                      MockData.schoolName,
+                      AppConfig.schoolName,
                       textAlign: TextAlign.center,
                       style: GoogleFonts.newsreader(
                         fontSize: 22,
@@ -139,7 +154,7 @@ class _MorningBriefingTransitionScreenState
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      'Academic Session 2026–27 • Main Campus',
+                      '${AppConfig.academicSession} • Main Campus',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.manrope(
                         fontSize: 11.5,
@@ -206,7 +221,7 @@ class _MorningBriefingTransitionScreenState
                                 ),
                                 child: Center(
                                   child: Text(
-                                    'MC',
+                                    initials,
                                     style: GoogleFonts.newsreader(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
@@ -229,7 +244,7 @@ class _MorningBriefingTransitionScreenState
                                       ),
                                     ),
                                     Text(
-                                      'Dr. M. Chacko',
+                                      fullName,
                                       style: GoogleFonts.newsreader(
                                         fontSize: 17,
                                         fontWeight: FontWeight.bold,
@@ -237,7 +252,7 @@ class _MorningBriefingTransitionScreenState
                                       ),
                                     ),
                                     Text(
-                                      'Principal & Head of Institution',
+                                      designation,
                                       style: GoogleFonts.manrope(
                                         fontSize: 11.5,
                                         fontWeight: FontWeight.w500,
@@ -284,7 +299,7 @@ class _MorningBriefingTransitionScreenState
                                 ],
                               ),
                               Text(
-                                'Affiliation No. 2130842',
+                                AppConfig.affiliation,
                                 style: GoogleFonts.manrope(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w500,

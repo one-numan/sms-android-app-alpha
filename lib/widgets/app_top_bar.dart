@@ -258,7 +258,11 @@ class _ThreeDotsMenuButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthState>();
-    final profile = AccountProfileSheet.getProfileForRole(auth.currentRole);
+    final roleTitle = AuthState.roleTitle(auth.currentRole);
+    final fullName = auth.fullName.isNotEmpty ? auth.fullName : (auth.currentUsername.isNotEmpty ? auth.currentUsername : roleTitle);
+    final initials = fullName.isNotEmpty
+        ? fullName.split(RegExp(r'\s+')).where((e) => e.isNotEmpty).map((e) => e[0].toUpperCase()).take(2).join()
+        : 'U';
 
     return Theme(
       data: Theme.of(context).copyWith(
@@ -322,7 +326,7 @@ class _ThreeDotsMenuButton extends StatelessWidget {
                     ),
                     child: Center(
                       child: Text(
-                        profile.initials,
+                        initials,
                         style: GoogleFonts.newsreader(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
@@ -337,7 +341,7 @@ class _ThreeDotsMenuButton extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          profile.fullName,
+                          fullName,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.newsreader(
@@ -347,7 +351,7 @@ class _ThreeDotsMenuButton extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          profile.roleTitle,
+                          roleTitle,
                           style: GoogleFonts.manrope(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,

@@ -8,7 +8,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../data/mock/mock_data.dart';
+import '../core/config/app_config.dart';
 import '../theme/app_theme.dart';
 import 'shared_widgets.dart';
 
@@ -285,7 +285,7 @@ class _AccountSettingsSheetState extends State<AccountSettingsSheet> {
                               'Academic Session',
                               style: GoogleFonts.manrope(fontSize: 12, color: AcademicColors.textSecondary),
                             ),
-                            PillBadge.neutral(MockData.session),
+                            PillBadge.neutral(AppConfig.academicSession),
                           ],
                         ),
                       ),

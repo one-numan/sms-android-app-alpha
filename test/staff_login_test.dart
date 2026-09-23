@@ -38,7 +38,7 @@ void main() {
     // Verify MorningBriefingTransitionScreen is displayed
     expect(find.byType(MorningBriefingTransitionScreen), findsOneWidget);
     expect(find.text('Signed in successfully'), findsOneWidget);
-    expect(find.text('Dr. M. Chacko'), findsOneWidget);
+    expect(find.text('Principal'), findsOneWidget);
     expect(find.text('Preparing your Principal Portal...'), findsOneWidget);
 
     // Wait for transition timer to complete and advance to PrincipalDashboardScreen

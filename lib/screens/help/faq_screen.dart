@@ -14,7 +14,6 @@ import '../../data/repositories/faq/faq_repository.dart';
 import '../../models/faq_model.dart';
 import '../../models/models.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/account_profile_sheet.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/shared_widgets.dart';
 
@@ -271,7 +270,8 @@ class _FaqScreenState extends State<FaqScreen> {
   }
 
   Widget _buildRolePersonalizedBanner(AuthState auth) {
-    final profile = AccountProfileSheet.getProfileForRole(auth.currentRole);
+    final roleTitle = AuthState.roleTitle(auth.currentRole);
+    final fullName = auth.fullName.isNotEmpty ? auth.fullName : (auth.currentUsername.isNotEmpty ? auth.currentUsername : roleTitle);
     final icon = _roleIcon(auth.currentRole);
 
     return Container(
@@ -304,7 +304,7 @@ class _FaqScreenState extends State<FaqScreen> {
                   children: [
                     Flexible(
                       child: Text(
-                        profile.fullName,
+                        fullName,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.newsreader(
@@ -322,7 +322,7 @@ class _FaqScreenState extends State<FaqScreen> {
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
-                        profile.roleTitle,
+                        roleTitle,
                         style: GoogleFonts.manrope(
                           fontSize: 10,
                           fontWeight: FontWeight.w700,
@@ -334,7 +334,7 @@ class _FaqScreenState extends State<FaqScreen> {
                 ),
                 Text(
                   _filterByRole
-                      ? 'Displaying questions tailored for ${profile.roleTitle}'
+                      ? 'Displaying questions tailored for $roleTitle'
                       : 'Displaying all school-wide knowledge topics',
                   style: GoogleFonts.manrope(
                     fontSize: 10.5,

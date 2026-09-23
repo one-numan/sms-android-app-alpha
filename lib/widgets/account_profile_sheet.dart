@@ -8,8 +8,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import '../core/config/app_config.dart';
 import '../data/mock/auth_state.dart';
-import '../data/mock/mock_data.dart';
 import '../models/models.dart';
 import '../theme/app_theme.dart';
 import 'account_settings_sheet.dart';
@@ -28,148 +28,78 @@ class AccountProfileSheet extends StatelessWidget {
     );
   }
 
-  static UserProfileInfo getProfileForRole(UserRole role) {
+  static String _getRoleTier(UserRole role) {
     switch (role) {
-      case UserRole.principal:
-        return const UserProfileInfo(
-          fullName: 'Principal Numan Khan',
-          initials: 'NK',
-          designation: 'Head of Institution • Executive Leadership',
-          roleTitle: 'Principal',
-          email: 'principal@onps.edu.in',
-          phone: '+91 98000 11223',
-          tier: 'Admin Tier 0',
-          idBadge: 'PRIN-2015-01',
-          joiningYear: 'Jan 2015',
-        );
-      case UserRole.vicePrincipal:
-        return const UserProfileInfo(
-          fullName: 'Vice Principal Office',
-          initials: 'VP',
-          designation: 'Vice Principal • Academic Dean',
-          roleTitle: 'Vice Principal',
-          email: 'vp@onps.edu.in',
-          phone: '+91 98000 22334',
-          tier: 'Admin Tier 1',
-          idBadge: 'VP-2017-08',
-          joiningYear: 'Jul 2017',
-        );
-      case UserRole.classTeacher:
-        return const UserProfileInfo(
-          fullName: 'Class Teacher Faculty',
-          initials: 'CT',
-          designation: 'Class Teacher Workspace',
-          roleTitle: 'Class Teacher',
-          email: 'teacher@onps.edu.in',
-          phone: '+91 98222 33445',
-          tier: 'Faculty Tier 2',
-          idBadge: 'FAC-T1',
-          joiningYear: 'Jun 2018',
-        );
-      case UserRole.subjectTeacher:
-        return const UserProfileInfo(
-          fullName: 'Subject Faculty Member',
-          initials: 'ST',
-          designation: 'Subject Faculty • Academic Department',
-          roleTitle: 'Subject Teacher',
-          email: 'faculty@onps.edu.in',
-          phone: '+91 98111 22334',
-          tier: 'Faculty Tier 2',
-          idBadge: 'FAC-T4',
-          joiningYear: 'Jul 2019',
-        );
-      case UserRole.parent:
-        return const UserProfileInfo(
-          fullName: 'Parent / Guardian Account',
-          initials: 'PG',
-          designation: 'Parent Account • Family Portal',
-          roleTitle: 'Parent / Guardian',
-          email: 'parent@onps.edu.in',
-          phone: '+91 98765 43210',
-          tier: 'Guardian Tier 3',
-          idBadge: 'PRNT-998',
-          joiningYear: 'Apr 2022',
-        );
-      case UserRole.student:
-        return const UserProfileInfo(
-          fullName: 'Enrolled Student Account',
-          initials: 'ST',
-          designation: 'Enrolled Student • Academic Portal',
-          roleTitle: 'Student',
-          email: 'student@onps.edu.in',
-          phone: '+91 98765 00000',
-          tier: 'Student Tier 4',
-          idBadge: 'STD-2024-001',
-          joiningYear: 'Apr 2024',
-        );
-      case UserRole.accountant:
-        return const UserProfileInfo(
-          fullName: 'Finance Officer',
-          initials: 'FO',
-          designation: 'Bursar • Accounts & Fee Operations',
-          roleTitle: 'Accountant',
-          email: 'accounts@onps.edu.in',
-          phone: '+91 98000 33445',
-          tier: 'Finance Tier 2',
-          idBadge: 'ACC-01',
-          joiningYear: 'Mar 2019',
-        );
-      case UserRole.librarian:
-        return const UserProfileInfo(
-          fullName: 'Librarian Desk',
-          initials: 'LB',
-          designation: 'Head Librarian • Resource Center',
-          roleTitle: 'Librarian',
-          email: 'library@onps.edu.in',
-          phone: '+91 98000 44556',
-          tier: 'Operations Tier 2',
-          idBadge: 'LIB-02',
-          joiningYear: 'Sep 2020',
-        );
-      case UserRole.receptionist:
-        return const UserProfileInfo(
-          fullName: 'Front Desk Officer',
-          initials: 'FD',
-          designation: 'Admissions & Information Desk Officer',
-          roleTitle: 'Receptionist',
-          email: 'admissions@onps.edu.in',
-          phone: '+91 98000 55667',
-          tier: 'Intake Tier 2',
-          idBadge: 'REC-05',
-          joiningYear: 'Feb 2021',
-        );
       case UserRole.superAdmin:
-        return const UserProfileInfo(
-          fullName: 'System Administrator',
-          initials: 'SA',
-          designation: 'Enterprise Infrastructure & IT Governance',
-          roleTitle: 'Super Admin',
-          email: 'admin@onps.edu.in',
-          phone: '+91 98000 00000',
-          tier: 'Root Tier 0',
-          idBadge: 'ROOT-00',
-          joiningYear: 'Aug 2014',
-        );
+      case UserRole.principal:
+        return 'Executive Tier 0';
+      case UserRole.vicePrincipal:
+        return 'Administrative Tier 1';
+      case UserRole.classTeacher:
+      case UserRole.subjectTeacher:
+        return 'Faculty Tier 2';
+      case UserRole.accountant:
+      case UserRole.librarian:
+      case UserRole.receptionist:
+        return 'Operational Tier 3';
+      case UserRole.parent:
+      case UserRole.student:
+        return 'Community Tier 4';
     }
+  }
+
+  static UserProfileInfo getProfileForRole(UserRole role) {
+    final title = AuthState.roleTitle(role);
+    return UserProfileInfo(
+      fullName: title,
+      initials: title.isNotEmpty ? title[0] : 'U',
+      designation: title,
+      roleTitle: title,
+      email: 'Not available',
+      phone: 'Not available',
+      tier: _getRoleTier(role),
+      idBadge: 'N/A',
+      joiningYear: AppConfig.sessionYear,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthState>();
-    final baseProfile = getProfileForRole(auth.currentRole);
-    final profile = (auth.fullName.isNotEmpty && auth.fullName != 'User')
-        ? UserProfileInfo(
-            fullName: auth.fullName,
-            initials: auth.fullName.split(RegExp(r'\s+')).where((e) => e.isNotEmpty).map((e) => e[0].toUpperCase()).take(2).join(),
-            designation: baseProfile.designation,
-            roleTitle: baseProfile.roleTitle,
-            email: auth.userEmail.isNotEmpty ? auth.userEmail : baseProfile.email,
-            phone: auth.userMobile.isNotEmpty ? auth.userMobile : baseProfile.phone,
-            tier: baseProfile.tier,
-            idBadge: baseProfile.idBadge,
-            joiningYear: baseProfile.joiningYear,
-          )
-        : baseProfile;
+    final userProfile = auth.userProfile;
+    final roleTitle = AuthState.roleTitle(auth.currentRole);
+
+    final fullName = (userProfile?['full_name'] as String?)?.trim().isNotEmpty == true
+        ? (userProfile!['full_name'] as String).trim()
+        : (auth.fullName.isNotEmpty ? auth.fullName : (auth.currentUsername.isNotEmpty ? auth.currentUsername : 'Not available'));
+    final email = (userProfile?['email'] as String?)?.trim().isNotEmpty == true
+        ? (userProfile!['email'] as String).trim()
+        : (auth.userEmail.isNotEmpty ? auth.userEmail : 'Not available');
+    final phone = (userProfile?['mobile_number'] as String?)?.trim().isNotEmpty == true
+        ? (userProfile!['mobile_number'] as String).trim()
+        : (auth.userMobile.isNotEmpty ? auth.userMobile : 'Not available');
+    final designation = (userProfile?['designation'] as String?)?.trim().isNotEmpty == true
+        ? (userProfile!['designation'] as String).trim()
+        : roleTitle;
+    final tier = _getRoleTier(auth.currentRole);
+    final idBadge = (userProfile?['id'] != null)
+        ? 'ID #${userProfile!['id']}'
+        : (auth.currentUsername.isNotEmpty ? auth.currentUsername.toUpperCase() : 'N/A');
+    final initials = fullName != 'Not available' && fullName.isNotEmpty
+        ? fullName.split(RegExp(r'\s+')).where((e) => e.isNotEmpty).map((e) => e[0].toUpperCase()).take(2).join()
+        : (auth.currentUsername.isNotEmpty ? auth.currentUsername[0].toUpperCase() : 'U');
+
+    final profile = UserProfileInfo(
+      fullName: fullName,
+      initials: initials,
+      designation: designation,
+      roleTitle: roleTitle,
+      email: email,
+      phone: phone,
+      tier: tier,
+      idBadge: idBadge,
+      joiningYear: AppConfig.sessionYear,
+    );
 
     return Container(
       decoration: const BoxDecoration(
@@ -299,9 +229,9 @@ class AccountProfileSheet extends StatelessWidget {
                     const Divider(height: 16, color: AcademicColors.border),
                     _buildDetailRow(Icons.phone_outlined, 'Registered Mobile', profile.phone),
                     const Divider(height: 16, color: AcademicColors.border),
-                    _buildDetailRow(Icons.school_outlined, 'Affiliation', MockData.schoolName),
+                    _buildDetailRow(Icons.school_outlined, 'Affiliation', AppConfig.schoolName),
                     const Divider(height: 16, color: AcademicColors.border),
-                    _buildDetailRow(Icons.calendar_today_outlined, 'Active Session', '${MockData.session} (Since ${profile.joiningYear})'),
+                    _buildDetailRow(Icons.calendar_today_outlined, 'Active Session', AppConfig.academicSession),
                   ],
                 ),
               ),

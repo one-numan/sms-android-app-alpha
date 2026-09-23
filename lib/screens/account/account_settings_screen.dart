@@ -8,7 +8,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../data/mock/mock_data.dart';
+import '../../core/config/app_config.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/onps_logo.dart';
@@ -269,7 +269,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                       style: GoogleFonts.manrope(fontSize: 14, fontWeight: FontWeight.w600),
                     ),
                     subtitle: Text(
-                      'Current: ${MockData.session} (Active)',
+                      'Current: ${AppConfig.academicSession} (Active)',
                       style: GoogleFonts.manrope(fontSize: 11, color: AcademicColors.textSecondary),
                     ),
                     trailing: PillBadge.info('Affiliated'),
@@ -316,7 +316,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            MockData.schoolName,
+                            AppConfig.schoolName,
                             style: GoogleFonts.newsreader(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
@@ -325,7 +325,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            'CBSE Affiliation #2130456 • ERP Mobile v1.0.0',
+                            '${AppConfig.affiliation} • ERP Mobile ${AppConfig.appVersion}',
                             style: GoogleFonts.manrope(
                               fontSize: 11,
                               color: AcademicColors.textSecondary,

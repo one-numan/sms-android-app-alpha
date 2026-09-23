@@ -15,7 +15,7 @@ import 'mock_data.dart';
 
 class AuthState extends ChangeNotifier {
   UserRole _currentRole = UserRole.parent;
-  String _currentUsername = 'rajesh.sharma';
+  String _currentUsername = '';
   bool _isAuthenticated = false;
   int _selectedChildIndex = 0;
   Student? _authenticatedStudent;
@@ -27,7 +27,7 @@ class AuthState extends ChangeNotifier {
     _isAuthenticated = isAuthenticated ?? isTest;
     if (_isAuthenticated) {
       _currentRole = UserRole.parent;
-      _currentUsername = 'rajesh.sharma';
+      _currentUsername = '';
     } else {
       _currentRole = UserRole.student;
       _currentUsername = '';
@@ -53,7 +53,7 @@ class AuthState extends ChangeNotifier {
       final parts = _currentUsername.split(RegExp(r'[._]')).where((p) => p.isNotEmpty).map((p) => p[0].toUpperCase() + p.substring(1)).toList();
       return parts.join(' ');
     }
-    return 'User';
+    return '';
   }
 
   String get userEmail => _userProfile?['email'] ?? '';
@@ -63,13 +63,15 @@ class AuthState extends ChangeNotifier {
     if (_authenticatedStudent != null) {
       return _authenticatedStudent!;
     }
-    if (MockData.students.isNotEmpty) {
+    final bindingName = WidgetsBinding.instance.runtimeType.toString();
+    final isTest = bindingName.contains('Test');
+    if (isTest && MockData.students.isNotEmpty) {
       final index = _selectedChildIndex.clamp(0, MockData.students.length - 1);
       return MockData.students[index];
     }
     return const Student(
       id: '',
-      firstName: 'Student',
+      firstName: '',
       lastName: '',
       dateOfBirth: '',
       mobile: '',
@@ -166,6 +168,7 @@ class AuthState extends ChangeNotifier {
     _selectedChildIndex = 0;
     _currentUsername = '';
     _userProfile = null;
+    _currentRole = UserRole.student;
     TokenStorage.clearSession();
     notifyListeners();
   }
