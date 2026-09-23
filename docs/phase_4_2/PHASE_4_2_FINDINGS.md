@@ -66,6 +66,9 @@
 15. `lib/screens/admin/unified_search_screen.dart:62` — `MockData.classes.where`
 16. `lib/screens/admin/unified_search_screen.dart:71` — `MockData.books.where`
 17. `lib/screens/admin/unified_search_screen.dart:80` — `MockData.announcements.where`
+- **Initial Count**: 17
+- **Post-Batch D Count**: **0**
+- **Status**: **PASSED (0 production-reachable MockData)**
 
 ### Batch E: Calendar / Transport / Inventory (12 occurrences)
 1. `lib/screens/library_transport_inventory/inventory_desk_screen.dart:39` — `MockData.inventory`

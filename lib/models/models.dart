@@ -275,6 +275,35 @@ class Teacher {
   });
 
   String get phone => mobile;
+
+  factory Teacher.fromJson(Map<String, dynamic> json) {
+    final addrMap = json['address'] is Map ? json['address'] as Map : null;
+    return Teacher(
+      id: json['id']?.toString() ?? '',
+      name: json['full_name']?.toString() ?? json['name']?.toString() ?? 'Faculty Member',
+      dateOfBirth: json['dob']?.toString() ?? json['date_of_birth']?.toString() ?? '',
+      mobile: json['mobile']?.toString() ??
+          json['phone']?.toString() ??
+          json['mobile_number']?.toString() ??
+          '',
+      alternateMobile: json['alternate_mobile']?.toString(),
+      email: json['email']?.toString() ?? '',
+      gender: json['gender']?.toString() ?? 'Not Specified',
+      joinDate: json['join_date']?.toString() ?? json['joining_date']?.toString() ?? '',
+      address: Address(
+        line1: addrMap?['line1']?.toString() ?? json['address_line1']?.toString() ?? '',
+        city: addrMap?['city']?.toString() ?? json['city']?.toString() ?? 'New Delhi',
+        district: addrMap?['district']?.toString() ?? json['district']?.toString() ?? 'Central',
+        state: addrMap?['state']?.toString() ?? json['state']?.toString() ?? 'Delhi',
+        pincode: addrMap?['pincode']?.toString() ?? json['pincode']?.toString() ?? '110054',
+      ),
+      subjectSpecialization: json['subject']?.toString() ??
+          json['specialization']?.toString() ??
+          json['department']?.toString() ??
+          json['designation']?.toString() ??
+          'General Academics',
+    );
+  }
 }
 
 class Staff {
@@ -321,6 +350,20 @@ class SchoolClass {
   String get name => className;
   String get displayName => 'Grade $className';
   String get classTeacherId => 'TCH-$id';
+
+  factory SchoolClass.fromJson(Map<String, dynamic> json) {
+    final grade = json['grade']?.toString() ?? '5';
+    final section = json['section']?.toString() ?? 'A';
+    final className = json['class_name']?.toString() ?? json['name']?.toString() ?? '$grade-$section';
+    final teacher = json['class_teacher'] is Map ? json['class_teacher']['name']?.toString() : json['class_teacher_name']?.toString();
+    return SchoolClass(
+      id: json['id']?.toString() ?? 'CLS-$className',
+      grade: grade,
+      section: section,
+      className: className,
+      classTeacherName: teacher ?? 'Assigned Faculty',
+    );
+  }
 }
 
 class Subject {
@@ -635,6 +678,25 @@ class Book {
   });
 
   String get shelfNumber => 'B-${id.split('-').last}';
+
+  factory Book.fromJson(Map<String, dynamic> json) {
+    return Book(
+      id: json['id']?.toString() ?? '',
+      title: json['title'] ?? json['name'] ?? '',
+      author: json['author'] ?? '',
+      isbn: json['isbn'] ?? '',
+      category: json['category'] ?? 'General',
+      totalCopies: json['total_copies'] is int
+          ? json['total_copies']
+          : (int.tryParse(json['total_copies']?.toString() ?? '') ?? 1),
+      availableCopies: json['available_copies'] is int
+          ? json['available_copies']
+          : (int.tryParse(json['available_copies']?.toString() ?? '') ?? 1),
+      replacementCost: json['replacement_cost'] is num
+          ? (json['replacement_cost'] as num).toDouble()
+          : (double.tryParse(json['replacement_cost']?.toString() ?? '') ?? 0.0),
+    );
+  }
 }
 
 class BookIssue {
@@ -856,4 +918,26 @@ class Announcement {
                       : 'School'))));
 
   bool get hasAttachment => attachmentName != null && attachmentName!.isNotEmpty;
+
+  factory Announcement.fromJson(Map<String, dynamic> json) {
+    return Announcement(
+      id: json['id']?.toString() ?? '',
+      postType: json['post_type'] ?? json['type'] ?? 'General',
+      title: json['title'] ?? '',
+      body: json['body'] ?? json['content'] ?? json['message'] ?? '',
+      author: json['author'] ?? json['created_by'] ?? 'Administration',
+      status: (json['status']?.toString().toUpperCase() == 'PUBLISHED' ||
+              json['status']?.toString().toUpperCase() == 'ACTIVE')
+          ? AnnouncementStatus.published
+          : AnnouncementStatus.pending,
+      isPinned: json['is_pinned'] == true,
+      audience: json['audience'] ?? 'ALL',
+      publishedAt: json['published_at'] ?? json['created_at'] ?? '',
+      category: json['category'],
+      attachmentName: json['attachment_name'],
+      attachmentType: json['attachment_type'],
+      attachmentSize: json['attachment_size'],
+      isRead: json['is_read'] == true,
+    );
+  }
 }

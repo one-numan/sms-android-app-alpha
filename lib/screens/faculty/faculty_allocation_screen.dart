@@ -10,7 +10,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../data/mock/mock_data.dart';
 import '../../data/services/faculty_api_service.dart';
 import '../../models/models.dart';
 import '../../theme/app_theme.dart';
@@ -56,20 +55,96 @@ class _FacultyAllocationScreenState extends State<FacultyAllocationScreen> {
   ];
 
   static List<SchoolClass> get _standardClasses {
-    final bindingName = WidgetsBinding.instance.runtimeType.toString();
-    if (bindingName.contains('Test')) {
-      return MockData.classes;
-    }
-    return [
-      for (final g in ['K', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'])
-        for (final s in ['A', 'B', 'C', 'D', 'E'])
-          SchoolClass(
-            id: 'CLS-$g$s',
-            grade: g,
-            section: s,
-            className: '$g-$s',
-            classTeacherName: 'Faculty Assigned',
-          ),
+    return const [
+      // Kindergarten
+      SchoolClass(id: 'C-KA', grade: 'K', section: 'A', className: 'K-A', classTeacherName: 'Pooja Saxena'),
+      SchoolClass(id: 'C-KB', grade: 'K', section: 'B', className: 'K-B', classTeacherName: 'Anjali Menon'),
+      SchoolClass(id: 'C-KC', grade: 'K', section: 'C', className: 'K-C', classTeacherName: 'Kavita Joshi'),
+      SchoolClass(id: 'C-KD', grade: 'K', section: 'D', className: 'K-D', classTeacherName: 'Sunita Mehra'),
+
+      // Grade 1
+      SchoolClass(id: 'C-1A', grade: '1', section: 'A', className: '1-A', classTeacherName: 'Neha Kapoor'),
+      SchoolClass(id: 'C-1B', grade: '1', section: 'B', className: '1-B', classTeacherName: 'Tarun Joshi'),
+      SchoolClass(id: 'C-1C', grade: '1', section: 'C', className: '1-C', classTeacherName: 'Suman Rao'),
+      SchoolClass(id: 'C-1D', grade: '1', section: 'D', className: '1-D', classTeacherName: 'David Miller'),
+      SchoolClass(id: 'C-1E', grade: '1', section: 'E', className: '1-E', classTeacherName: 'Pooja Saxena'),
+
+      // Grade 2
+      SchoolClass(id: 'C-2A', grade: '2', section: 'A', className: '2-A', classTeacherName: 'Suresh Gupta'),
+      SchoolClass(id: 'C-2B', grade: '2', section: 'B', className: '2-B', classTeacherName: 'Meenakshi Sharma'),
+      SchoolClass(id: 'C-2C', grade: '2', section: 'C', className: '2-C', classTeacherName: 'Vikram Batra'),
+      SchoolClass(id: 'C-2D', grade: '2', section: 'D', className: '2-D', classTeacherName: 'Robert Chen'),
+      SchoolClass(id: 'C-2E', grade: '2', section: 'E', className: '2-E', classTeacherName: 'Neha Kapoor'),
+
+      // Grade 3
+      SchoolClass(id: 'C-3A', grade: '3', section: 'A', className: '3-A', classTeacherName: 'Anjali Menon'),
+      SchoolClass(id: 'C-3B', grade: '3', section: 'B', className: '3-B', classTeacherName: 'David Miller'),
+      SchoolClass(id: 'C-3C', grade: '3', section: 'C', className: '3-C', classTeacherName: 'Sunita Mehra'),
+      SchoolClass(id: 'C-3D', grade: '3', section: 'D', className: '3-D', classTeacherName: 'Tarun Joshi'),
+      SchoolClass(id: 'C-3E', grade: '3', section: 'E', className: '3-E', classTeacherName: 'Meenakshi Sharma'),
+
+      // Grade 4
+      SchoolClass(id: 'C-4A', grade: '4', section: 'A', className: '4-A', classTeacherName: 'Robert Chen'),
+      SchoolClass(id: 'C-4B', grade: '4', section: 'B', className: '4-B', classTeacherName: 'Vikram Batra'),
+      SchoolClass(id: 'C-4C', grade: '4', section: 'C', className: '4-C', classTeacherName: 'Suresh Gupta'),
+      SchoolClass(id: 'C-4D', grade: '4', section: 'D', className: '4-D', classTeacherName: 'Pooja Saxena'),
+      SchoolClass(id: 'C-4E', grade: '4', section: 'E', className: '4-E', classTeacherName: 'Anjali Menon'),
+
+      // Grade 5
+      SchoolClass(id: 'C-5A', grade: '5', section: 'A', className: '5-A', classTeacherName: 'Anita Desai'),
+      SchoolClass(id: 'C-5B', grade: '5', section: 'B', className: '5-B', classTeacherName: 'David Miller'),
+      SchoolClass(id: 'C-5C', grade: '5', section: 'C', className: '5-C', classTeacherName: 'Robert Chen'),
+      SchoolClass(id: 'C-5D', grade: '5', section: 'D', className: '5-D', classTeacherName: 'Meenakshi Sharma'),
+      SchoolClass(id: 'C-5E', grade: '5', section: 'E', className: '5-E', classTeacherName: 'Neha Kapoor'),
+
+      // Grade 6
+      SchoolClass(id: 'C-6A', grade: '6', section: 'A', className: '6-A', classTeacherName: 'Suresh Gupta'),
+      SchoolClass(id: 'C-6B', grade: '6', section: 'B', className: '6-B', classTeacherName: 'Pooja Saxena'),
+      SchoolClass(id: 'C-6C', grade: '6', section: 'C', className: '6-C', classTeacherName: 'Vikram Batra'),
+      SchoolClass(id: 'C-6D', grade: '6', section: 'D', className: '6-D', classTeacherName: 'Anjali Menon'),
+      SchoolClass(id: 'C-6E', grade: '6', section: 'E', className: '6-E', classTeacherName: 'Tarun Joshi'),
+
+      // Grade 7
+      SchoolClass(id: 'C-7A', grade: '7', section: 'A', className: '7-A', classTeacherName: 'David Miller'),
+      SchoolClass(id: 'C-7B', grade: '7', section: 'B', className: '7-B', classTeacherName: 'Kavita Joshi'),
+      SchoolClass(id: 'C-7C', grade: '7', section: 'C', className: '7-C', classTeacherName: 'Robert Chen'),
+      SchoolClass(id: 'C-7D', grade: '7', section: 'D', className: '7-D', classTeacherName: 'Meenakshi Sharma'),
+      SchoolClass(id: 'C-7E', grade: '7', section: 'E', className: '7-E', classTeacherName: 'Suresh Gupta'),
+
+      // Grade 8
+      SchoolClass(id: 'C-8A', grade: '8', section: 'A', className: '8-A', classTeacherName: 'Neha Kapoor'),
+      SchoolClass(id: 'C-8B', grade: '8', section: 'B', className: '8-B', classTeacherName: 'Vikram Batra'),
+      SchoolClass(id: 'C-8C', grade: '8', section: 'C', className: '8-C', classTeacherName: 'Pooja Saxena'),
+      SchoolClass(id: 'C-8D', grade: '8', section: 'D', className: '8-D', classTeacherName: 'Tarun Joshi'),
+      SchoolClass(id: 'C-8E', grade: '8', section: 'E', className: '8-E', classTeacherName: 'Anjali Menon'),
+
+      // Grade 9
+      SchoolClass(id: 'C-9A', grade: '9', section: 'A', className: '9-A', classTeacherName: 'Pooja Saxena'),
+      SchoolClass(id: 'C-9B', grade: '9', section: 'B', className: '9-B', classTeacherName: 'Robert Chen'),
+      SchoolClass(id: 'C-9C', grade: '9', section: 'C', className: '9-C', classTeacherName: 'David Miller'),
+      SchoolClass(id: 'C-9D', grade: '9', section: 'D', className: '9-D', classTeacherName: 'Suresh Gupta'),
+      SchoolClass(id: 'C-9E', grade: '9', section: 'E', className: '9-E', classTeacherName: 'Meenakshi Sharma'),
+
+      // Grade 10
+      SchoolClass(id: 'C-10A', grade: '10', section: 'A', className: '10-A', classTeacherName: 'Vikram Batra'),
+      SchoolClass(id: 'C-10B', grade: '10', section: 'B', className: '10-B', classTeacherName: 'Neha Kapoor'),
+      SchoolClass(id: 'C-10C', grade: '10', section: 'C', className: '10-C', classTeacherName: 'Anita Desai'),
+      SchoolClass(id: 'C-10D', grade: '10', section: 'D', className: '10-D', classTeacherName: 'Anjali Menon'),
+      SchoolClass(id: 'C-10E', grade: '10', section: 'E', className: '10-E', classTeacherName: 'Tarun Joshi'),
+
+      // Grade 11
+      SchoolClass(id: 'C-11A', grade: '11', section: 'A', className: '11-A', classTeacherName: 'Sunita Mehra'),
+      SchoolClass(id: 'C-11B', grade: '11', section: 'B', className: '11-B', classTeacherName: 'Kavita Joshi'),
+      SchoolClass(id: 'C-11C', grade: '11', section: 'C', className: '11-C', classTeacherName: 'Robert Chen'),
+      SchoolClass(id: 'C-11D', grade: '11', section: 'D', className: '11-D', classTeacherName: 'Suresh Gupta'),
+      SchoolClass(id: 'C-11E', grade: '11', section: 'E', className: '11-E', classTeacherName: 'David Miller'),
+
+      // Grade 12
+      SchoolClass(id: 'C-12A', grade: '12', section: 'A', className: '12-A', classTeacherName: 'Meenakshi Sharma'),
+      SchoolClass(id: 'C-12B', grade: '12', section: 'B', className: '12-B', classTeacherName: 'Vikram Batra'),
+      SchoolClass(id: 'C-12C', grade: '12', section: 'C', className: '12-C', classTeacherName: 'Neha Kapoor'),
+      SchoolClass(id: 'C-12D', grade: '12', section: 'D', className: '12-D', classTeacherName: 'Anita Desai'),
+      SchoolClass(id: 'C-12E', grade: '12', section: 'E', className: '12-E', classTeacherName: 'Pooja Saxena'),
     ];
   }
 

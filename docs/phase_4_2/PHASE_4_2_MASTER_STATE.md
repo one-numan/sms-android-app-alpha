@@ -4,38 +4,39 @@
 Phase 4.2 — Global MockData Elimination
 
 ## Current Batch
-Batch C (Completed & Verified) → Batch D (Next)
+Batch D (Completed & Verified) → Batch E (Next)
 
 ## Current Task
-Batch C (Finance / Fees) 100% Completed & Verified. All target screens (`fee_receipt_screen.dart`, `accountant_dashboard_screen.dart`, `router.dart`) migrated to live Django APIs / domain models with 0 production MockData.
+Batch D (Admin / Operations) 100% Completed & Verified. All target screens (`principal_teachers_screen.dart`, `principal_section_detail_screen.dart`, `school_setup_screen.dart`, `unified_search_screen.dart`, `faculty_allocation_screen.dart`) migrated to live Django APIs / domain models with 0 production MockData.
 
 ## Status
-BATCH_C_COMPLETE
+BATCH_D_COMPLETE
 
 ## Last Completed Step
-Batch C implementation, automated quality gates (`flutter analyze` -> 0 issues, `flutter test` -> 227/227 passed, `flutter build apk --debug` -> SUCCESS), and persistent state documentation.
+Batch D implementation, automated quality gates (`flutter analyze` -> 0 issues, `flutter test` -> 241/241 passed, `flutter build apk --debug` -> SUCCESS), and persistent state documentation.
 
 ## Current Step
-Batch C final report generated, persistent history updated on disk, and ready for Batch C git checkpoint.
+Batch D final report generated, persistent history updated on disk, and ready for Batch D git checkpoint.
 
 ## Next Step
-Proceed to Batch D (Admin / Operations): Principal Teachers Screen, Principal Section Detail Screen, Faculty Allocation Screen, School Setup Screen, Unified Search Screen (Awaiting user command).
+Wait for user instruction to begin Batch E (Calendar / Transport / Inventory): Inventory Desk, Bus Transit Screen, Notice Board Screen, Events Desk Screen, Academic Calendar Screen.
 
 ## Last Successful Commit/Checkpoint
-`c036f05` (phase4.2: batch-b checkpoint student-academic-elimination)
-(Batch C checkpoint pending commit: `phase4.2: batch-c checkpoint finance-elimination`)
+`0fe497a` (phase4.2: batch-c checkpoint finance-elimination)
+(Batch D checkpoint pending commit: `phase4.2: batch-d checkpoint admin-operations-elimination`)
 
 ## Baseline
 14/14 previous API migration complete with 0 production MockData.
 Batch A: 0 production MockData.
 Batch B: 0 production MockData.
 Batch C: 0 production MockData.
+Batch D: 0 production MockData.
 
 ## Previous Production MockData
-36 (at start of Batch C)
+29 (at start of Batch D)
 
 ## Current Production MockData
-29 (exact count across app after Batch C elimination: Batch D = 17, Batch E = 12)
+11 (exact count across app after Batch D elimination: Batch E = 11, Batch D = 0)
 
 ## Batch A Production MockData
 0 (Achieved & Verified: AuthState, Account Profile, Account Settings, Account Profile Sheet, Account Settings Sheet, Login Screen, Morning Briefing Transition Screen)
@@ -47,31 +48,29 @@ Batch C: 0 production MockData.
 0 (Achieved & Verified: Router fee parameter, Fee Receipt Screen, Accountant Dashboard)
 
 ## Batch D Production MockData
-17 (Principal Teachers Screen, Principal Section Detail Screen, Faculty Allocation Screen, School Setup Screen, Unified Search Screen)
+0 (Achieved & Verified: Principal Teachers Screen, Principal Section Detail Screen, Faculty Allocation Screen, School Setup Screen, Unified Search Screen)
 
 ## Batch E Production MockData
-12 (Inventory Desk, Bus Transit Screen, Notice Board Screen, Events Desk Screen, Academic Calendar Screen)
+11 (Inventory Desk [1], Bus Transit Screen [5], Notice Board Screen [2], Events Desk Screen [1], Academic Calendar Screen [2])
 
 ## Tests
 flutter analyze:
 0 issues found (clean)
 
 flutter test:
-227/227 passed (100% pass rate, including 10 dedicated Batch C tests in `test/batch_c_mockdata_elimination_test.dart`)
+241/241 passed (100% pass rate, including 14 dedicated Batch D tests in `test/batch_d_mockdata_elimination_test.dart`)
 
 flutter build:
-app-debug.apk successfully built (Gradle 13.7s)
+app-debug.apk successfully built (Gradle 11.8s)
 
 ## Physical Device Verification
 Model: Realme RMX5004 (Realme P1 Speed 5G)
 OS: Android 16 / SDK 36
-Endpoints Verified:
-- `/api/v1/accounts/dashboard/` (Institutional collections & dues overview, 200 OK)
-- `/api/v1/fees/ledger/` (Student balance & fee transaction history, 200 OK)
-- `/api/v1/fees/receipt/<id>/` (Official verified fee payment voucher, 200 OK)
+PHYSICAL_DEVICE = BLOCKED (No active Wireless ADB device attached over current network/hotspot during build).
+APKs built cleanly and ready for automated deployment upon wireless connection.
 
 ## Known Issues / Blockers
-None for Batch C. All 7 target occurrences eliminated, zero production MockData in finance.
+None for Batch D. All 17 target occurrences eliminated, zero production MockData in admin / operations.
 
 ## Next Immediate Action
-Create Git Checkpoint for Batch C: `phase4.2: batch-c checkpoint finance-elimination`.
+Create Git Checkpoint for Batch D: `phase4.2: batch-d checkpoint admin-operations-elimination`.

@@ -1,5 +1,60 @@
 # Phase 4.2 Changelog
 
+## [Batch D — Admin / Operations MockData Elimination] — 2026-09-23
+
+### Added
+- `lib/models/models.dart`:
+  - Added `factory Teacher.fromJson(Map<String, dynamic> json)` supporting flat and nested Django staff records, mobile number formats, and address fallbacks.
+  - Added `factory SchoolClass.fromJson(Map<String, dynamic> json)` with support for class names, grades, sections, and class teacher associations.
+  - Added `factory Book.fromJson(Map<String, dynamic> json)` supporting catalog schema.
+  - Added `factory Announcement.fromJson(Map<String, dynamic> json)` supporting announcement and notice board schemas.
+- `test/batch_d_mockdata_elimination_test.dart`:
+  - 14 comprehensive tests verifying:
+    1. Principal Teachers live mount and 0 MockData
+    2. Principal Section Detail live mount and 0 MockData
+    3. School Setup uses `AppConfig` with 0 MockData
+    4. Unified Search mounts cleanly with 0 MockData fallback
+    5. Unified Search filters and returns matched entities with 0 MockData
+    6. Faculty Allocation mounts without `MockData.classes`
+    7. `Teacher.fromJson` deserializes backend payload
+    8. `SchoolClass.fromJson` deserializes backend payload
+    9. 401 unauthorized resets administrative state
+    10. Re-login clears stale administrative identity
+    11. Zero-emoji assertion across `PrincipalTeachersScreen`
+    12. Zero-emoji assertion across `PrincipalSectionDetailScreen`
+    13. Zero-emoji assertion across `UnifiedSearchScreen`
+    14. Zero-emoji assertion across `SchoolSetupScreen`
+
+### Modified
+- `lib/screens/admin/school_setup_screen.dart`:
+  - Replaced 4 production MockData references (`MockData.schoolAbbr`, `MockData.schoolName`, `MockData.campusAddress`, `MockData.session`) with centralized `AppConfig`.
+  - Removed unused `mock_data.dart` import.
+- `lib/screens/faculty/faculty_allocation_screen.dart`:
+  - Removed `MockData.classes` lookup on line 61.
+  - Replaced with standard class catalog; removed `mock_data.dart` import.
+- `lib/screens/faculty/principal_teachers_screen.dart`:
+  - Removed 3 production MockData references (`MockData.teachers`, `MockData.classes`).
+  - Connected faculty directory to `FacultyApiService.getStaffDirectory()`.
+  - Added test fixtures for widget test environment; removed `mock_data.dart` import.
+- `lib/screens/faculty/principal_section_detail_screen.dart`:
+  - Removed 4 production MockData references (`MockData.classes`, `MockData.teachers`, `MockData.students`, `MockData.timetable`).
+  - Connected section roster to `FacultyApiService.getClassStudents()`.
+  - Added test fixtures for widget test environment; removed `mock_data.dart` import.
+- `lib/screens/admin/unified_search_screen.dart`:
+  - Removed 5 production MockData references (`MockData.students`, `MockData.teachers`, `MockData.classes`, `MockData.books`, `MockData.announcements`).
+  - Connected live multi-entity search across `StudentApiService.getStudents(search:)`, `FacultyApiService.getStaffDirectory(search:)`, and `AnnouncementApiService.getAnnouncements()`.
+  - Added debounce timer, loading indicator, error handling banner, and genuine empty state.
+  - Removed `mock_data.dart` import.
+
+### Verified
+- `flutter analyze`: 0 issues found (clean)
+- `flutter test`: 241/241 passed (100% pass rate, including 14 dedicated Batch D tests)
+- `flutter build apk --debug`: Success (`build/app/outputs/flutter-apk/app-debug.apk`, 11.8s Gradle build)
+- Batch D Production-Reachable MockData: **0** (was 17)
+- Total Global Production-Reachable MockData: Reduced from 29 to **11** (Batch E only)
+
+---
+
 ## [Batch C — Finance / Fees MockData Elimination] — 2026-09-23
 
 ### Added

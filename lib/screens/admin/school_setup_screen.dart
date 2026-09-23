@@ -6,7 +6,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../data/mock/mock_data.dart';
+import '../../core/config/app_config.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/shared_widgets.dart';
@@ -53,7 +53,7 @@ class SchoolSetupScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          MockData.schoolAbbr,
+                          AppConfig.schoolAbbr,
                           style: GoogleFonts.manrope(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
@@ -66,7 +66,7 @@ class SchoolSetupScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      MockData.schoolName,
+                      AppConfig.schoolName,
                       style: GoogleFonts.newsreader(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -75,7 +75,7 @@ class SchoolSetupScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      MockData.campusAddress,
+                      AppConfig.campusAddress,
                       style: GoogleFonts.manrope(
                         fontSize: 12,
                         color: AcademicColors.surface.withValues(alpha: 0.85),
@@ -95,7 +95,7 @@ class SchoolSetupScreen extends StatelessWidget {
               const InsetCard(
                 child: Column(
                   children: [
-                    _ConfigRow(label: 'Active Academic Session', value: MockData.session),
+                    _ConfigRow(label: 'Active Academic Session', value: AppConfig.academicSession),
                     Divider(height: 16, color: AcademicColors.border),
                     _ConfigRow(label: 'Curriculum Framework', value: 'CBSE New Delhi'),
                     Divider(height: 16, color: AcademicColors.border),
