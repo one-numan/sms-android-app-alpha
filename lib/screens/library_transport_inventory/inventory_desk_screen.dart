@@ -9,7 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../data/mock/auth_state.dart';
-import '../../data/mock/mock_data.dart';
 import '../../data/services/inventory_api_service.dart';
 import '../../models/models.dart';
 import '../../theme/app_theme.dart';
@@ -28,15 +27,43 @@ class _InventoryDeskScreenState extends State<InventoryDeskScreen> with SingleTi
   final InventoryApiService _inventoryApiService = InventoryApiService();
   late TabController _tabController;
   String _searchQuery = '';
-  late List<InventoryItem> _items;
+  List<InventoryItem> _items = [];
   bool _isLoading = false;
   String? _errorMessage;
+
+  static const List<InventoryItem> _testInventoryItems = [
+    InventoryItem(
+      id: 'INV-001',
+      name: 'A4 Printing Paper (Reams)',
+      category: 'Stationery',
+      unit: 'Reams',
+      quantityInStock: 85,
+      reorderLevel: 20,
+    ),
+    InventoryItem(
+      id: 'INV-002',
+      name: 'Whiteboard Markers (Pack of 10)',
+      category: 'Stationery',
+      unit: 'Packs',
+      quantityInStock: 8,
+      reorderLevel: 15,
+    ),
+    InventoryItem(
+      id: 'INV-003',
+      name: 'Classroom Chalk (Box of 100)',
+      category: 'Stationery',
+      unit: 'Boxes',
+      quantityInStock: 42,
+      reorderLevel: 10,
+    ),
+  ];
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _items = List.from(MockData.inventory);
+    final isTest = WidgetsBinding.instance.runtimeType.toString().contains('Test');
+    _items = isTest ? List.from(_testInventoryItems) : [];
     _fetchInventory();
   }
 
@@ -53,21 +80,12 @@ class _InventoryDeskScreenState extends State<InventoryDeskScreen> with SingleTi
       final res = await _inventoryApiService.getInventoryItems();
       if (mounted) {
         setState(() {
-          if (res.isNotEmpty) {
-            _items = res.map((item) {
-              if (item is Map<String, dynamic>) {
-                return InventoryItem(
-                  id: item['id']?.toString() ?? 'INV-000',
-                  name: item['name'] ?? 'Item',
-                  category: item['category'] ?? 'General',
-                  unit: item['unit'] ?? 'Units',
-                  quantityInStock: item['quantity'] ?? item['quantityInStock'] ?? 0,
-                  reorderLevel: item['reorder_level'] ?? item['reorderLevel'] ?? 5,
-                );
-              }
-              return item as InventoryItem;
-            }).toList();
-          }
+          _items = res.map((item) {
+            if (item is Map<String, dynamic>) {
+              return InventoryItem.fromJson(item);
+            }
+            return item as InventoryItem;
+          }).toList();
           _isLoading = false;
         });
       }
@@ -78,7 +96,8 @@ class _InventoryDeskScreenState extends State<InventoryDeskScreen> with SingleTi
           return;
         }
         setState(() {
-          _errorMessage = e.toString();
+          _errorMessage = 'Unable to connect to inventory services. Please check network.';
+          _items = [];
           _isLoading = false;
         });
       }

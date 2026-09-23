@@ -55,3 +55,23 @@ For Batch B (Student / Academic), the following live production Django endpoints
 3. **School Configuration**:
    - School name, abbreviation, campus address, and academic session are centralized in `AppConfig` and `TokenStorage`, eliminating all dependencies on `MockData`.
 
+## Batch E Endpoints Reused & Verified
+1. `GET /api/v1/inventory/desk/` (`InventoryApiService.getInventoryItems()`):
+   - Django backend exposes `InventoryDeskView` at `/api/v1/inventory/desk/`.
+   - Returns live inventory items catalog. Replaces `MockData.inventory` in `InventoryDeskScreen`.
+2. `GET /api/v1/transit/bus/?student_id=<id>` (`TransitApiService.getBusTransit({studentId})`):
+   - Returns real student transport route assignment, vehicle registration, driver contact, and stoppage sequence.
+   - Handled unassigned students by returning clean null/empty data rather than fake transit records. Replaces `MockData.routes` and `MockData.students` in `BusTransitScreen`.
+3. `GET /api/v1/announcements/` (`AnnouncementApiService.getAnnouncements()`):
+   - Returns published institutional circulars, notices, and events.
+   - Replaces `MockData.announcements` in `NoticeBoardScreen`, `MockData.events` in `EventsDeskScreen`, and `MockData.holidays`/`MockData.events` in `AcademicCalendarScreen`.
+
+## Batch E Gaps & Architectural Decisions
+1. **Dedicated Gazetted Holidays Endpoint**:
+   - The Django backend currently defines holidays in `apps/school_calendar/` but does not expose a standalone `/api/v1/calendar/holidays/` endpoint.
+   - **Resolution**: `AcademicCalendarScreen` categorizes circulars and observances from `/api/v1/announcements/` and presents genuine empty states if no holiday circulars are published for the session. Zero hardcoded holidays are fabricated in production.
+2. **Multi-Route Fleet Visibility for Students**:
+   - Students only possess an allocation to their own route; backend `/api/v1/transit/bus/` returns the student's assigned route.
+   - **Resolution**: When a single route is assigned, the screen displays that route. Multi-route fleet switching is only activated if multiple routes are returned from the backend fleet service.
+
+

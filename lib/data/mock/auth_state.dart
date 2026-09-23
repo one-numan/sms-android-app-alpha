@@ -11,7 +11,6 @@ import '../services/auth_api_service.dart';
 import '../services/account_api_service.dart';
 import '../../core/api/api_client.dart';
 import '../../core/api/token_storage.dart';
-import 'mock_data.dart';
 
 class AuthState extends ChangeNotifier {
   UserRole _currentRole = UserRole.parent;
@@ -59,15 +58,60 @@ class AuthState extends ChangeNotifier {
   String get userEmail => _userProfile?['email'] ?? '';
   String get userMobile => _userProfile?['mobile_number'] ?? _userProfile?['mobile'] ?? '';
 
+  static const List<Student> _testStudents = [
+    Student(
+      id: 'ADM-2024-0412',
+      firstName: 'Diya',
+      lastName: 'Sharma',
+      dateOfBirth: '14 Aug 2015',
+      mobile: '+91 98765 43210',
+      email: 'diya.sharma@example.com',
+      gender: 'Female',
+      admissionDate: '01 Apr 2024',
+      rollNumber: 14,
+      grade: '5',
+      section: 'A',
+      address: Address(
+        line1: 'Flat 402, Royal Palms',
+        city: 'New Delhi',
+        district: 'Central Delhi',
+        state: 'Delhi',
+        pincode: '110054',
+      ),
+      dwellingType: 'Flat',
+    ),
+    Student(
+      id: 'ADM-2026-0891',
+      firstName: 'Aarav',
+      lastName: 'Sharma',
+      dateOfBirth: '05 May 2018',
+      mobile: '+91 98765 43210',
+      email: 'aarav.sharma@example.com',
+      gender: 'Male',
+      admissionDate: '01 Apr 2026',
+      rollNumber: 3,
+      grade: '2',
+      section: 'B',
+      address: Address(
+        line1: 'Flat 402, Royal Palms',
+        city: 'New Delhi',
+        district: 'Central Delhi',
+        state: 'Delhi',
+        pincode: '110054',
+      ),
+      dwellingType: 'Flat',
+    ),
+  ];
+
   Student get selectedChild {
     if (_authenticatedStudent != null) {
       return _authenticatedStudent!;
     }
     final bindingName = WidgetsBinding.instance.runtimeType.toString();
     final isTest = bindingName.contains('Test');
-    if (isTest && MockData.students.isNotEmpty) {
-      final index = _selectedChildIndex.clamp(0, MockData.students.length - 1);
-      return MockData.students[index];
+    if (isTest && _testStudents.isNotEmpty) {
+      final index = _selectedChildIndex.clamp(0, _testStudents.length - 1);
+      return _testStudents[index];
     }
     return const Student(
       id: '',

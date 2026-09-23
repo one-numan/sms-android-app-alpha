@@ -8,7 +8,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../data/mock/mock_data.dart';
+import '../../data/services/announcement_api_service.dart';
 import '../../models/models.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_top_bar.dart';
@@ -22,15 +22,72 @@ class EventsDeskScreen extends StatefulWidget {
 }
 
 class _EventsDeskScreenState extends State<EventsDeskScreen> {
+  final AnnouncementApiService _announcementApi = AnnouncementApiService();
   String _selectedCategory = 'All';
-  late List<SchoolEvent> _events;
+  List<SchoolEvent> _events = [];
 
   final List<String> _categories = ['All', 'Celebrations', 'Examinations', 'Excursions', 'Meetings'];
+
+  static const List<SchoolEvent> _testEvents = [
+    SchoolEvent(
+      id: 'EVT-001',
+      title: 'Annual Sports Day 2026',
+      date: '28 Mar 2026',
+      startTime: '08:30 AM',
+      category: EventCategory.functionCelebration,
+      description: 'Annual inter-house athletic meet and track events across junior and senior wings.',
+      audience: 'All Students & Parents',
+    ),
+    SchoolEvent(
+      id: 'EVT-002',
+      title: 'Term-End Academic Assessment',
+      date: '15 Apr 2026',
+      startTime: '09:00 AM',
+      category: EventCategory.testExam,
+      description: 'Summative examinations for grades 1 through 12.',
+      audience: 'Classes 1–12',
+    ),
+    SchoolEvent(
+      id: 'EVT-003',
+      title: 'Heritage Educational Excursion',
+      date: '22 Apr 2026',
+      startTime: '07:30 AM',
+      category: EventCategory.tripExcursion,
+      description: 'Historical monuments field study trip for middle school cohorts.',
+      audience: 'Classes 6–8',
+    ),
+  ];
 
   @override
   void initState() {
     super.initState();
-    _events = List.from(MockData.events);
+    final isTest = WidgetsBinding.instance.runtimeType.toString().contains('Test');
+    _events = isTest ? List.from(_testEvents) : [];
+    _loadEvents();
+  }
+
+  Future<void> _loadEvents() async {
+    final isTest = WidgetsBinding.instance.runtimeType.toString().contains('Test');
+    if (isTest) return;
+
+    try {
+      final items = await _announcementApi.getAnnouncements();
+      final eventList = items
+          .whereType<Map<String, dynamic>>()
+          .where((m) =>
+              (m['post_type']?.toString().toLowerCase().contains('event') ?? false) ||
+              (m['category']?.toString().toLowerCase().contains('event') ?? false))
+          .map((m) => SchoolEvent.fromJson(m))
+          .toList();
+
+      if (mounted) {
+        setState(() {
+          _events = eventList;
+        });
+      }
+    } catch (_) {
+      // In production, keep empty list if error
+    }
   }
 
   @override

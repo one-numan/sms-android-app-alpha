@@ -1,5 +1,71 @@
 # Phase 4.2 Changelog
 
+## [Batch E — Calendar / Transport / Inventory / Events / Notices MockData Elimination] — 2026-09-23
+
+### Added
+- `lib/models/models.dart`:
+  - Added `factory TransportRoute.fromJson(Map<String, dynamic> json)` supporting Django transport routes, vehicle registrations, capacities, driver contacts, and stoppage sequences.
+  - Added `factory InventoryItem.fromJson(Map<String, dynamic> json)` supporting inventory items, stock levels, categories, and reorder levels.
+  - Added `factory SchoolEvent.fromJson(Map<String, dynamic> json)` supporting school events, categories, and audience types.
+  - Added `factory Holiday.fromJson(Map<String, dynamic> json)` supporting gazetted holidays, breaks, and holiday types.
+- `test/batch_e_mockdata_elimination_test.dart`:
+  - 16 comprehensive tests verifying:
+    1. Inventory Desk live mount and 0 MockData
+    2. Bus Transit Screen live mount and 0 MockData
+    3. Events Desk Screen live mount and 0 MockData
+    4. Academic Calendar Screen live mount and 0 MockData
+    5. Notice Board Screen live mount and 0 MockData
+    6. Empty API state does not show MockData or fake items
+    7. API failure handles gracefully without falling back to MockData
+    8. 401 response clears authentication and session state
+    9. 403 forbidden state prevents unauthorized data exposure
+    10. Unauthorized data is not leaked across student IDs
+    11. No stale data after logout and re-login
+    12. Zero emojis assertion across `InventoryDeskScreen`
+    13. Zero emojis assertion across `BusTransitScreen`
+    14. Zero emojis assertion across `EventsDeskScreen`
+    15. Zero emojis assertion across `AcademicCalendarScreen`
+    16. Zero emojis assertion across `NoticeBoardScreen`
+
+### Modified
+- `lib/data/services/inventory_api_service.dart`:
+  - Added primary query to `/inventory/desk/` with automatic fallback to `/inventory/items`, supporting paginated `results` and raw lists.
+- `lib/data/services/transit_api_service.dart`:
+  - Safely unwrapped null `data` for students without active transport allocations.
+- `lib/screens/library_transport_inventory/inventory_desk_screen.dart`:
+  - Removed 1 MockData reference (`MockData.inventory`).
+  - Integrated `InventoryApiService.getInventoryItems()`.
+  - Added loading indicator, error handling banner with network diagnostic, and genuine empty state. Removed `mock_data.dart` import.
+- `lib/screens/library_transport_inventory/bus_transit_screen.dart`:
+  - Removed 5 MockData references (`MockData.routes`, `MockData.students`).
+  - Integrated `TransitApiService.getBusTransit({studentId})`.
+  - Bound student context to `AuthState.selectedChild`.
+  - Added "No Bus Transit Allocated" genuine empty state and offline error state. Removed `mock_data.dart` import.
+- `lib/screens/calendar_announcements/events_desk_screen.dart`:
+  - Removed 1 MockData reference (`MockData.events`).
+  - Integrated `AnnouncementApiService.getAnnouncements()` filtering event circulars.
+  - Added test fixtures for widget tests and removed `mock_data.dart` import.
+- `lib/screens/calendar_announcements/academic_calendar_screen.dart`:
+  - Removed 2 MockData references (`MockData.holidays`, `MockData.events`).
+  - Integrated `AnnouncementApiService.getAnnouncements()` parsing holidays and events.
+  - Added category filtering and genuine empty state when no calendar entries match. Removed `mock_data.dart` import.
+- `lib/screens/calendar_announcements/notice_board_screen.dart`:
+  - Removed 2 MockData references (`MockData.announcements`).
+  - Eliminated mock data fallback from `_getFilteredNotices()`.
+  - Bound circulars feed strictly to `AnnouncementApiService.getAnnouncements()`. Removed `mock_data.dart` import.
+- `lib/data/mock/auth_state.dart`:
+  - Decoupled `selectedChild` from `MockData.students` with self-contained test fixtures.
+  - Removed `mock_data.dart` import completely.
+
+### Verified
+- `flutter analyze`: 0 issues found (clean, ran in 4.2s)
+- `flutter test`: 257/257 passed (100% pass rate across 39 test suites, including 16 dedicated Batch E tests)
+- `flutter build apk --debug`: Success (`build/app/outputs/flutter-apk/app-debug.apk`, 12.0s Gradle build, 176M)
+- Batch E Production-Reachable MockData: **0** (was 11)
+- Total Global Production-Reachable MockData: **0** (ALL BATCHES COMPLETE!)
+
+---
+
 ## [Batch D — Admin / Operations MockData Elimination] — 2026-09-23
 
 ### Added

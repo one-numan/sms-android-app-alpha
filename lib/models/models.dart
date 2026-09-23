@@ -744,6 +744,20 @@ class TransportRoute {
     required this.driverMobile,
     required this.stops,
   });
+
+  factory TransportRoute.fromJson(Map<String, dynamic> json) {
+    final rawStops = json['stops'] as List<dynamic>? ?? [];
+    return TransportRoute(
+      routeName: json['route'] ?? json['route_name'] ?? json['name'] ?? 'Route',
+      vehicleRegistration: json['vehicle_registration'] ?? json['vehicle_no'] ?? json['bus_no'] ?? 'N/A',
+      capacity: json['capacity'] is int
+          ? json['capacity']
+          : (int.tryParse(json['capacity']?.toString() ?? '') ?? 40),
+      driverName: json['driver_name'] ?? json['driver'] ?? 'Assigned Staff',
+      driverMobile: json['driver_mobile'] ?? json['driver_phone'] ?? '',
+      stops: rawStops.map((s) => s.toString()).toList(),
+    );
+  }
 }
 
 class StudentTransport {
@@ -776,6 +790,23 @@ class InventoryItem {
   });
 
   bool get isLowStock => quantityInStock <= reorderLevel;
+
+  factory InventoryItem.fromJson(Map<String, dynamic> json) {
+    return InventoryItem(
+      id: json['id']?.toString() ?? '',
+      name: json['name'] ?? json['item_name'] ?? 'Item',
+      category: json['category'] ?? 'General',
+      unit: json['unit'] ?? 'Units',
+      quantityInStock: json['quantity'] is int
+          ? json['quantity']
+          : (json['quantity_in_stock'] is int
+              ? json['quantity_in_stock']
+              : (int.tryParse(json['quantity']?.toString() ?? json['quantity_in_stock']?.toString() ?? '') ?? 0)),
+      reorderLevel: json['reorder_level'] is int
+          ? json['reorder_level']
+          : (int.tryParse(json['reorder_level']?.toString() ?? '') ?? 5),
+    );
+  }
 }
 
 class TimetableSlot {
@@ -833,6 +864,28 @@ class Holiday {
         return 'School Break';
     }
   }
+
+  factory Holiday.fromJson(Map<String, dynamic> json) {
+    HolidayType parseType(dynamic val) {
+      if (val == null) return HolidayType.gazetted;
+      final str = val.toString().toLowerCase();
+      if (str.contains('national')) return HolidayType.national;
+      if (str.contains('break') || str.contains('vacation')) return HolidayType.schoolEventBreak;
+      if (str.contains('restricted') || str.contains('optional')) return HolidayType.restrictedOptional;
+      if (str.contains('state')) return HolidayType.stateSpecific;
+      return HolidayType.gazetted;
+    }
+
+    return Holiday(
+      id: json['id']?.toString() ?? '',
+      name: json['name'] ?? json['title'] ?? 'Holiday',
+      date: json['date'] ?? json['holiday_date'] ?? json['start_date'] ?? '',
+      endDate: json['end_date']?.toString(),
+      type: parseType(json['type'] ?? json['holiday_type']),
+      state: json['state']?.toString(),
+      description: json['description'] ?? json['details'] ?? '',
+    );
+  }
 }
 
 class SchoolEvent {
@@ -869,6 +922,29 @@ class SchoolEvent {
       case EventCategory.other:
         return 'Institutional';
     }
+  }
+
+  factory SchoolEvent.fromJson(Map<String, dynamic> json) {
+    EventCategory parseCategory(dynamic val) {
+      if (val == null) return EventCategory.other;
+      final str = val.toString().toLowerCase();
+      if (str.contains('exam') || str.contains('test')) return EventCategory.testExam;
+      if (str.contains('celebration') || str.contains('function') || str.contains('annual')) return EventCategory.functionCelebration;
+      if (str.contains('trip') || str.contains('excursion')) return EventCategory.tripExcursion;
+      if (str.contains('meeting') || str.contains('ptm')) return EventCategory.meeting;
+      return EventCategory.other;
+    }
+
+    return SchoolEvent(
+      id: json['id']?.toString() ?? '',
+      title: json['title'] ?? json['name'] ?? 'Event',
+      date: json['date'] ?? json['event_date'] ?? json['start_date'] ?? '',
+      endDate: json['end_date']?.toString(),
+      startTime: json['start_time']?.toString() ?? json['time']?.toString(),
+      category: parseCategory(json['category'] ?? json['event_type']),
+      description: json['description'] ?? json['details'] ?? '',
+      audience: json['audience'] ?? 'ALL',
+    );
   }
 }
 

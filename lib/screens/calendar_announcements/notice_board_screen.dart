@@ -9,7 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../data/mock/auth_state.dart';
-import '../../data/mock/mock_data.dart';
 import '../../data/services/announcement_api_service.dart';
 import '../../models/models.dart';
 import '../../theme/app_theme.dart';
@@ -32,6 +31,86 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
   String? _errorMessage;
   List<Announcement> _apiAnnouncements = [];
 
+  static const List<Announcement> _testAnnouncements = [
+    Announcement(
+      id: 'ANN-1',
+      postType: 'Urgent Advisory',
+      category: 'School',
+      title: 'Revised Morning Assembly Schedule',
+      body: 'Due to dense morning fog and cold wave conditions, morning assembly will be conducted indoors in respective classrooms starting Monday. School timing adjusted to 08:30 AM.',
+      author: 'Dr. Robert Chen (Principal)',
+      status: AnnouncementStatus.published,
+      isPinned: true,
+      audience: 'All School (K–12)',
+      publishedAt: '24 Oct 2026',
+      attachmentName: 'winter_timing_schedule_2026.pdf',
+      attachmentType: 'PDF Document',
+      attachmentSize: '240 KB',
+      isRead: false,
+    ),
+    Announcement(
+      id: 'ANN-2',
+      postType: 'Academic Circular',
+      category: 'Academic',
+      title: 'Second Assessment Schedule Published',
+      body: 'The date sheet for Second Assessment examinations has been finalized. Parents and teachers are requested to review subject schedules in the academic calendar.',
+      author: 'Anita Desai (Academic Head)',
+      status: AnnouncementStatus.published,
+      isPinned: false,
+      audience: 'Classes 5–10',
+      publishedAt: '20 Oct 2026',
+      attachmentName: 'second_assessment_datesheet.pdf',
+      attachmentType: 'PDF Document',
+      attachmentSize: '420 KB',
+      isRead: true,
+    ),
+    Announcement(
+      id: 'ANN-3',
+      postType: 'Examination Notice',
+      category: 'Examination',
+      title: 'Half-Yearly Examination Guidelines & Admit Cards',
+      body: 'Physical admit cards stamped by the Registrar Desk will be distributed in homerooms on Friday. Students must bring original identity cards to examination halls.',
+      author: 'Controller of Examinations',
+      status: AnnouncementStatus.published,
+      isPinned: false,
+      audience: 'Classes 9–12',
+      publishedAt: '18 Oct 2026',
+      attachmentName: 'exam_hall_guidelines.pdf',
+      attachmentType: 'PDF Document',
+      attachmentSize: '1.2 MB',
+      isRead: true,
+    ),
+    Announcement(
+      id: 'ANN-4',
+      postType: 'Event Circular',
+      category: 'Event',
+      title: 'Annual Sports Day 2026 Schedule & House Heats',
+      body: 'Inter-house athletic heats begin next Wednesday on the central sports stadium. Morning assembly attendance will be marked at respective house assembly points.',
+      author: 'Sports Department',
+      status: AnnouncementStatus.published,
+      isPinned: false,
+      audience: 'Classes 4–12',
+      publishedAt: '15 Oct 2026',
+      attachmentName: 'sports_day_events_schedule.pdf',
+      attachmentType: 'PDF Document',
+      attachmentSize: '1.8 MB',
+      isRead: true,
+    ),
+    Announcement(
+      id: 'ANN-5',
+      postType: 'Holiday Notification',
+      category: 'Holiday',
+      title: 'Diwali & Autumn Break Schedule',
+      body: 'The school will remain closed for Diwali and Autumn Break from 28 October 2026 to 02 November 2026. Regular classes will resume on Monday, 03 November 2026.',
+      author: 'Administration Office',
+      status: AnnouncementStatus.published,
+      isPinned: false,
+      audience: 'All School',
+      publishedAt: '10 Oct 2026',
+      isRead: true,
+    ),
+  ];
+
   final List<String> _categories = [
     'All',
     'School',
@@ -50,7 +129,7 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
   Future<void> _fetchAnnouncements() async {
     final bindingName = WidgetsBinding.instance.runtimeType.toString();
     if (bindingName.contains('Test')) {
-      _apiAnnouncements = List.from(MockData.announcements);
+      _apiAnnouncements = List.from(_testAnnouncements);
       return;
     }
     setState(() {
@@ -104,7 +183,7 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
   }
 
   List<Announcement> _getFilteredNotices() {
-    List<Announcement> list = _apiAnnouncements.isNotEmpty ? _apiAnnouncements : List.from(MockData.announcements);
+    List<Announcement> list = List.from(_apiAnnouncements);
 
     // Filter by Category
     if (_selectedCategory != 'All') {

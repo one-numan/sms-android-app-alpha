@@ -15,7 +15,10 @@ class TransitApiService {
       },
     );
     if (response is Map<String, dynamic> && response.containsKey('data')) {
-      return response['data'] is Map<String, dynamic> ? response['data'] : response;
+      final data = response['data'];
+      if (data is Map<String, dynamic>) return data;
+      if (data == null) return {};
+      return response;
     }
     return response is Map<String, dynamic> ? response : {};
   }
