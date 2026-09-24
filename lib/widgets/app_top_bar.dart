@@ -74,13 +74,13 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
       case UserRole.vicePrincipal:
         return '/dashboard/principal';
       case UserRole.accountant:
-        return '/dashboard/accounts';
+        return '/dashboard/accountant';
       case UserRole.librarian:
-        return '/dashboard/library';
+        return '/dashboard/librarian';
       case UserRole.receptionist:
         return '/admissions/enquiries';
       case UserRole.superAdmin:
-        return '/dashboard/admin';
+        return '/dashboard/modules';
     }
   }
 

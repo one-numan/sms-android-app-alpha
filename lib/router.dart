@@ -298,6 +298,10 @@ GoRouter createOnpsRouter(AuthState authState) {
         builder: (context, state) => const AccountantDashboardScreen(),
       ),
       GoRoute(
+        path: '/dashboard/accounts',
+        builder: (context, state) => const AccountantDashboardScreen(),
+      ),
+      GoRoute(
         path: '/accounts/dashboard',
         builder: (context, state) => const AccountantDashboardScreen(),
       ),
@@ -306,11 +310,19 @@ GoRouter createOnpsRouter(AuthState authState) {
         builder: (context, state) => const LibrarianDashboardScreen(),
       ),
       GoRoute(
+        path: '/dashboard/library',
+        builder: (context, state) => const LibrarianDashboardScreen(),
+      ),
+      GoRoute(
         path: '/library/desk',
         builder: (context, state) => const LibrarianDashboardScreen(),
       ),
       GoRoute(
         path: '/dashboard/modules',
+        builder: (context, state) => const SuperAdminModulesScreen(),
+      ),
+      GoRoute(
+        path: '/dashboard/admin',
         builder: (context, state) => const SuperAdminModulesScreen(),
       ),
       GoRoute(
