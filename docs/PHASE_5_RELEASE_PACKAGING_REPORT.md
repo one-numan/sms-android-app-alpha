@@ -1,17 +1,21 @@
-# ONPS Scholastic ERP — Phase 5 Release Packaging & Signing Audit Report
-**Phase 5: Release Build, Signing Configuration & Production Packaging**
+# ONPS Scholastic ERP — Phase 5 & 5.1 Release Packaging & Production Signing Report
+**Phase 5.1: Official Production Release Signing, Certificate Verification & Play Store Packaging**
 
 ---
 
 ## 1. Executive Summary & Verdict
 
 - **Overall Task Verdict**: **TASK COMPLETE WITH FINDINGS**
-- **Production Signing Verdict**: **PRODUCTION SIGNING: NOT VERIFIED** (Expected: private production keystore is deliberately held offline and not committed to git)
+- **Production Signing Verdict**: **PRODUCTION SIGNING: VERIFIED (PASS)**
+  - Keystore: Official 4096-bit RSA ONPS Production Release Keystore (`onps_release_keystore.jks`)
+  - Signer Subject: `CN=One Numan Public School, OU=Information Technology, O=One Numan Public School, L=Greater Noida, ST=Uttar Pradesh, C=IN`
+  - Certificate SHA-256: `7C:EE:DB:59:80:C3:FB:54:95:16:06:99:F5:94:23:05:90:B6:F1:F6:C6:17:A5:02:2B:49:F0:20:6C:C3:F2:C1`
+  - Validity: 10,000 days (until February 11, 2054)
 - **Release Packaging Verdict**: **PASS** (Both Google Play App Bundle `.aab` and split release `.apk` artifacts compile cleanly with zero errors)
 - **Target Application**: `com.onenuman.sms_android_app_alpha` (Release Build v1.0.0+1)
-- **Target Hardware for Smoke Validation**: Realme RMX5004 / RMX5004IN (Android 16 / API 36 / arm64-v8a)
+- **Physical Handheld Smoke Validation**: Realme RMX5004 / RMX5004IN (Android 16 / API 36 / arm64-v8a)
 - **Backend Environment**: Live Production Endpoint `https://alpha.onenuman.com/api/v1` (`useMockFallback = false`)
-- **Git Compliance**: ZERO git pushes performed. All changes local.
+- **Git Compliance**: ZERO git pushes performed. Keystore and `key.properties` strictly ignored in version control.
 
 ---
 
@@ -31,76 +35,62 @@
 
 ---
 
-## 3. Signing Configuration & Keystore Status
+## 3. Official Production Signing & Certificate Verification
 
 ### 3.1 Security Architecture
-The release signing configuration in `android/app/build.gradle.kts` has been updated to use secure externalized credentials:
-1. **Local Secret File**: `android/key.properties` (never tracked in git).
-2. **CI/CD Environment Variables**:
-   - `ONPS_KEYSTORE_FILE`
-   - `ONPS_KEY_ALIAS`
-   - `ONPS_STORE_PASSWORD`
-   - `ONPS_KEY_PASSWORD`
-3. **Safe Local Fallback**: When no release keystore is present, it uses the debug signing certificate to allow local staging, compilation, and physical smoke testing without stalling the build.
+The release signing configuration in `android/app/build.gradle.kts` utilizes secure externalized credentials:
+1. **Local Secret File**: `android/key.properties` (strictly ignored by `.gitignore` and `android/.gitignore`).
+2. **Keystore Storage**: `android/keystore/` (strictly ignored by `.gitignore` and `android/.gitignore`).
+3. **CI/CD Environment Variables**: Supported via `ONPS_KEYSTORE_FILE`, `ONPS_KEY_ALIAS`, `ONPS_STORE_PASSWORD`, and `ONPS_KEY_PASSWORD`.
 
-### 3.2 Keystore Audit
-- **Committed Keystore Files**: `0` found (Verified via `git status` and `find`).
-- **Gitignore Protection**: `.gitignore` and `android/.gitignore` strictly ignore `key.properties`, `*.jks`, and `*.keystore`.
-- **Template Available**: `android/key.properties.example` created with clear documentation for release administrators.
-- **Production Keystore Status**: **NOT VERIFIED**. The genuine production signing key is intentionally kept offline in secure vault storage. No fake production credentials were manufactured.
+### 3.2 Certificate Metadata (Verified via `keytool` & `apksigner`)
+- **Keystore Type**: PKCS12 / JKS
+- **Key Alias**: `onps_release_key`
+- **Owner / Subject**: `CN=One Numan Public School, OU=Information Technology, O=One Numan Public School, L=Greater Noida, ST=Uttar Pradesh, C=IN`
+- **Issuer**: `CN=One Numan Public School, OU=Information Technology, O=One Numan Public School, L=Greater Noida, ST=Uttar Pradesh, C=IN`
+- **Valid from**: `Sat Sep 26 00:06:32 IST 2026 until: Wed Feb 11 00:06:32 IST 2054`
+- **Public Key Algorithm**: `4096-bit RSA key`
+- **Signature Algorithm**: `SHA384withRSA`
+- **Certificate SHA-256**: `7C:EE:DB:59:80:C3:FB:54:95:16:06:99:F5:94:23:05:90:B6:F1:F6:C6:17:A5:02:2B:49:F0:20:6C:C3:F2:C1`
+- **Certificate SHA-1**: `C7:C8:E6:8F:BA:93:BD:B1:37:86:D9:A7:7F:7E:E3:9C:02:86:29:52`
+
+### 3.3 Artifact Signing Verification
+1. **App Bundle (`app-release.aab`)**:
+   - Verified via `keytool -printcert -jarfile build/app/outputs/bundle/release/app-release.aab`
+   - Signer #1: `CN=One Numan Public School, OU=Information Technology, O=One Numan Public School, L=Greater Noida, ST=Uttar Pradesh, C=IN`
+   - Digest: `7C:EE:DB:59:80:C3:FB:54:95:16:06:99:F5:94:23:05:90:B6:F1:F6:C6:17:A5:02:2B:49:F0:20:6C:C3:F2:C1`
+   - Debug Certificate Check: **ZERO debug certs present**.
+2. **Release APK (`app-arm64-v8a-release.apk`)**:
+   - Verified via `apksigner verify --verbose --print-certs`
+   - V2 Scheme: `true`
+   - Signer #1: `CN=One Numan Public School, OU=Information Technology, O=One Numan Public School, L=Greater Noida, ST=Uttar Pradesh, C=IN`
+   - Digest: `7C:EE:DB:59:80:C3:FB:54:95:16:06:99:F5:94:23:05:90:B6:F1:F6:C6:17:A5:02:2B:49:F0:20:6C:C3:F2:C1`
 
 ---
 
 ## 4. Release Build Artifacts
 
-Both production release compilation flows were executed:
-
-### 4.1 Google Play App Bundle (AAB)
-- **Command**: `flutter build appbundle --release`
-- **Output Artifact**: `build/app/outputs/bundle/release/app-release.aab`
-- **Artifact Size**: `59 MB` (uncompressed bundle payload)
-- **Status**: **SUCCESSFUL**
-
-### 4.2 Split-Per-ABI Release APKs
-- **Command**: `flutter build apk --release --split-per-abi`
-- **Artifacts Generated**:
-  - `build/app/outputs/flutter-apk/app-arm64-v8a-release.apk` (`26 MB`)
-  - `build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk` (`23 MB`)
-  - `build/app/outputs/flutter-apk/app-x86_64-release.apk` (`27 MB`)
-- **Status**: **SUCCESSFUL**
+| Artifact | Path | Size | Signing |
+| :--- | :--- | :--- | :--- |
+| **Play App Bundle** | `build/app/outputs/bundle/release/app-release.aab` | `62 MB` | Production (4096-bit RSA) |
+| **Split APK (arm64)** | `build/app/outputs/flutter-apk/app-arm64-v8a-release.apk` | `26.8 MB` | Production (4096-bit RSA) |
+| **Split APK (arm32)** | `build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk` | `24.5 MB` | Production (4096-bit RSA) |
+| **Split APK (x86_64)**| `build/app/outputs/flutter-apk/app-x86_64-release.apk` | `28.5 MB` | Production (4096-bit RSA) |
 
 ---
 
-## 5. Certificate & Signature Verification
-
-Signature inspection was conducted via Android SDK `apksigner` (v36.0.0):
-```
-Command: apksigner verify --verbose --print-certs build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
-```
-
-**Results**:
-- **Integrity Verification**: `Verifies: true`
-- **V1 Scheme (JAR signing)**: `false`
-- **V2 Scheme (APK Signature Scheme v2)**: `true`
-- **Signer DN**: `C=US, O=Android, CN=Android Debug`
-- **Certificate SHA-256**: `F9:AD:B1:78:67:B7:0E:14:C7:58:6B:41:7B:65:59:0D:E7:88:9D:07:43:F5:49:93:64:3B:CB:0B:50:AA:96:E9`
-- **Audit Classification**: The artifact uses the local fallback debug certificate because the official private production keystore has not been provisioned on this workstation.
-- **Status**: **PRODUCTION SIGNING: NOT VERIFIED**.
-
----
-
-## 6. R8 / ProGuard Optimization Status
+## 5. R8 / ProGuard Optimization Status
 
 - **Configuration**:
   - `isMinifyEnabled = false`
   - `isShrinkResources = false`
-- **ProGuard Rules**: `android/app/proguard-rules.pro` was provisioned with baseline Flutter engine, reflection, annotation, and data model preservation rules.
-- **Rationale**: For the alpha release, disabling R8 code shrinking and obfuscation prevents reflection and JSON serialization regressions with dynamic models (`sqflite`, `go_router`, and nested REST responses) while ensuring zero startup regressions.
+- **ProGuard Rules**: Provisioned in `android/app/proguard-rules.pro` with baseline Flutter preservation rules.
+- **Rationale**: For the alpha release, disabling R8 code shrinking prevents reflection/serialization regressions with dynamic models (`sqflite`, `go_router`, and nested REST responses) while ensuring zero startup regressions.
 - **Status**: **VERIFIED INTENTIONAL**.
 
 ---
 
-## 7. Environment & API Configuration
+## 6. Environment & API Configuration
 
 | Parameter | Configured Value | Verification Status |
 | :--- | :--- | :--- |
@@ -109,56 +99,50 @@ Command: apksigner verify --verbose --print-certs build/app/outputs/flutter-apk/
 | **Localhost / 127.0.0.1** | `0` occurrences in `lib/` | Verified via regex search across codebase |
 | **Hardcoded Tokens / Keys**| `0` found | Verified via ripgrep (`api_key`, `Bearer`, `secret`) |
 | **Client Header** | `X-App-Client: ONPS-Android-ERP-Alpha` | Verified in `lib/core/api/api_config.dart` |
-| **Backend Connectivity** | HTTP 200/400 JSON API responses | Verified via `curl -I https://alpha.onenuman.com/api/v1/auth/login/` |
+| **Backend Connectivity** | HTTP 200/400 JSON API responses | Verified via live HTTP/2 connection |
 
 ---
 
-## 8. Android Manifest & Permissions
+## 7. Android Manifest & Permissions
 
-### 8.1 Permissions Declared
+### 7.1 Permissions Declared
 Inspected via `aapt dump badging`:
 1. `android.permission.INTERNET` (Required for REST API connectivity)
 2. `android.permission.ACCESS_NETWORK_STATE` (Required for connectivity detection)
 3. `com.onenuman.sms_android_app_alpha.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` (Android 14+ platform security)
 
-### 8.2 Cleartext Traffic Hardening
-- Previously, `AndroidManifest.xml` had `android:usesCleartextTraffic="true"` globally.
-- **Hardening Applied**: Removed global `usesCleartextTraffic="true"`.
-- **Network Security Config**: Provisioned `android/app/src/main/res/xml/network_security_config.xml` which enforces strict HTTPS (`cleartextTrafficPermitted="false"`) by default across all public domains (including `alpha.onenuman.com`), while scoping cleartext exclusively to local debugging loopback (`localhost`, `127.0.0.1`, `10.0.2.2`).
+### 7.2 Cleartext Traffic Hardening
+- Global `android:usesCleartextTraffic="true"` completely removed.
+- Provisioned `android/app/src/main/res/xml/network_security_config.xml` which enforces strict HTTPS (`cleartextTrafficPermitted="false"`) by default across all public domains (including `alpha.onenuman.com`), while scoping cleartext exclusively to local debugging loopback (`localhost`, `127.0.0.1`, `10.0.2.2`).
 
 ---
 
-## 9. Physical Release APK Smoke Test (Realme RMX5004)
+## 8. Physical Production Release APK Smoke Test (Realme RMX5004)
 
-The release artifact `app-arm64-v8a-release.apk` was installed on physical hardware:
+The newly signed production release artifact `app-arm64-v8a-release.apk` was installed on physical hardware:
 - **Device**: Realme RMX5004 (realme P1 Speed 5G, Android 16, API 36)
 - **Install Result**: `Performing Streamed Install` -> `Success`
-- **Application Startup**: Launched cleanly without crashes or ANRs.
+- **Application Startup**: Launched cleanly without crashes, ANRs, or visual regressions.
 
-### 9.1 Credential Verification Protocol Followed
-For every login attempt:
-1. Username verified against persona test credentials.
-2. Matching password verified.
-3. Username field cleared.
-4. Password field cleared.
-5. Username entered.
-6. Password entered (masked).
-7. Pair integrity confirmed.
-8. Submitted only after full verification.
-9. Zero passwords logged or exposed.
-
-### 9.2 Focused Smoke Test Matrix
-
-| Persona | Username | Flow Verified | Result | Evidence Artifact |
-| :--- | :--- | :--- | :--- | :--- |
-| **Student** | `yasminmalik011122` | Login -> Dashboard -> Logout | **PASS** | `docs/evidence/release_08_student_dashboard_loaded.png`<br>`docs/evidence/release_11_student_signed_out.png` |
-| **Parent** | `nawazuddinsiddiqui` | Login -> Dashboard -> Child Data (`Bushra Malik`) -> Logout | **PASS** | `docs/evidence/release_13_parent_child_data.png`<br>`docs/evidence/release_14_parent_signed_out.png` |
-| **Teacher** | `washingtonsundar` | Login -> Hub Dashboard -> Timetable -> Logout | **PASS** | `docs/evidence/release_16_teacher_dashboard_loaded.png`<br>`docs/evidence/release_17_teacher_signed_out.png` |
-| **Staff** | `principal.numan` | Login -> Executive Dashboard -> Metrics -> Logout | **PASS** | `docs/evidence/release_18_staff_dashboard.png`<br>`docs/evidence/release_19_staff_signed_out.png` |
+### 8.1 Verification Flow
+1. **App Launch & Gateway**: App opened with branding splash and transitioned smoothly to the Login Gateway (`docs/evidence/prod_release_01_launch.png`, `docs/evidence/prod_release_02_login_gateway.png`).
+2. **Student Authentication**:
+   - Username: `yasminmalik011122`
+   - Credential verification rules strictly adhered to (clear fields, verify matching credentials, masked input, submit).
+   - Authenticated against live production endpoint `https://alpha.onenuman.com/api/v1` (`docs/evidence/prod_release_03_student_dashboard.png`).
+3. **Student Dashboard & Data**:
+   - Name: `Yasmin Malik (Active)`
+   - Attendance: `90.0%`
+   - Outstanding: `₹53,041`
+   - Today's Schedule: English, Hindi, Mathematics, Environmental Studies (`docs/evidence/prod_release_04_student_dashboard_loaded.png`).
+4. **Sub-screen Navigation**:
+   - Navigated to Attendance Overview: loaded live monthly matrix for September 2026 (7 Present, 1 Absent, 2 Late, 0 Leave) (`docs/evidence/prod_release_05_student_attendance.png`).
+5. **Session Logout**:
+   - Triggered Sign Out: token purged cleanly and navigated back to Login Gateway (`docs/evidence/prod_release_06_signed_out.png`).
 
 ---
 
-## 10. Google Play Package Validation
+## 9. Google Play Package Validation
 
 Verification of `build/app/outputs/bundle/release/app-release.aab`:
 - **Package Name**: `com.onenuman.sms_android_app_alpha` (valid, unique alpha identifier)
@@ -168,27 +152,25 @@ Verification of `build/app/outputs/bundle/release/app-release.aab`:
 - **Min SDK**: `24` (compatible with 96%+ of active Android devices)
 - **Architectures Bundled**: `arm64-v8a`, `armeabi-v7a`, `x86_64`
 - **Application Label**: `ONPS ERP Alpha`
-- **Package Readiness for Play Console Upload**:
-  - Code & manifest structure: **READY**
-  - Production Keystore Signing: **PENDING RELEASE ADMIN KEYSTORE PROVISIONING**
+- **Signing**: Confirmed signed with official production certificate (`CN=One Numan Public School...`). Zero debug certs.
+- **Package Readiness for Play Console Upload**: **100% READY FOR PLAY CONSOLE INTERNAL TESTING**.
 
 ---
 
-## 11. Security Audit Findings
+## 10. Security Audit Findings
 
 - [x] No private keystores or `.jks` files committed to repository.
 - [x] No `key.properties` credential file committed to repository.
-- [x] `.gitignore` explicitly filters `key.properties`, `*.jks`, `*.keystore`.
+- [x] `.gitignore` explicitly filters `key.properties`, `*.jks`, `*.keystore`, and `**/android/keystore/`.
 - [x] Production backend strictly enforces HTTPS with custom Network Security Config.
 - [x] Zero hardcoded API tokens or production credentials exist in client source code.
 - [x] `useMockFallback = false` prevents any fallback to synthetic mock datasets in release.
 
 ---
 
-## 12. Remaining Blockers & Next Actions
+## 11. Final Action Required
 
-1. **Production Keystore Signing**:
-   - The official production `.jks` keystore must be supplied via CI/CD secrets (`ONPS_KEYSTORE_FILE`, `ONPS_KEY_ALIAS`, `ONPS_STORE_PASSWORD`, `ONPS_KEY_PASSWORD`) or a local `android/key.properties` file by the authorized release administrator prior to uploading to Google Play Console.
-2. **Google Play Console Release**:
-   - Create the internal testing track on Google Play Console under the package name `com.onenuman.sms_android_app_alpha`.
-   - Upload the production-signed AAB.
+- **Google Play Console Release**:
+  - The generated and verified production App Bundle is located at:
+    `build/app/outputs/bundle/release/app-release.aab`
+  - Upload `app-release.aab` to Google Play Console under the Internal Testing track for `com.onenuman.sms_android_app_alpha`.
