@@ -311,15 +311,15 @@ class _PrincipalTeachersScreenState extends State<PrincipalTeachersScreen> {
 
       if (mounted) {
         setState(() {
-          _teachersList = teachers.isNotEmpty ? teachers : List<Teacher>.from(_standardTestTeachers);
-          _classesList = List<SchoolClass>.from(_standardClasses);
+          _teachersList = teachers;
+          _classesList = [];
         });
       }
     } catch (_) {
       if (mounted) {
         setState(() {
-          _teachersList = List<Teacher>.from(_standardTestTeachers);
-          _classesList = List<SchoolClass>.from(_standardClasses);
+          _teachersList = [];
+          _classesList = [];
         });
       }
     }

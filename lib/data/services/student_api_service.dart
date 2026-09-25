@@ -1,5 +1,4 @@
 import '../../core/api/api_client.dart';
-import '../../core/api/api_config.dart';
 
 /// Student & Academic Roster API Service.
 class StudentApiService {
@@ -9,27 +8,11 @@ class StudentApiService {
 
   /// Fetch Student Hub summary data (`GET /api/v1/student/hub/`).
   Future<Map<String, dynamic>> getStudentHub() async {
-    try {
-      final response = await _apiClient.get('/student/hub/');
-      if (response is Map<String, dynamic> && response.containsKey('data')) {
-        return response['data'] is Map<String, dynamic> ? response['data'] : response;
-      }
-      return response is Map<String, dynamic> ? response : {};
-    } catch (_) {
-      if (ApiConfig.useMockFallback) {
-        return {
-          'student_name': 'Test Student',
-          'roll_no': 'STU-000',
-          'class_section': 'Class 8-A',
-          'attendance_percentage': 0.0,
-          'dues': 0.0,
-          'open_loans': 0,
-          'overdue_loans': 0,
-          'todays_schedule': [],
-        };
-      }
-      rethrow;
+    final response = await _apiClient.get('/student/hub/');
+    if (response is Map<String, dynamic> && response.containsKey('data')) {
+      return response['data'] is Map<String, dynamic> ? response['data'] : response;
     }
+    return response is Map<String, dynamic> ? response : {};
   }
 
   /// Fetch student list from live backend directory or class roster.

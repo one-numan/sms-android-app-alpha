@@ -120,12 +120,12 @@ class _ClassSubjectsScreenState extends State<ClassSubjectsScreen> {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthState>();
-    final teacherName = (auth.fullName.isNotEmpty && auth.fullName != 'User' && auth.fullName != 'Rajesh Sharma')
+    final teacherName = (auth.fullName.isNotEmpty && auth.fullName != 'User')
         ? auth.fullName
-        : 'Shubman Gill';
+        : (auth.currentUsername.isNotEmpty ? auth.currentUsername : 'Faculty Member');
     _subjectsData[0]['teacher'] = teacherName;
 
-    final className = widget.initialClass ?? '5-A';
+    final className = widget.initialClass ?? (auth.userProfile?['class_name'] ?? '5-A');
 
     final filtered = _subjectsData.where((s) {
       if (_selectedFilter == 'All') return true;
@@ -191,7 +191,7 @@ class _ClassSubjectsScreenState extends State<ClassSubjectsScreen> {
                           border: Border.all(color: AcademicColors.border),
                         ),
                         child: Text(
-                          'Class 5-A',
+                          'Class $className',
                           style: GoogleFonts.manrope(
                             fontSize: 11,
                             fontWeight: FontWeight.bold,

@@ -118,10 +118,10 @@ class _AcademicReportCardScreenState extends State<AcademicReportCardScreen> {
     } else {
       final name = auth.userProfile?['full_name'] as String? ?? (auth.fullName.isNotEmpty ? auth.fullName : 'Student');
       student = Student.fromJson({
-        'id': widget.studentId.isNotEmpty ? widget.studentId : 'STU-001',
+        'id': widget.studentId.isNotEmpty ? widget.studentId : (auth.userProfile?['student_id']?.toString() ?? ''),
         'full_name': name,
-        'roll_number': 1,
-        'class_section': auth.userProfile?['class_section'] ?? 'Grade 5-A',
+        'roll_number': auth.userProfile?['roll_number'] ?? 0,
+        'class_section': auth.userProfile?['class_section'] ?? '',
       });
     }
 
@@ -242,7 +242,7 @@ class _AcademicReportCardScreenState extends State<AcademicReportCardScreen> {
             TimetableSlot(
               className: '5-A',
               subjectName: 'Mathematics',
-              teacherName: 'Washington Sundar',
+              teacherName: 'Faculty Teacher',
               dayOfWeek: 1,
               periodNumber: 1,
               startTime: '08:00',

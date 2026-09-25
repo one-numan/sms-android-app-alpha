@@ -260,11 +260,22 @@ class _UnifiedSearchScreenState extends State<UnifiedSearchScreen> {
           .where((a) => a.title.toLowerCase().contains(queryLower) || a.body.toLowerCase().contains(queryLower))
           .toList();
 
-      final classList = _testClasses.where((c) {
-        return c.name.toLowerCase().contains(queryLower) ||
-            c.displayName.toLowerCase().contains(queryLower) ||
-            c.classTeacherName.toLowerCase().contains(queryLower);
-      }).toList();
+      final classNames = <String>{};
+      final classList = <SchoolClass>[];
+      for (final s in studentList) {
+        if (s.className.isNotEmpty && !classNames.contains(s.className)) {
+          classNames.add(s.className);
+          if (s.className.toLowerCase().contains(queryLower)) {
+            classList.add(SchoolClass(
+              id: 'CLS-${s.className}',
+              grade: s.grade ?? '',
+              section: s.section ?? '',
+              className: s.className,
+              classTeacherName: '',
+            ));
+          }
+        }
+      }
 
       if (mounted) {
         setState(() {

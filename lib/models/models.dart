@@ -722,7 +722,11 @@ class BookIssue {
 
   bool get isOverdue {
     if (returnDate != null) return false;
-    return true; // Mock calculation
+    final due = DateTime.tryParse(dueDate);
+    if (due != null) {
+      return DateTime.now().isAfter(due);
+    }
+    return false;
   }
 
   String get bookId => id;
