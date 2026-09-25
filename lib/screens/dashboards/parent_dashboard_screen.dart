@@ -62,6 +62,9 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
     try {
       final data = await _parentApiService.getDashboard();
       if (mounted) {
+        if (data.containsKey('children') && data['children'] is List) {
+          context.read<AuthState>().setLinkedChildren(data['children'] as List);
+        }
         setState(() {
           _dashboardData = data;
           _isLoading = false;

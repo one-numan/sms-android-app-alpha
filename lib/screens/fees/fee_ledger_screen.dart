@@ -9,7 +9,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../data/mock/auth_state.dart';
+import '../../data/services/accountant_api_service.dart';
 import '../../data/services/fee_api_service.dart';
+import '../../data/services/parent_api_service.dart';
+import '../../models/models.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/bottom_nav_bar.dart';
@@ -25,6 +28,7 @@ class FeeLedgerScreen extends StatefulWidget {
 
 class _FeeLedgerScreenState extends State<FeeLedgerScreen> {
   final FeeApiService _feeApiService = FeeApiService();
+  final AccountantApiService _accountantApiService = AccountantApiService();
   bool _isLoading = true;
   String? _errorMessage;
   Map<String, dynamic>? _ledgerData;
@@ -59,12 +63,44 @@ class _FeeLedgerScreenState extends State<FeeLedgerScreen> {
       _errorMessage = null;
     });
     try {
-      final data = await _feeApiService.getFeeLedger(studentId: widget.studentId);
-      if (mounted) {
-        setState(() {
-          _ledgerData = data;
-          _isLoading = false;
-        });
+      final auth = context.read<AuthState>();
+      String? resolvedStudentId = widget.studentId;
+      if ((resolvedStudentId == null || resolvedStudentId.isEmpty) && auth.currentRole == UserRole.parent) {
+        resolvedStudentId = auth.selectedLinkedChild?['id']?.toString() ?? (auth.selectedChild.id.isNotEmpty ? auth.selectedChild.id : null);
+        if (resolvedStudentId == null || resolvedStudentId.isEmpty) {
+          try {
+            final parentData = await ParentApiService().getDashboard();
+            final children = parentData['children'] as List?;
+            if (children != null && children.isNotEmpty) {
+              auth.setLinkedChildren(children);
+              resolvedStudentId = auth.selectedLinkedChild?['id']?.toString() ?? auth.selectedChild.id;
+            }
+          } catch (_) {}
+        }
+      }
+
+      if (auth.currentRole == UserRole.accountant && (resolvedStudentId == null || resolvedStudentId.isEmpty)) {
+        final accData = await _accountantApiService.getDashboard();
+        if (mounted) {
+          setState(() {
+            _ledgerData = {
+              'total_fee': accData['total_expected'] ?? 0.0,
+              'paid_amount': accData['total_dues_collected'] ?? 0.0,
+              'outstanding_amount': accData['total_outstanding_dues'] ?? 0.0,
+              'session': '2026-27',
+              'transactions': accData['recent_transactions'] ?? [],
+            };
+            _isLoading = false;
+          });
+        }
+      } else {
+        final data = await _feeApiService.getFeeLedger(studentId: resolvedStudentId);
+        if (mounted) {
+          setState(() {
+            _ledgerData = data;
+            _isLoading = false;
+          });
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -113,6 +149,63 @@ class _FeeLedgerScreenState extends State<FeeLedgerScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (auth.currentRole == UserRole.parent && auth.linkedChildren.isNotEmpty) ...[
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: List.generate(auth.linkedChildren.length, (i) {
+                        final child = auth.linkedChildren[i];
+                        final name = (child['full_name'] ?? child['name'] ?? 'Child').toString();
+                        final grade = (child['class_section'] ?? '').toString();
+                        final isSelected = auth.selectedChildIndex == i;
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: InkWell(
+                            onTap: () {
+                              auth.selectChild(i);
+                              _fetchLedger();
+                            },
+                            borderRadius: BorderRadius.circular(20),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: isSelected ? AcademicColors.primary : AcademicColors.surface,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: isSelected ? AcademicColors.primary : AcademicColors.border,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    name,
+                                    style: GoogleFonts.manrope(
+                                      fontSize: 13,
+                                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                      color: isSelected ? Colors.white : AcademicColors.textPrimary,
+                                    ),
+                                  ),
+                                  if (grade.isNotEmpty) ...[
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      '($grade)',
+                                      style: GoogleFonts.manrope(
+                                        fontSize: 11,
+                                        color: isSelected ? Colors.white.withValues(alpha: 0.8) : AcademicColors.textSecondary,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
                 if (_isLoading)
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 24),

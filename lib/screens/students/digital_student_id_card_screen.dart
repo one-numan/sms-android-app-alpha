@@ -64,8 +64,7 @@ class _DigitalStudentIdCardScreenState extends State<DigitalStudentIdCardScreen>
     });
 
     try {
-      final studentId = widget.studentId ?? '1';
-      final data = await _studentApi.getStudentIdCard(studentId);
+      final data = await _studentApi.getStudentIdCard(widget.studentId);
       if (mounted) {
         setState(() {
           _idCardData = data;
@@ -84,15 +83,20 @@ class _DigitalStudentIdCardScreenState extends State<DigitalStudentIdCardScreen>
 
   @override
   Widget build(BuildContext context) {
-    final fullName = _idCardData['full_name'] as String? ?? _idCardData['name'] as String? ?? 'Student';
-    final studentId = _idCardData['student_id'] as String? ?? widget.studentId ?? 'ADM-2024-0001';
-    final classSection = _idCardData['class_section'] as String? ?? 'Grade Nursery A';
-    final rollNumber = _idCardData['roll_number']?.toString() ?? '0';
+    final fullName = _idCardData['student_name'] as String? ?? _idCardData['full_name'] as String? ?? _idCardData['name'] as String? ?? 'Student';
+    final rawStudentId = _idCardData['student_id']?.toString();
+    final studentId = _idCardData['admission_number'] as String? ??
+        _idCardData['adm_no'] as String? ??
+        (rawStudentId != null
+            ? (rawStudentId.startsWith('ADM-') ? rawStudentId : 'ADM-2024-$rawStudentId')
+            : (widget.studentId ?? 'N/A'));
+    final classSection = _idCardData['class_section'] as String? ?? 'Enrolled';
+    final rollNumber = _idCardData['roll_no']?.toString() ?? _idCardData['roll_number']?.toString() ?? 'N/A';
     final dob = _idCardData['date_of_birth'] as String? ?? 'N/A';
     final bloodGroup = _idCardData['blood_group'] as String? ?? 'N/A';
-    final house = _idCardData['house'] as String? ?? 'Ruby House';
-    final validThrough = _idCardData['valid_through'] as String? ?? _idCardData['valid_until'] as String? ?? 'Valid Through 31 Mar 2027';
-    final qrCode = _idCardData['qr_verification_code'] as String? ?? _idCardData['qr_code'] as String? ?? 'ONPS-VERIFY-2026-ADM0412';
+    final house = _idCardData['house'] as String? ?? 'Primary Wing';
+    final validThrough = _idCardData['valid_through'] as String? ?? _idCardData['valid_until'] as String? ?? (_idCardData['academic_session'] != null ? 'Session ${_idCardData['academic_session']}' : 'AY 2026-27');
+    final qrCode = _idCardData['qr_data'] as String? ?? _idCardData['qr_verification_code'] as String? ?? _idCardData['qr_code'] as String? ?? 'ONPS-VERIFY';
     final emergencyLabel = _idCardData['emergency_contact_label'] as String? ??
         (_idCardData['emergency_contact_relation'] != null
             ? 'EMERGENCY CONTACT (${(_idCardData['emergency_contact_relation'] as String).toUpperCase()})'

@@ -72,7 +72,10 @@ class ApiClient {
       uri = uri.replace(queryParameters: stringParams);
     }
 
-    final token = await TokenStorage.getToken();
+    // Omit Authorization header for auth endpoints (e.g. login, register) to avoid
+    // rejecting requests with stale/expired JWT tokens before credential validation.
+    final isAuthEndpoint = endpoint.contains('/auth/login') || endpoint.contains('/auth/register');
+    final token = isAuthEndpoint ? null : await TokenStorage.getToken();
     final requestHeaders = ApiConfig.defaultHeaders(token: token);
     if (headers != null) {
       requestHeaders.addAll(headers);

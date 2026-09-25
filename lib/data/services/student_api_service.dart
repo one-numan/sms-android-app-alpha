@@ -133,10 +133,13 @@ class StudentApiService {
     return response is Map<String, dynamic> ? response : {};
   }
 
-  /// Get student digital ID card details (`GET /api/v1/students/<id>/id-card/`).
-  Future<Map<String, dynamic>> getStudentIdCard(String studentId) async {
-    final targetId = _resolveStudentId(studentId);
-    final response = await _apiClient.get('/students/$targetId/id-card/');
+  /// Get student digital ID card details:
+  /// - `GET /api/v1/students/id-card/` (self-only ID card when studentId is null/empty)
+  /// - `GET /api/v1/students/<id>/id-card/` (staff/authorized view for a specific student ID)
+  Future<Map<String, dynamic>> getStudentIdCard([String? studentId]) async {
+    final response = (studentId == null || studentId.trim().isEmpty)
+        ? await _apiClient.get('/students/id-card/')
+        : await _apiClient.get('/students/${_resolveStudentId(studentId)}/id-card/');
     if (response is Map<String, dynamic> && response.containsKey('data') && response['data'] is Map<String, dynamic>) {
       return response['data'] as Map<String, dynamic>;
     }

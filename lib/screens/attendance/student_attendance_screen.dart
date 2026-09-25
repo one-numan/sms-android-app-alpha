@@ -10,6 +10,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../data/mock/auth_state.dart';
 import '../../data/services/attendance_api_service.dart';
+import '../../data/services/parent_api_service.dart';
+import '../../models/models.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/bottom_nav_bar.dart';
@@ -59,7 +61,22 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
       _errorMessage = null;
     });
     try {
-      final data = await _attendanceApiService.getStudentAttendance(studentId: widget.studentId);
+      final auth = context.read<AuthState>();
+      String? resolvedStudentId = widget.studentId;
+      if ((resolvedStudentId == null || resolvedStudentId.isEmpty) && auth.currentRole == UserRole.parent) {
+        resolvedStudentId = auth.selectedLinkedChild?['id']?.toString() ?? (auth.selectedChild.id.isNotEmpty ? auth.selectedChild.id : null);
+        if (resolvedStudentId == null || resolvedStudentId.isEmpty) {
+          try {
+            final parentData = await ParentApiService().getDashboard();
+            final children = parentData['children'] as List?;
+            if (children != null && children.isNotEmpty) {
+              auth.setLinkedChildren(children);
+              resolvedStudentId = auth.selectedLinkedChild?['id']?.toString() ?? auth.selectedChild.id;
+            }
+          } catch (_) {}
+        }
+      }
+      final data = await _attendanceApiService.getStudentAttendance(studentId: resolvedStudentId);
       if (mounted) {
         setState(() {
           _attendanceData = data;
@@ -85,8 +102,6 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
     final leaveDays = _attendanceData?['on_leave_days'] as int? ?? 0;
     final matrix = (_attendanceData?['matrix'] as Map<String, dynamic>?) ?? {};
 
-
-
     return Scaffold(
       backgroundColor: AcademicColors.canvas,
       appBar: const AppTopBar(
@@ -102,6 +117,63 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (auth.currentRole == UserRole.parent && auth.linkedChildren.isNotEmpty) ...[
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: List.generate(auth.linkedChildren.length, (i) {
+                        final child = auth.linkedChildren[i];
+                        final name = (child['full_name'] ?? child['name'] ?? 'Child').toString();
+                        final grade = (child['class_section'] ?? '').toString();
+                        final isSelected = auth.selectedChildIndex == i;
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: InkWell(
+                            onTap: () {
+                              auth.selectChild(i);
+                              _fetchAttendance();
+                            },
+                            borderRadius: BorderRadius.circular(20),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: isSelected ? AcademicColors.primary : AcademicColors.surface,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: isSelected ? AcademicColors.primary : AcademicColors.border,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    name,
+                                    style: GoogleFonts.manrope(
+                                      fontSize: 13,
+                                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                      color: isSelected ? Colors.white : AcademicColors.textPrimary,
+                                    ),
+                                  ),
+                                  if (grade.isNotEmpty) ...[
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      '($grade)',
+                                      style: GoogleFonts.manrope(
+                                        fontSize: 11,
+                                        color: isSelected ? Colors.white.withValues(alpha: 0.8) : AcademicColors.textSecondary,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
                 if (_isLoading)
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 24),

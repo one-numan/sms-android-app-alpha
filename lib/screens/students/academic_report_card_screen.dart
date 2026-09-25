@@ -11,6 +11,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../data/mock/auth_state.dart';
+import '../../data/services/parent_api_service.dart';
 import '../../data/services/student_api_service.dart';
 import '../../models/models.dart';
 import '../../theme/app_theme.dart';
@@ -48,14 +49,29 @@ class _AcademicReportCardScreenState extends State<AcademicReportCardScreen> {
 
   Future<void> _loadReportCard() async {
     try {
-      final res = await StudentApiService().getReportCard(studentId: widget.studentId);
+      final auth = context.read<AuthState>();
+      String? targetId = widget.studentId.isNotEmpty ? widget.studentId : null;
+      if (targetId == null && auth.currentRole == UserRole.parent) {
+        targetId = auth.selectedLinkedChild?['id']?.toString() ?? (auth.selectedChild.id.isNotEmpty ? auth.selectedChild.id : null);
+        if (targetId == null || targetId.isEmpty) {
+          try {
+            final parentData = await ParentApiService().getDashboard();
+            final children = parentData['children'] as List?;
+            if (children != null && children.isNotEmpty) {
+              auth.setLinkedChildren(children);
+              targetId = auth.selectedLinkedChild?['id']?.toString() ?? auth.selectedChild.id;
+            }
+          } catch (_) {}
+        }
+      }
+      final res = await StudentApiService().getReportCard(studentId: targetId);
       if (mounted && res.isNotEmpty) {
         final List<StudentMarks> parsedMarks = [];
         if (res['subjects'] is List) {
           for (final sub in res['subjects']) {
             if (sub is Map<String, dynamic>) {
               parsedMarks.add(StudentMarks(
-                studentId: widget.studentId,
+                studentId: targetId ?? widget.studentId,
                 subjectName: sub['name']?.toString() ?? sub['subject_name']?.toString() ?? 'Subject',
                 firstAssessment: (sub['first_assessment'] as num?)?.toDouble() ?? 0.0,
                 halfYearly: (sub['half_yearly'] as num?)?.toDouble() ?? 0.0,
@@ -261,27 +277,31 @@ class _AcademicReportCardScreenState extends State<AcademicReportCardScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (auth.currentRole == UserRole.parent) ...[
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      _buildChildPill(
-                        name: 'Diya Sharma',
-                        grade: 'Grade 5-A',
-                        isSelected: auth.selectedChildIndex == 0,
-                        onTap: () => auth.selectChild(0),
-                      ),
-                      const SizedBox(width: 8),
-                      _buildChildPill(
-                        name: 'Aarav Sharma',
-                        grade: 'Grade 2-B',
-                        isSelected: auth.selectedChildIndex == 1,
-                        onTap: () => auth.selectChild(1),
-                      ),
-                    ],
+                if (auth.linkedChildren.isNotEmpty) ...[
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: List.generate(auth.linkedChildren.length, (i) {
+                        final c = auth.linkedChildren[i];
+                        final name = (c['full_name'] ?? c['name'] ?? 'Child').toString();
+                        final grade = (c['class_section'] ?? '').toString();
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: _buildChildPill(
+                            name: name,
+                            grade: grade,
+                            isSelected: auth.selectedChildIndex == i,
+                            onTap: () {
+                              auth.selectChild(i);
+                              _loadReportCard();
+                            },
+                          ),
+                        );
+                      }),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 12),
+                  const SizedBox(height: 12),
+                ],
               ],
               // 1. Academic Header (Compact, per prompt specifications)
               _buildAcademicHeader(student),
@@ -390,7 +410,8 @@ class _AcademicReportCardScreenState extends State<AcademicReportCardScreen> {
   // Section 1: Academic Header
   // ---------------------------------------------------------------------------
   Widget _buildAcademicHeader(Student student) {
-    final gradeName = student.firstName == 'Diya' ? '5-A' : '2-B';
+    final grade = student.grade;
+    final gradeName = (grade != null && grade.isNotEmpty) ? grade : 'Enrolled';
     return InsetCard(
       margin: EdgeInsets.zero,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),

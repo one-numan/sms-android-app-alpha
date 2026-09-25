@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import '../../models/models.dart';
 import '../services/auth_api_service.dart';
 import '../services/account_api_service.dart';
+import '../services/parent_api_service.dart';
 import '../../core/api/api_client.dart';
 import '../../core/api/token_storage.dart';
 
@@ -17,6 +18,7 @@ class AuthState extends ChangeNotifier {
   String _currentUsername = '';
   bool _isAuthenticated = false;
   int _selectedChildIndex = 0;
+  List<Map<String, dynamic>> _linkedChildren = [];
   Student? _authenticatedStudent;
   Map<String, dynamic>? _userProfile;
 
@@ -38,8 +40,15 @@ class AuthState extends ChangeNotifier {
   String get currentUsername => _currentUsername;
   bool get isAuthenticated => _isAuthenticated;
   int get selectedChildIndex => _selectedChildIndex;
+  List<Map<String, dynamic>> get linkedChildren => _linkedChildren;
   Student? get authenticatedStudent => _authenticatedStudent;
   Map<String, dynamic>? get userProfile => _userProfile;
+
+  Map<String, dynamic>? get selectedLinkedChild {
+    if (_linkedChildren.isEmpty) return null;
+    final index = _selectedChildIndex.clamp(0, _linkedChildren.length - 1);
+    return _linkedChildren[index];
+  }
 
   String get fullName {
     if (_userProfile != null && _userProfile!['full_name'] != null && (_userProfile!['full_name'] as String).trim().isNotEmpty) {
@@ -107,6 +116,35 @@ class AuthState extends ChangeNotifier {
     if (_authenticatedStudent != null) {
       return _authenticatedStudent!;
     }
+    if (_linkedChildren.isNotEmpty) {
+      final index = _selectedChildIndex.clamp(0, _linkedChildren.length - 1);
+      final c = _linkedChildren[index];
+      final fullName = (c['full_name'] ?? c['name'] ?? '').toString().trim();
+      final parts = fullName.split(' ');
+      final firstName = parts.isNotEmpty ? parts.first : '';
+      final lastName = parts.length > 1 ? parts.skip(1).join(' ') : '';
+      return Student(
+        id: c['id']?.toString() ?? '',
+        firstName: firstName,
+        lastName: lastName,
+        dateOfBirth: c['date_of_birth']?.toString() ?? '',
+        mobile: c['mobile']?.toString() ?? '',
+        email: c['email']?.toString() ?? '',
+        gender: c['gender']?.toString() ?? '',
+        admissionDate: c['admission_date']?.toString() ?? '',
+        rollNumber: int.tryParse(c['roll_no']?.toString() ?? c['roll_number']?.toString() ?? '') ?? 0,
+        address: const Address(
+          line1: '',
+          city: '',
+          district: '',
+          state: '',
+          pincode: '',
+        ),
+        dwellingType: '',
+        grade: c['class_section']?.toString() ?? '',
+        section: '',
+      );
+    }
     final bindingName = WidgetsBinding.instance.runtimeType.toString();
     final isTest = bindingName.contains('Test');
     if (isTest && _testStudents.isNotEmpty) {
@@ -132,6 +170,14 @@ class AuthState extends ChangeNotifier {
       ),
       dwellingType: '',
     );
+  }
+
+  void setLinkedChildren(List<dynamic> children) {
+    _linkedChildren = children.map((c) => Map<String, dynamic>.from(c as Map)).toList();
+    if (_linkedChildren.isNotEmpty && _selectedChildIndex >= _linkedChildren.length) {
+      _selectedChildIndex = 0;
+    }
+    notifyListeners();
   }
 
   void setAuthenticatedStudent(Student student) {
@@ -177,6 +223,16 @@ class AuthState extends ChangeNotifier {
               _userProfile = profile;
             }
           } catch (_) {}
+          if (role == UserRole.parent) {
+            try {
+              final parentData = await ParentApiService().getDashboard();
+              final children = parentData['children'] as List?;
+              if (children != null && children.isNotEmpty) {
+                _linkedChildren = children.map((c) => Map<String, dynamic>.from(c as Map)).toList();
+                _selectedChildIndex = 0;
+              }
+            } catch (_) {}
+          }
         }
         notifyListeners();
         return true;
@@ -186,6 +242,13 @@ class AuthState extends ChangeNotifier {
       final bindingName = WidgetsBinding.instance.runtimeType.toString();
       if (bindingName.contains('Test')) {
         _isAuthenticated = true;
+        if (role == UserRole.parent && _linkedChildren.isEmpty) {
+          _linkedChildren = _testStudents.map((s) => {
+            'id': s.id,
+            'full_name': '${s.firstName} ${s.lastName}'.trim(),
+            'class_section': 'Grade ${s.grade}-${s.section}',
+          }).toList();
+        }
         notifyListeners();
         return true;
       }
@@ -210,6 +273,7 @@ class AuthState extends ChangeNotifier {
     _isAuthenticated = false;
     _authenticatedStudent = null;
     _selectedChildIndex = 0;
+    _linkedChildren = [];
     _currentUsername = '';
     _userProfile = null;
     _currentRole = UserRole.student;
