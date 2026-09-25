@@ -58,6 +58,7 @@ unlinked_spec.ds
 key.properties
 *.jks
 *.keystore
+**/android/keystore/
 
 # iOS/XCode related
 **/ios/**/*.mode1v3
