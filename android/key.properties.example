@@ -1,0 +1,24 @@
+# ==============================================================================
+# One Numan Public School (ONPS) — Production Android Release Signing Template
+# DO NOT COMMIT THE ACTUAL key.properties FILE TO VERSION CONTROL
+# Store the actual keystore securely in CI/CD secrets or local protected storage.
+# ==============================================================================
+
+# Relative path from android/ directory to your production keystore file:
+storeFile=../keystore/onps_release_keystore.jks
+
+# Key alias defined when creating the production keystore:
+keyAlias=onps_release_key
+
+# Keystore password:
+storePassword=YOUR_STORE_PASSWORD_HERE
+
+# Key password:
+keyPassword=YOUR_KEY_PASSWORD_HERE
+
+# Note: In CI/CD pipelines (e.g. GitHub Actions), you may also supply these
+# via environment variables:
+# ONPS_KEYSTORE_FILE
+# ONPS_KEY_ALIAS
+# ONPS_STORE_PASSWORD
+# ONPS_KEY_PASSWORD

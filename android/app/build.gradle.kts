@@ -1,8 +1,29 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
+
+val keystorePropertiesFile = rootProject.file("key.properties")
+val keystoreProperties = Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
+
+val envStoreFile: String? = System.getenv("ONPS_KEYSTORE_FILE")
+val envStorePassword: String? = System.getenv("ONPS_STORE_PASSWORD")
+val envKeyAlias: String? = System.getenv("ONPS_KEY_ALIAS")
+val envKeyPassword: String? = System.getenv("ONPS_KEY_PASSWORD")
+
+val storeFilePath: String? = keystoreProperties.getProperty("storeFile") ?: envStoreFile
+val storePass: String? = keystoreProperties.getProperty("storePassword") ?: envStorePassword
+val keyId: String? = keystoreProperties.getProperty("keyAlias") ?: envKeyAlias
+val keyPass: String? = keystoreProperties.getProperty("keyPassword") ?: envKeyPassword
+val hasReleaseKeystore = !storeFilePath.isNullOrBlank() && 
+    (file(storeFilePath).exists() || rootProject.file(storeFilePath).exists())
 
 android {
     namespace = "com.onenuman.sms_android_app_alpha"
@@ -29,11 +50,39 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        create("release") {
+            if (hasReleaseKeystore) {
+                val resolvedKeystoreFile = if (file(storeFilePath!!).exists()) {
+                    file(storeFilePath)
+                } else {
+                    rootProject.file(storeFilePath)
+                }
+                storeFile = resolvedKeystoreFile
+                storePassword = storePass
+                keyAlias = keyId
+                keyPassword = keyPass
+            } else {
+                // If production keystore is not yet configured, fall back to debug signing for local staging/smoke test.
+                // NOTE: Production release status will report PRODUCTION SIGNING: NOT VERIFIED.
+                val debugConfig = signingConfigs.getByName("debug")
+                storeFile = debugConfig.storeFile
+                storePassword = debugConfig.storePassword
+                keyAlias = debugConfig.keyAlias
+                keyPassword = debugConfig.keyPassword
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = false
+            isShrinkResources = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 }
