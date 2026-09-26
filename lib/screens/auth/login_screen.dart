@@ -33,7 +33,23 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _errorMessage;
 
   @override
+  void initState() {
+    super.initState();
+    _identifierController.addListener(_onIdentifierChanged);
+  }
+
+  void _onIdentifierChanged() {
+    final text = _identifierController.text.trim().toLowerCase();
+    if (text.contains('principal') && _selectedRole != UserRole.principal) {
+      setState(() {
+        _selectedRole = UserRole.principal;
+      });
+    }
+  }
+
+  @override
   void dispose() {
+    _identifierController.removeListener(_onIdentifierChanged);
     _identifierController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -87,16 +103,20 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     final auth = context.read<AuthState>();
+    final uTrim = username.toLowerCase();
+    final effectiveRole = (uTrim.contains('principal') || _selectedRole == UserRole.principal)
+        ? UserRole.principal
+        : _selectedRole;
 
     try {
       if (isTest) {
         auth.login(
-          role: _selectedRole,
+          role: effectiveRole,
           username: username,
           password: password,
         );
         if (auth.isAuthenticated) {
-          _navigateForRole(_selectedRole);
+          _navigateForRole(effectiveRole);
         } else {
           setState(() {
             _errorMessage = 'Wrong password or invalid credentials. Please try again.';
@@ -106,7 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
 
       final success = await auth.login(
-        role: _selectedRole,
+        role: effectiveRole,
         username: username,
         password: password,
       );

@@ -13,6 +13,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../core/config/app_config.dart';
 import '../../data/mock/auth_state.dart';
+import '../../models/models.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/onps_logo.dart';
 import '../../widgets/shared_widgets.dart';
@@ -88,16 +89,20 @@ class _MorningBriefingTransitionScreenState
   Widget build(BuildContext context) {
     final auth = context.watch<AuthState>();
     final userProfile = auth.userProfile;
-    final roleTitle = AuthState.roleTitle(auth.currentRole);
+    final isPrincipal = auth.currentRole == UserRole.principal ||
+        auth.currentUsername.toLowerCase().contains('principal');
+    final roleTitle = isPrincipal ? 'Principal' : AuthState.roleTitle(auth.currentRole);
     final fullName = (userProfile?['full_name'] as String?)?.trim().isNotEmpty == true
         ? (userProfile!['full_name'] as String).trim()
         : (auth.fullName.isNotEmpty ? auth.fullName : (auth.currentUsername.isNotEmpty ? auth.currentUsername : 'User'));
     final initials = fullName != 'User' && fullName.isNotEmpty
         ? fullName.split(RegExp(r'\s+')).where((e) => e.isNotEmpty).map((e) => e[0].toUpperCase()).take(2).join()
         : (auth.currentUsername.isNotEmpty ? auth.currentUsername[0].toUpperCase() : 'U');
-    final designation = (userProfile?['designation'] as String?)?.trim().isNotEmpty == true
-        ? (userProfile!['designation'] as String).trim()
-        : '$roleTitle & Institutional Member';
+    final designation = isPrincipal
+        ? 'Principal • Head of Institution'
+        : ((userProfile?['designation'] as String?)?.trim().isNotEmpty == true
+            ? (userProfile!['designation'] as String).trim()
+            : '$roleTitle & Institutional Member');
 
     return PopScope(
       canPop: false,

@@ -77,7 +77,17 @@ class _StaffDirectoryScreenState extends State<StaffDirectoryScreen> {
   Widget build(BuildContext context) {
     final filtered = _staffList.where((m) {
       final dept = (m['department'] as String? ?? 'Academics').toLowerCase();
+      final role = (m['assigned_role'] as String? ?? m['designation'] as String? ?? '').toLowerCase();
       if (_selectedDept == 'All') return true;
+      if (_selectedDept == 'Academics') {
+        return dept.contains('academic') || role.contains('teacher') || role.contains('faculty') || role.contains('head');
+      }
+      if (_selectedDept == 'Administration') {
+        return dept.contains('admin') || role.contains('admin') || role.contains('accountant') || role.contains('clerk') || role.contains('registrar') || role.contains('principal');
+      }
+      if (_selectedDept == 'Support') {
+        return dept.contains('support') || dept.contains('transport') || role.contains('driver') || role.contains('librarian') || role.contains('receptionist') || role.contains('guard') || role.contains('peon');
+      }
       return dept.contains(_selectedDept.toLowerCase());
     }).toList();
 
@@ -237,89 +247,93 @@ class _StaffDirectoryScreenState extends State<StaffDirectoryScreen> {
 
                                 return Padding(
                                   padding: const EdgeInsets.only(bottom: 10),
-                                  child: InsetCard(
-                                    child: Row(
-                                      children: [
-                                        CircleAvatar(
-                                          radius: 22,
-                                          backgroundColor: AcademicColors.primaryDark,
-                                          child: Text(
-                                            avatarLetter,
-                                            style: GoogleFonts.newsreader(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: AcademicColors.accent,
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(12),
+                                    onTap: () => _showStaffProfileSheet(context, member),
+                                    child: InsetCard(
+                                      child: Row(
+                                        children: [
+                                          CircleAvatar(
+                                            radius: 22,
+                                            backgroundColor: AcademicColors.primaryDark,
+                                            child: Text(
+                                              avatarLetter,
+                                              style: GoogleFonts.newsreader(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                                color: AcademicColors.accent,
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
-                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                children: [
-                                                  Expanded(
-                                                    child: Text(
-                                                      fullName,
-                                                      style: GoogleFonts.newsreader(
-                                                        fontSize: 15,
-                                                        fontWeight: FontWeight.bold,
-                                                        color: AcademicColors.textPrimary,
-                                                      ),
-                                                      maxLines: 1,
-                                                      overflow: TextOverflow.ellipsis,
-                                                    ),
-                                                  ),
-                                                  PillBadge.info(dept),
-                                                ],
-                                              ),
-                                              const SizedBox(height: 2),
-                                              Text(
-                                                designation,
-                                                style: GoogleFonts.manrope(
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: AcademicColors.caramelDark,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Row(
-                                                children: [
-                                                  if (email.isNotEmpty) ...[
-                                                    const Icon(Icons.mail_outline, size: 13, color: AcademicColors.textSecondary),
-                                                    const SizedBox(width: 4),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                  children: [
                                                     Expanded(
                                                       child: Text(
-                                                        email,
-                                                        style: GoogleFonts.manrope(
-                                                          fontSize: 11,
-                                                          color: AcademicColors.textSecondary,
+                                                        fullName,
+                                                        style: GoogleFonts.newsreader(
+                                                          fontSize: 15,
+                                                          fontWeight: FontWeight.bold,
+                                                          color: AcademicColors.textPrimary,
                                                         ),
                                                         maxLines: 1,
                                                         overflow: TextOverflow.ellipsis,
                                                       ),
                                                     ),
+                                                    PillBadge.info(dept),
                                                   ],
-                                                  if (mobile.isNotEmpty) ...[
-                                                    const SizedBox(width: 8),
-                                                    const Icon(Icons.phone_outlined, size: 13, color: AcademicColors.textSecondary),
-                                                    const SizedBox(width: 4),
-                                                    Text(
-                                                      mobile,
-                                                      style: GoogleFonts.manrope(
-                                                        fontSize: 11,
-                                                        color: AcademicColors.textSecondary,
+                                                ),
+                                                const SizedBox(height: 2),
+                                                Text(
+                                                  designation,
+                                                  style: GoogleFonts.manrope(
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: AcademicColors.caramelDark,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 4),
+                                                Row(
+                                                  children: [
+                                                    if (email.isNotEmpty) ...[
+                                                      const Icon(Icons.mail_outline, size: 13, color: AcademicColors.textSecondary),
+                                                      const SizedBox(width: 4),
+                                                      Expanded(
+                                                        child: Text(
+                                                          email,
+                                                          style: GoogleFonts.manrope(
+                                                            fontSize: 11,
+                                                            color: AcademicColors.textSecondary,
+                                                          ),
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow.ellipsis,
+                                                        ),
                                                       ),
-                                                    ),
+                                                    ],
+                                                    if (mobile.isNotEmpty) ...[
+                                                      const SizedBox(width: 8),
+                                                      const Icon(Icons.phone_outlined, size: 13, color: AcademicColors.textSecondary),
+                                                      const SizedBox(width: 4),
+                                                      Text(
+                                                        mobile,
+                                                        style: GoogleFonts.manrope(
+                                                          fontSize: 11,
+                                                          color: AcademicColors.textSecondary,
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ],
-                                                ],
-                                              ),
-                                            ],
+                                                ),
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 );
@@ -329,6 +343,121 @@ class _StaffDirectoryScreenState extends State<StaffDirectoryScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  void _showStaffProfileSheet(BuildContext context, Map<String, dynamic> member) {
+    final fullName = member['full_name'] as String? ?? 'Staff Member';
+    final designation = member['designation'] as String? ?? member['assigned_role'] ?? 'Faculty';
+    final dept = member['department'] as String? ?? 'Academics';
+    final email = member['email'] as String? ?? 'n/a@onps.edu.in';
+    final mobile = member['mobile'] as String? ?? 'N/A';
+    final empId = member['employee_id']?.toString() ?? member['id']?.toString() ?? 'EMP-102';
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AcademicColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 28,
+                      backgroundColor: AcademicColors.primaryDark,
+                      child: Text(
+                        fullName.isNotEmpty ? fullName[0].toUpperCase() : 'S',
+                        style: GoogleFonts.newsreader(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: AcademicColors.accent,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            fullName,
+                            style: GoogleFonts.newsreader(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AcademicColors.textPrimary,
+                            ),
+                          ),
+                          Text(
+                            '$designation • $dept',
+                            style: GoogleFonts.manrope(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w600,
+                              color: AcademicColors.caramelDark,
+                            ),
+                          ),
+                          Text(
+                            'Employee ID: $empId',
+                            style: GoogleFonts.manrope(
+                              fontSize: 11,
+                              color: AcademicColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    PillBadge.success('Active Staff'),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const Divider(height: 1, color: AcademicColors.border),
+                const SizedBox(height: 16),
+                ListTile(
+                  dense: true,
+                  leading: const Icon(Icons.phone_outlined, color: AcademicColors.primary),
+                  title: const Text('Direct Mobile'),
+                  subtitle: Text(mobile),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Initiating direct call to $fullName ($mobile)...')),
+                    );
+                  },
+                ),
+                ListTile(
+                  dense: true,
+                  leading: const Icon(Icons.email_outlined, color: AcademicColors.primary),
+                  title: const Text('Official Email'),
+                  subtitle: Text(email),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Opening mail client for $email...')),
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () => Navigator.pop(ctx),
+                    icon: const Icon(Icons.close),
+                    label: const Text('Close Profile Dossier'),
+                    style: ElevatedButton.styleFrom(backgroundColor: AcademicColors.primary),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

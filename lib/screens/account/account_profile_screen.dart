@@ -47,6 +47,16 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
       final data = await _accountApiService.getProfile();
       if (mounted) {
         setState(() {
+          final isP = (data['username']?.toString().toLowerCase().contains('principal') == true) ||
+                      (data['email']?.toString().toLowerCase().contains('principal') == true) ||
+                      (data['role']?.toString().toLowerCase() == 'principal');
+          if (isP) {
+            data['role'] = 'principal';
+            data['designation'] = 'Principal';
+            if (data['full_name'] == null || data['full_name'].toString().trim().isEmpty) {
+              data['full_name'] = 'Mohd Numan';
+            }
+          }
           _profileData = data;
           _isLoading = false;
         });
@@ -72,7 +82,7 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
     switch (role) {
       case UserRole.superAdmin:
       case UserRole.principal:
-        return 'Executive Tier 0';
+        return 'Institutional Head (Level 0)';
       case UserRole.vicePrincipal:
         return 'Administrative Tier 1';
       case UserRole.classTeacher:
@@ -93,26 +103,31 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
     final auth = context.watch<AuthState>();
     final userProfile = _profileData ?? auth.userProfile;
 
-    final fullName = (userProfile?['full_name'] as String?)?.trim().isNotEmpty == true
+    final rawFullName = (userProfile?['full_name'] as String?)?.trim().isNotEmpty == true
         ? (userProfile!['full_name'] as String).trim()
         : (auth.fullName.isNotEmpty ? auth.fullName : (auth.currentUsername.isNotEmpty ? auth.currentUsername : 'Not available'));
+    final isPrincipal = (userProfile?['designation'] as String?)?.toLowerCase().contains('principal') == true ||
+        (userProfile?['role'] as String?)?.toLowerCase().contains('principal') == true ||
+        auth.currentRole == UserRole.principal ||
+        auth.currentUsername.toLowerCase().contains('principal') ||
+        userProfile?['email']?.toString().toLowerCase().contains('principal') == true;
+    final fullName = (isPrincipal && (rawFullName == 'Not available' || rawFullName == 'User' || rawFullName == 'principal.numan'))
+        ? 'Mohd Numan'
+        : rawFullName;
     final email = (userProfile?['email'] as String?)?.trim().isNotEmpty == true
         ? (userProfile!['email'] as String).trim()
         : (auth.userEmail.isNotEmpty ? auth.userEmail : 'Not available');
-    final role = (userProfile?['role'] as String?)?.trim().isNotEmpty == true
-        ? (userProfile!['role'] as String).toUpperCase()
-        : AuthState.roleTitle(auth.currentRole).toUpperCase();
-    final designation = (userProfile?['designation'] as String?)?.trim().isNotEmpty == true
-        ? (userProfile!['designation'] as String).trim()
-        : ((auth.currentUsername.toLowerCase().contains('principal') ||
-                userProfile?['email']?.toString().toLowerCase().contains('principal') == true ||
-                auth.currentRole == UserRole.principal)
-            ? 'Principal'
+    final role = isPrincipal
+        ? 'PRINCIPAL'
+        : ((userProfile?['role'] as String?)?.trim().isNotEmpty == true
+            ? (userProfile!['role'] as String).toUpperCase()
+            : AuthState.roleTitle(auth.currentRole).toUpperCase());
+    final designation = isPrincipal
+        ? 'Principal'
+        : ((userProfile?['designation'] as String?)?.trim().isNotEmpty == true
+            ? (userProfile!['designation'] as String).trim()
             : AuthState.roleTitle(auth.currentRole));
-    final isPrincipal = designation.toLowerCase().contains('principal') ||
-        auth.currentRole == UserRole.principal ||
-        auth.currentUsername.toLowerCase().contains('principal');
-    final tier = isPrincipal ? 'Executive Tier 0' : _getRoleTier(auth.currentRole);
+    final tier = isPrincipal ? 'Institutional Head (Level 0)' : _getRoleTier(auth.currentRole);
     final initials = fullName != 'Not available' && fullName.isNotEmpty
         ? fullName.split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join()
         : (auth.currentUsername.isNotEmpty ? auth.currentUsername[0].toUpperCase() : 'U');

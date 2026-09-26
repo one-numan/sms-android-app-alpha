@@ -45,11 +45,13 @@ class FacultyApiService {
     int page = 1,
     int? pageSize,
     String? role,
+    String? department,
     String? search,
   }) async {
     final query = <String, dynamic>{'page': page.toString()};
     if (pageSize != null) query['page_size'] = pageSize.toString();
     if (role != null && role.isNotEmpty) query['role'] = role;
+    if (department != null && department.isNotEmpty) query['department'] = department;
     if (search != null && search.isNotEmpty) query['search'] = search;
 
     final response = await _apiClient.get('/faculty/staff/', queryParameters: query);

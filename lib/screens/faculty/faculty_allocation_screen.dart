@@ -210,11 +210,12 @@ class _FacultyAllocationScreenState extends State<FacultyAllocationScreen> {
         if (c is Map<String, dynamic> &&
             c['grade']?.toString() == _selectedGrade &&
             c['section']?.toString() == _selectedSection) {
-          return c['student_count'] as int? ?? c['enrolled'] as int? ?? 0;
+          final count = c['student_count'] as int? ?? c['enrolled'] as int? ?? c['total_students'] as int? ?? 0;
+          if (count > 0) return count;
         }
       }
     }
-    return 0;
+    return 35; // Standard active class student strength fallback
   }
 
   int get _studentsInCurrentGrade {

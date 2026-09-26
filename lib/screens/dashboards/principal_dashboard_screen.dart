@@ -58,9 +58,11 @@ class _PrincipalDashboardScreenState extends State<PrincipalDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthState>();
-    final rawName = (auth.fullName.isNotEmpty && auth.fullName != 'User' && auth.fullName != 'Rajesh Sharma') ? auth.fullName : 'Numan Khan';
-    final principalName = rawName.startsWith('Principal') ? rawName : 'Principal $rawName';
-    final initials = principalName.split(' ').where((e) => e.isNotEmpty).map((e) => e[0].toUpperCase()).take(2).join();
+    final rawName = (auth.fullName.isNotEmpty && auth.fullName != 'User' && auth.fullName != 'Rajesh Sharma') ? auth.fullName : 'Mohd Numan';
+    final displayName = (rawName == 'Principal Numan' || rawName == 'principal.numan' || rawName.isEmpty)
+        ? 'Mohd Numan'
+        : (rawName.startsWith('Principal ') ? rawName.replaceFirst('Principal ', '') : rawName);
+    final initials = displayName.split(' ').where((e) => e.isNotEmpty).map((e) => e[0].toUpperCase()).take(2).join();
 
     final totalStudents = _dashboardData['total_enrolled_students']?.toString() ?? '10000';
     final totalFaculty = _dashboardData['total_faculty']?.toString() ?? '255';
@@ -136,28 +138,27 @@ class _PrincipalDashboardScreenState extends State<PrincipalDashboardScreen> {
                               children: [
                                 Row(
                                   children: [
-                                    Expanded(
-                                      child: Text(
-                                        principalName,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: GoogleFonts.newsreader(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: AcademicColors.textPrimary,
-                                        ),
+                                    Text(
+                                      displayName,
+                                      style: GoogleFonts.newsreader(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: AcademicColors.textPrimary,
                                       ),
                                     ),
                                     const SizedBox(width: 6),
                                     OnpsVerifiedBadge.principal(size: 20),
-                                    const SizedBox(width: 6),
+                                    const Spacer(),
                                     PillBadge.info('2026–27'),
                                   ],
                                 ),
+                                const SizedBox(height: 2),
                                 Text(
-                                  'Head of Institution • Executive Leadership',
+                                  'Principal • Head of Institution',
                                   style: GoogleFonts.manrope(
-                                    fontSize: 11.5,
-                                    color: AcademicColors.textSecondary,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: AcademicColors.primaryDark,
                                   ),
                                 ),
                               ],

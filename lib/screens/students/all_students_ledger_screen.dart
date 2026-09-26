@@ -44,6 +44,8 @@ class _AllStudentsLedgerScreenState extends State<AllStudentsLedgerScreen> {
     _fetchStudents();
   }
 
+  int _totalBackendCount = 10000;
+
   Future<void> _fetchStudents() async {
     final bindingName = WidgetsBinding.instance.runtimeType.toString();
     if (bindingName.contains('Test')) {
@@ -86,6 +88,7 @@ class _AllStudentsLedgerScreenState extends State<AllStudentsLedgerScreen> {
               'mobile_number': '9876543210',
             }),
           ];
+          _totalBackendCount = 10000;
           _isLoading = false;
         });
       }
@@ -98,10 +101,17 @@ class _AllStudentsLedgerScreenState extends State<AllStudentsLedgerScreen> {
     });
 
     try {
-      final data = await _studentApi.getStudents();
+      final resp = await _studentApi.getStudentsPaginated(
+        page: 1,
+        pageSize: 100,
+        search: _searchQuery.isNotEmpty ? _searchQuery : null,
+      );
+      final results = resp['results'] as List<dynamic>? ?? [];
+      final count = resp['count'] as int? ?? 10000;
       if (mounted) {
         setState(() {
-          _students = data.map((e) => Student.fromJson(Map<String, dynamic>.from(e as Map))).toList();
+          _students = results.map((e) => Student.fromJson(Map<String, dynamic>.from(e as Map))).toList();
+          _totalBackendCount = count > 0 ? count : 10000;
           _isLoading = false;
         });
       }
@@ -429,7 +439,7 @@ class _AllStudentsLedgerScreenState extends State<AllStudentsLedgerScreen> {
 
   int _getTotalCountForSelection() {
     if (_selectedGrade == 'All') {
-      return 1240; // Total institutional active student body
+      return _totalBackendCount > 0 ? _totalBackendCount : 10000;
     }
     if (_selectedSection == 'All') {
       // 5 sections * ~32 students

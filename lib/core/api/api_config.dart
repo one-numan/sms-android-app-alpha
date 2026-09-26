@@ -20,6 +20,7 @@ class ApiConfig {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
       'X-App-Client': 'ONPS-Android-ERP-Alpha',
+      'User-Agent': 'ONPS-Android-ERP-Alpha/1.0.0 (Android 16; RMX5004)',
     };
     if (token != null && token.isNotEmpty) {
       headers['Authorization'] = 'Bearer $token';

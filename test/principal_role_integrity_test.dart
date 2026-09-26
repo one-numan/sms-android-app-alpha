@@ -18,6 +18,18 @@ void main() {
       expect(role, equals(UserRole.principal));
     });
 
+    test('AuthState resolves UserRole.principal from backend profile with role: staff and username: principal.numan', () {
+      final profile = {
+        'id': 38290,
+        'username': 'principal.numan',
+        'role': 'staff',
+        'email': 'principal@onenuman.com',
+      };
+
+      final role = AuthState.resolveRoleFromProfile(profile);
+      expect(role, equals(UserRole.principal));
+    });
+
     test('AuthState profile resolution strictly differentiates principal from teacher', () {
       final profile = {
         'id': 38290,

@@ -42,12 +42,17 @@ void main() {
     expect(find.text('Preparing your Principal Portal...'), findsOneWidget);
 
     // Wait for transition timer to complete and advance to PrincipalDashboardScreen
-    await tester.pump(const Duration(milliseconds: 1500));
-    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pump(const Duration(milliseconds: 2000));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump();
 
-    // Verify PrincipalDashboardScreen is displayed
+    // Verify PrincipalDashboardScreen is displayed with Principal navigation
     expect(find.byType(PrincipalDashboardScreen), findsOneWidget);
-    expect(find.text("TODAY'S OVERVIEW"), findsOneWidget);
-    expect(find.text('QUICK ACCESS'), findsOneWidget);
+    expect(find.text('Portal'), findsOneWidget);
+    expect(find.text('Academics'), findsOneWidget);
+    expect(find.text('Students'), findsOneWidget);
+    expect(find.text('Notices'), findsOneWidget);
+    expect(find.text('More'), findsOneWidget);
   });
 }

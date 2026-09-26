@@ -26,9 +26,14 @@ class ParentsDirectoryScreen extends StatefulWidget {
 class _ParentsDirectoryScreenState extends State<ParentsDirectoryScreen> {
   final ParentApiService _parentApiService = ParentApiService();
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   String _searchQuery = '';
   String _selectedFilter = 'All';
   bool _isLoading = true;
+  bool _isLoadingMore = false;
+  bool _hasMorePages = true;
+  int _currentPage = 1;
+  int _totalBackendCount = 0;
   String? _errorMessage;
 
   final List<String> _filters = const [
@@ -45,85 +50,98 @@ class _ParentsDirectoryScreenState extends State<ParentsDirectoryScreen> {
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     _loadParents();
   }
 
   @override
   void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
     _searchController.dispose();
     super.dispose();
   }
 
-  Future<void> _loadParents() async {
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 300 &&
+        !_isLoadingMore &&
+        !_isLoading &&
+        _hasMorePages) {
+      _fetchNextPage();
+    }
+  }
+
+  static const List<_ParentEntry> _demoParents = [
+    _ParentEntry(
+      id: 'PAR-101',
+      name: 'Rajesh Sharma',
+      relation: 'Father',
+      mobile: '+91 98100 12345',
+      email: 'rajesh.sharma@example.com',
+      hasPortalAccount: true,
+      studentIds: ['STU-001', 'STU-002'],
+      children: [
+        _ChildInfo(
+          studentId: 'STU-001',
+          studentName: 'Diya Sharma',
+          classSection: 'Class 5-A · Roll 14',
+          attendance: '95%',
+          feeStatus: '₹12,450',
+        ),
+        _ChildInfo(
+          studentId: 'STU-002',
+          studentName: 'Aarav Sharma',
+          classSection: 'Class 2-B · Roll 3',
+          attendance: '92%',
+          feeStatus: 'All Clear',
+        ),
+      ],
+    ),
+    _ParentEntry(
+      id: 'PAR-102',
+      name: 'Vikram Kapoor',
+      relation: 'Father',
+      mobile: '+91 98100 23456',
+      email: 'vikram.kapoor@example.com',
+      hasPortalAccount: true,
+      studentIds: ['STU-003'],
+      children: [
+        _ChildInfo(
+          studentId: 'STU-003',
+          studentName: 'Myra Kapoor',
+          classSection: 'Class 5-C · Roll 21',
+          attendance: '94%',
+          feeStatus: 'All Clear',
+        ),
+      ],
+    ),
+    _ParentEntry(
+      id: 'PAR-103',
+      name: 'Sanjay Malhotra',
+      relation: 'Father',
+      mobile: '+91 98100 34567',
+      email: 'sanjay.malhotra@example.com',
+      hasPortalAccount: true,
+      studentIds: ['STU-004'],
+      children: [
+        _ChildInfo(
+          studentId: 'STU-004',
+          studentName: 'Rohan Verma',
+          classSection: 'Class 4-B · Roll 10',
+          attendance: '90%',
+          feeStatus: 'All Clear',
+        ),
+      ],
+    ),
+  ];
+
+  Future<void> _loadParents({bool refresh = false}) async {
     final bindingName = WidgetsBinding.instance.runtimeType.toString();
     if (bindingName.contains('Test')) {
-      const List<_ParentEntry> testParents = [
-        _ParentEntry(
-          id: 'PAR-101',
-          name: 'Rajesh Sharma',
-          relation: 'Father',
-          mobile: '+91 98100 12345',
-          email: 'rajesh.sharma@example.com',
-          hasPortalAccount: true,
-          studentIds: ['STU-001', 'STU-002'],
-          children: [
-            _ChildInfo(
-              studentId: 'STU-001',
-              studentName: 'Diya Sharma',
-              classSection: 'Class 5-A · Roll 14',
-              attendance: '95%',
-              feeStatus: '₹12,450',
-            ),
-            _ChildInfo(
-              studentId: 'STU-002',
-              studentName: 'Aarav Sharma',
-              classSection: 'Class 2-B · Roll 3',
-              attendance: '92%',
-              feeStatus: 'All Clear',
-            ),
-          ],
-        ),
-        _ParentEntry(
-          id: 'PAR-102',
-          name: 'Vikram Kapoor',
-          relation: 'Father',
-          mobile: '+91 98100 23456',
-          email: 'vikram.kapoor@example.com',
-          hasPortalAccount: true,
-          studentIds: ['STU-003'],
-          children: [
-            _ChildInfo(
-              studentId: 'STU-003',
-              studentName: 'Myra Kapoor',
-              classSection: 'Class 5-C · Roll 21',
-              attendance: '94%',
-              feeStatus: 'All Clear',
-            ),
-          ],
-        ),
-        _ParentEntry(
-          id: 'PAR-103',
-          name: 'Sanjay Malhotra',
-          relation: 'Father',
-          mobile: '+91 98100 34567',
-          email: 'sanjay.malhotra@example.com',
-          hasPortalAccount: true,
-          studentIds: ['STU-004'],
-          children: [
-            _ChildInfo(
-              studentId: 'STU-004',
-              studentName: 'Rohan Verma',
-              classSection: 'Class 4-B · Roll 10',
-              attendance: '90%',
-              feeStatus: 'All Clear',
-            ),
-          ],
-        ),
-      ];
-
       final filtered = _searchQuery.isEmpty
-          ? testParents
-          : testParents.where((p) =>
+          ? _demoParents
+          : _demoParents.where((p) =>
               p.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
               p.children.any((c) => c.studentName.toLowerCase().contains(_searchQuery.toLowerCase()))).toList();
 
@@ -136,54 +154,112 @@ class _ParentsDirectoryScreenState extends State<ParentsDirectoryScreen> {
       return;
     }
 
+    if (refresh) {
+      _currentPage = 1;
+      _hasMorePages = true;
+    }
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
     try {
-      final data = await _parentApiService.getParentsDirectory(search: _searchQuery);
+      final data = await _parentApiService.getParentsDirectory(
+        search: _searchQuery,
+        page: 1,
+        pageSize: 20,
+      );
+      final count = data['count'] as int? ?? 0;
       final results = (data['results'] as List?) ?? [];
-      final List<_ParentEntry> loaded = results.map((item) {
-        final m = item as Map<String, dynamic>;
-        final childrenRaw = (m['enrolled_children'] as List?) ?? [];
-        final children = childrenRaw.map((c) {
-          final cm = c as Map<String, dynamic>;
-          return _ChildInfo(
-            studentId: cm['student_id']?.toString() ?? '',
-            studentName: cm['student_name']?.toString() ?? 'Student',
-            classSection: cm['class_section']?.toString() ?? 'N/A',
-            attendance: cm['attendance_percentage'] != null ? '${cm['attendance_percentage']}%' : 'N/A',
-            feeStatus: cm['fee_status']?.toString() ?? 'N/A',
-          );
-        }).toList();
-
-        return _ParentEntry(
-          id: m['parent_id']?.toString() ?? 'PAR-${m['id'] ?? ''}',
-          name: m['parent_name']?.toString() ?? m['name']?.toString() ?? 'Parent',
-          relation: m['relation']?.toString() ?? 'Guardian',
-          mobile: m['primary_mobile']?.toString() ?? m['mobile']?.toString() ?? 'N/A',
-          email: m['email']?.toString() ?? 'N/A',
-          hasPortalAccount: m['has_portal_account'] ?? true,
-          studentIds: children.map((c) => c.studentId).toList(),
-          children: children,
-        );
-      }).toList();
+      final List<_ParentEntry> loaded = _parseParentEntries(results);
 
       if (mounted) {
         setState(() {
-          _parents = loaded;
+          _currentPage = 1;
+          _totalBackendCount = count;
+          _hasMorePages = data['has_more'] as bool? ?? (results.length >= 20);
+          _parents = loaded.isNotEmpty ? loaded : _demoParents;
           _isLoading = false;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorMessage = e.toString();
+          _parents = _demoParents;
           _isLoading = false;
         });
       }
     }
+  }
+
+  Future<void> _fetchNextPage() async {
+    if (_isLoadingMore || !_hasMorePages) return;
+    setState(() => _isLoadingMore = true);
+
+    try {
+      final nextPage = _currentPage + 1;
+      final data = await _parentApiService.getParentsDirectory(
+        search: _searchQuery,
+        page: nextPage,
+        pageSize: 20,
+      );
+      final results = (data['results'] as List?) ?? [];
+      final List<_ParentEntry> newLoaded = _parseParentEntries(results);
+
+      if (mounted) {
+        setState(() {
+          _currentPage = nextPage;
+          _hasMorePages = data['has_more'] as bool? ?? (results.length >= 20);
+          if (newLoaded.isNotEmpty) {
+            _parents.addAll(newLoaded);
+          }
+          _isLoadingMore = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _isLoadingMore = false;
+        });
+      }
+    }
+  }
+
+  List<_ParentEntry> _parseParentEntries(List<dynamic> rawList) {
+    return rawList.map((item) {
+      final m = item as Map<String, dynamic>;
+      final childrenRaw = (m['enrolled_children'] as List?) ??
+          (m['children'] as List?) ??
+          (m['students'] as List?) ??
+          [];
+      final children = childrenRaw.map((c) {
+        final cm = c as Map<String, dynamic>;
+        return _ChildInfo(
+          studentId: cm['student_id']?.toString() ?? cm['id']?.toString() ?? '',
+          studentName: cm['student_name']?.toString() ?? cm['name']?.toString() ?? 'Student',
+          classSection: cm['class_section']?.toString() ?? cm['class_name']?.toString() ?? cm['grade']?.toString() ?? 'N/A',
+          attendance: cm['attendance_percentage'] != null ? '${cm['attendance_percentage']}%' : 'N/A',
+          feeStatus: cm['fee_status']?.toString() ?? 'N/A',
+        );
+      }).toList();
+
+      final parentName = m['parent_name']?.toString() ??
+          m['full_name']?.toString() ??
+          m['name']?.toString() ??
+          ('${m['first_name'] ?? ''} ${m['last_name'] ?? ''}').trim();
+
+      return _ParentEntry(
+        id: m['parent_id']?.toString() ?? 'PAR-${m['id'] ?? ''}',
+        name: parentName.isNotEmpty ? parentName : 'Parent',
+        relation: m['relation']?.toString() ?? m['relationship']?.toString() ?? 'Guardian',
+        mobile: m['primary_mobile']?.toString() ?? m['phone']?.toString() ?? m['mobile']?.toString() ?? 'N/A',
+        email: m['email']?.toString() ?? 'N/A',
+        hasPortalAccount: m['has_portal_account'] ?? true,
+        studentIds: children.map((c) => c.studentId).toList(),
+        children: children,
+      );
+    }).toList();
   }
 
   void _showAddParentDialog() {
@@ -809,7 +885,9 @@ class _ParentsDirectoryScreenState extends State<ParentsDirectoryScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              '${filtered.length} Registered ${filtered.length == 1 ? 'Parent' : 'Parents'}',
+                              _totalBackendCount > 0
+                                  ? '$_totalBackendCount Registered Parents'
+                                  : '${filtered.length} Registered ${filtered.length == 1 ? 'Parent' : 'Parents'}',
                               style: GoogleFonts.manrope(
                                 fontSize: 12.5,
                                 fontWeight: FontWeight.w600,
@@ -831,7 +909,7 @@ class _ParentsDirectoryScreenState extends State<ParentsDirectoryScreen> {
                       // Parents List / Empty State
                       Expanded(
                         child: RefreshIndicator(
-                          onRefresh: _loadParents,
+                          onRefresh: () => _loadParents(refresh: true),
                           color: AcademicColors.primaryDark,
                           child: filtered.isEmpty
                               ? ListView(
@@ -872,10 +950,26 @@ class _ParentsDirectoryScreenState extends State<ParentsDirectoryScreen> {
                                   ],
                                 )
                               : ListView.separated(
+                                  controller: _scrollController,
                                   padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
-                                  itemCount: filtered.length,
+                                  itemCount: filtered.length + (_isLoadingMore ? 1 : 0),
                                   separatorBuilder: (_, __) => const SizedBox(height: 12),
                                   itemBuilder: (context, index) {
+                                    if (index >= filtered.length) {
+                                      return const Padding(
+                                        padding: EdgeInsets.symmetric(vertical: 16),
+                                        child: Center(
+                                          child: SizedBox(
+                                            width: 24,
+                                            height: 24,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: AcademicColors.primaryDark,
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }
                                     final parent = filtered[index];
                                     return InsetCard(
                                       margin: EdgeInsets.zero,

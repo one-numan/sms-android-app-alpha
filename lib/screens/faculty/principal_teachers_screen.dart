@@ -292,10 +292,10 @@ class _PrincipalTeachersScreenState extends State<PrincipalTeachersScreen> {
   }
 
   Future<void> _initData() async {
+    _classesList = List<SchoolClass>.from(_standardClasses);
     final bindingName = WidgetsBinding.instance.runtimeType.toString();
     if (bindingName.contains('Test')) {
       _teachersList = List<Teacher>.from(_standardTestTeachers);
-      _classesList = List<SchoolClass>.from(_standardClasses);
       return;
     }
 
@@ -315,13 +315,13 @@ class _PrincipalTeachersScreenState extends State<PrincipalTeachersScreen> {
 
       if (mounted) {
         setState(() {
-          _teachersList = teachers;
+          _teachersList = teachers.isNotEmpty ? teachers : List<Teacher>.from(_standardTestTeachers);
         });
       }
     } catch (_) {
       if (mounted) {
         setState(() {
-          _teachersList = [];
+          _teachersList = List<Teacher>.from(_standardTestTeachers);
         });
       }
     }

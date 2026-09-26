@@ -98,7 +98,7 @@ class RoleSwitcherSheet extends StatelessWidget {
                 if (authState.availableRoles.contains(UserRole.subjectTeacher))
                   _buildRoleItem(context, authState, UserRole.subjectTeacher, 'Subject Teacher Desk', 'Subject Faculty Workspace', Icons.science),
                 if (authState.availableRoles.contains(UserRole.principal))
-                  _buildRoleItem(context, authState, UserRole.principal, 'Principal Executive Command', 'Head of School Workspace', Icons.account_balance),
+                  _buildRoleItem(context, authState, UserRole.principal, 'Principal Desk & Command', 'Head of School Workspace', Icons.account_balance),
                 if (authState.availableRoles.contains(UserRole.vicePrincipal))
                   _buildRoleItem(context, authState, UserRole.vicePrincipal, 'Vice Principal Hub', 'Academic Head Workspace', Icons.shield),
                 if (authState.availableRoles.contains(UserRole.accountant))

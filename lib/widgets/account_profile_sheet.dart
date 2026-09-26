@@ -33,7 +33,7 @@ class AccountProfileSheet extends StatelessWidget {
     switch (role) {
       case UserRole.superAdmin:
       case UserRole.principal:
-        return 'Executive Tier 0';
+        return 'Institutional Head (Level 0)';
       case UserRole.vicePrincipal:
         return 'Administrative Tier 1';
       case UserRole.classTeacher:

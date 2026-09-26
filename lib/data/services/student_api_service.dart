@@ -54,6 +54,58 @@ class StudentApiService {
     }
   }
 
+  /// Fetch paginated student directory response containing metadata (`count`, `next`, `results`).
+  Future<Map<String, dynamic>> getStudentsPaginated({
+    String? classId,
+    String? sectionId,
+    int page = 1,
+    int pageSize = 50,
+    String? search,
+  }) async {
+    try {
+      final query = <String, dynamic>{
+        'page': page.toString(),
+        'page_size': pageSize.toString(),
+        if (search != null && search.isNotEmpty) 'search': search,
+        if (classId != null && classId.isNotEmpty) 'class_id': classId,
+        if (sectionId != null && sectionId.isNotEmpty) 'section_id': sectionId,
+      };
+      final response = await _apiClient.get(
+        '/students/directory/',
+        queryParameters: query,
+      );
+
+      if (response is Map<String, dynamic>) {
+        int count = response['count'] as int? ?? 0;
+        List<dynamic> results = [];
+        if (response['results'] is List) {
+          results = response['results'] as List;
+        } else if (response['data'] is List) {
+          results = response['data'] as List;
+          count = count > 0 ? count : results.length;
+        } else if (response['data'] is Map && response['data']['results'] is List) {
+          results = response['data']['results'] as List;
+          count = response['data']['count'] as int? ?? count;
+        }
+        return {
+          'count': count,
+          'has_more': response['next'] != null || results.length >= pageSize,
+          'results': results,
+        };
+      }
+      if (response is List) {
+        return {
+          'count': response.length,
+          'has_more': false,
+          'results': response,
+        };
+      }
+      return {'count': 0, 'has_more': false, 'results': []};
+    } catch (_) {
+      return {'count': 0, 'has_more': false, 'results': []};
+    }
+  }
+
   /// Get student detailed report card (`GET /api/v1/academics/report-card/`).
   Future<Map<String, dynamic>> getReportCard({String? studentId}) async {
     try {

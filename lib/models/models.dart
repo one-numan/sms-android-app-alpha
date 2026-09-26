@@ -221,7 +221,9 @@ class Student {
       admissionDate: json['admission_date'] as String? ?? '',
       rollNumber: json['roll_number'] is int
           ? json['roll_number'] as int
-          : int.tryParse(json['roll_number']?.toString() ?? '0') ?? 0,
+          : json['roll_no'] is int
+              ? json['roll_no'] as int
+              : int.tryParse(json['roll_number']?.toString() ?? json['roll_no']?.toString() ?? json['rollNo']?.toString() ?? '0') ?? 0,
       address: json['address'] is Map
           ? Address(
               line1: json['address']['line1']?.toString() ?? '',
@@ -290,8 +292,14 @@ class Teacher {
             ?.map((e) => e.toString())
             .toList() ??
         (json['subject'] != null ? [json['subject'].toString()] : <String>[]);
-    final classOf = json['class_teacher_of']?.toString();
-    final isCT = json['is_class_teacher'] == true || (classOf != null && classOf.isNotEmpty);
+    final classOf = json['class_teacher_of']?.toString() ??
+        json['assigned_class']?.toString() ??
+        json['class_assigned']?.toString() ??
+        json['class_name']?.toString() ??
+        (json['class_teacher'] is Map ? json['class_teacher']['class_name']?.toString() : null);
+    final isCT = json['is_class_teacher'] == true ||
+        json['is_class_teacher_role'] == true ||
+        (classOf != null && classOf.isNotEmpty);
     final isST = json['is_subject_teacher'] == true || subjectsList.isNotEmpty;
 
     return Teacher(
