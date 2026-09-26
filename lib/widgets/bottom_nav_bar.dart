@@ -7,6 +7,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../data/mock/auth_state.dart';
 import '../models/models.dart';
 import '../theme/app_theme.dart';
 import 'module_grid_sheet.dart';
@@ -41,16 +43,29 @@ class AcademicBottomNavBar extends StatelessWidget {
     this.onTap,
   });
 
-  /// Factory for the 9 institutional roles
+  /// Factory for institutional roles with route-aware active tab auto-detection
   factory AcademicBottomNavBar.forRole(
-    UserRole role, {
+    UserRole? role, {
     Key? key,
     required BuildContext context,
-    int currentIndex = 0,
+    int? currentIndex,
   }) {
+    // Determine effective role:
+    // If the authenticated user is a teacher (classTeacher or subjectTeacher),
+    // preserve their active teacher persona rather than a hardcoded screen parameter.
+    UserRole effectiveRole = role ?? UserRole.parent;
+    try {
+      final auth = Provider.of<AuthState>(context, listen: false);
+      if (auth.currentRole == UserRole.classTeacher || auth.currentRole == UserRole.subjectTeacher) {
+        effectiveRole = auth.currentRole;
+      } else if (role == null) {
+        effectiveRole = auth.currentRole;
+      }
+    } catch (_) {}
+
     List<AcademicNavItem> roleItems;
 
-    switch (role) {
+    switch (effectiveRole) {
       case UserRole.parent:
         roleItems = [
           const AcademicNavItem(
@@ -368,11 +383,64 @@ class AcademicBottomNavBar extends StatelessWidget {
         break;
     }
 
+    int resolvedIndex = currentIndex ?? 0;
+    try {
+      final currentPath = GoRouterState.of(context).uri.path;
+      final autoIndex = _detectActiveIndex(effectiveRole, currentPath);
+      if (autoIndex != null) {
+        resolvedIndex = autoIndex;
+      }
+    } catch (_) {}
+
+    if (resolvedIndex < 0 || resolvedIndex >= roleItems.length) {
+      resolvedIndex = 0;
+    }
+
     return AcademicBottomNavBar(
       key: key,
-      currentIndex: currentIndex,
+      currentIndex: resolvedIndex,
       items: roleItems,
     );
+  }
+
+  /// Automatically matches route path hierarchy to the correct active tab index
+  static int? _detectActiveIndex(UserRole role, String path) {
+    if (role == UserRole.classTeacher) {
+      // Index 0: Hub -> /dashboard/class-teacher, /teacher/class-dashboard
+      // Index 1: Attendance -> /attendance (roll-call, student, etc.)
+      // Index 2: Classes -> /cohorts, /faculty/classes, /faculty/subjects, /faculty/class-info, /faculty/assignments
+      // Index 3: Timetable -> /faculty/timetable, /timetable
+      if (path.contains('/attendance')) return 1;
+      if (path.contains('/timetable')) return 3;
+      if (path.contains('/cohorts') ||
+          path.contains('/classes') ||
+          path.contains('/class-info') ||
+          path.contains('/subjects') ||
+          path.contains('/assignments') ||
+          path.contains('/faculty/students') ||
+          path.contains('/marks-entry')) {
+        return 2;
+      }
+      if (path.contains('class-teacher') || path.contains('class-dashboard')) return 0;
+    } else if (role == UserRole.subjectTeacher) {
+      // Index 0: Portal -> /dashboard/subject-teacher, /teacher/subject-dashboard
+      // Index 1: Academics -> /cohorts, /faculty/classes, /faculty/subjects, /faculty/class-info, /faculty/assignments
+      // Index 2: Attendance -> /attendance
+      // Index 3: Timetable -> /faculty/timetable, /timetable
+      if (path.contains('/attendance')) return 2;
+      if (path.contains('/timetable')) return 3;
+      if (path.contains('/cohorts') ||
+          path.contains('/classes') ||
+          path.contains('/class-info') ||
+          path.contains('/subjects') ||
+          path.contains('/assignments') ||
+          path.contains('/faculty/students') ||
+          path.contains('/marks-entry')) {
+        return 1;
+      }
+      if (path.contains('subject-teacher') || path.contains('subject-dashboard')) return 0;
+    }
+    return null;
   }
 
   @override
@@ -408,7 +476,11 @@ class AcademicBottomNavBar extends StatelessWidget {
                     if (item.onTap != null) {
                       item.onTap!();
                     } else if (item.route != null) {
-                      if (!isSelected) {
+                      String currentPath = '';
+                      try {
+                        currentPath = GoRouterState.of(context).uri.path;
+                      } catch (_) {}
+                      if (!isSelected || currentPath != item.route) {
                         context.go(item.route!);
                       }
                     }

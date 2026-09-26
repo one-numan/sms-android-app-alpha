@@ -144,7 +144,8 @@ class _ClassSubjectsScreenState extends State<ClassSubjectsScreen> {
         showBackButton: true,
       ),
       bottomNavigationBar: AcademicBottomNavBar.forRole(
-        UserRole.classTeacher,
+        context.watch<AuthState>().currentRole,
+        currentIndex: context.watch<AuthState>().currentRole == UserRole.classTeacher ? 2 : 1,
         context: context,
       ),
       body: SafeArea(

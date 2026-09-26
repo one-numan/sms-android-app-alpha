@@ -58,8 +58,9 @@ class AuthApiService {
       if (response.containsKey('refresh') && response['refresh'] is String) {
         await TokenStorage.saveRefreshToken(response['refresh']);
       }
+      return response;
     }
-    return response is Map<String, dynamic> ? response : {'status': 'verified'};
+    return {'data': response};
   }
 
   /// Reset Password.
@@ -74,7 +75,7 @@ class AuthApiService {
         'new_password': newPassword,
       },
     );
-    return response is Map<String, dynamic> ? response : {'status': 'success'};
+    return response is Map<String, dynamic> ? response : {'data': response};
   }
 
   /// Logout and revoke active session token.

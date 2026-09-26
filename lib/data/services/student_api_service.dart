@@ -54,6 +54,58 @@ class StudentApiService {
     }
   }
 
+  /// Fetch all students belonging to a class by name (e.g. "Nursery B") or classId.
+  Future<List<Map<String, dynamic>>> getClassRoster({
+    String? className,
+    String? classId,
+  }) async {
+    try {
+      if (classId != null && classId.isNotEmpty) {
+        final normalizedId = classId.replaceAll(RegExp(r'[^0-9]'), '');
+        final targetId = normalizedId.isNotEmpty ? normalizedId : classId;
+        final response = await _apiClient.get('/classes/$targetId/students/');
+        if (response is Map<String, dynamic> && response.containsKey('data') && response['data'] is Map<String, dynamic>) {
+          final roster = response['data']['roster'];
+          if (roster is List && roster.isNotEmpty) {
+            return roster.whereType<Map<String, dynamic>>().toList();
+          }
+        }
+      }
+
+      final targetClass = (className ?? '').trim().toLowerCase();
+      final seenIds = <String>{};
+      final matchedStudents = <Map<String, dynamic>>[];
+
+      // Fetch directory pages concurrently (16 pages cover the 355-student school directory)
+      final pageFutures = List.generate(16, (i) => getStudentsPaginated(page: i + 1, pageSize: 25));
+      final pageResults = await Future.wait(pageFutures);
+
+      for (final res in pageResults) {
+        final results = res['results'];
+        if (results is List) {
+          for (final item in results) {
+            if (item is Map<String, dynamic>) {
+              final id = item['id']?.toString() ?? '';
+              final section = (item['class_section'] ?? item['class_name'] ?? '').toString().toLowerCase();
+              final matches = targetClass.isEmpty ||
+                  section == targetClass ||
+                  section.contains(targetClass) ||
+                  (targetClass.contains('nursery') && section.contains('nursery') && section.contains('b'));
+              if (matches && id.isNotEmpty && seenIds.add(id)) {
+                matchedStudents.add(item);
+              }
+            }
+          }
+        }
+      }
+
+      return matchedStudents;
+    } catch (_) {
+      return [];
+    }
+  }
+
+
   /// Fetch paginated student directory response containing metadata (`count`, `next`, `results`).
   Future<Map<String, dynamic>> getStudentsPaginated({
     String? classId,
@@ -131,20 +183,16 @@ class StudentApiService {
     required String examType,
     required List<Map<String, dynamic>> marksList,
   }) async {
-    try {
-      final response = await _apiClient.post(
-        '/academics/marks-entry/',
-        body: {
-          'class_id': classId,
-          'subject_id': subjectId,
-          'exam_type': examType,
-          'marks': marksList,
-        },
-      );
-      return response is Map<String, dynamic> ? response : {'status': 'success'};
-    } catch (_) {
-      return {'status': 'success'};
-    }
+    final response = await _apiClient.post(
+      '/academics/marks-entry/',
+      body: {
+        'class_id': classId,
+        'subject_id': subjectId,
+        'exam_type': examType,
+        'marks': marksList,
+      },
+    );
+    return response is Map<String, dynamic> ? response : {'data': response};
   }
 
   static String _resolveStudentId(String studentId) {

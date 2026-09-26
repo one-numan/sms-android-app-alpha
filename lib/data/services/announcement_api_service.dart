@@ -40,6 +40,6 @@ class AnnouncementApiService {
         if (notes != null) 'notes': notes,
       },
     );
-    return response is Map<String, dynamic> ? response : {'status': 'success'};
+    return response is Map<String, dynamic> ? response : {'data': response};
   }
 }

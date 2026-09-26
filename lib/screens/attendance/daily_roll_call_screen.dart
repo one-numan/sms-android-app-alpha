@@ -153,12 +153,18 @@ class _DailyRollCallScreenState extends State<DailyRollCallScreen> {
   Future<void> _loadLiveClassRoster() async {
     try {
       final auth = context.read<AuthState>();
-      final classId = auth.userProfile?['class_id']?.toString() ?? '1';
-      final rawList = await StudentApiService().getStudents(classId: classId);
-      if (mounted) {
+      final className = widget.classOverride?.className ??
+          auth.userProfile?['class_name']?.toString() ??
+          auth.userProfile?['assigned_class']?.toString() ??
+          '';
+      final classId = widget.classOverride?.id ?? auth.userProfile?['class_id']?.toString();
+      final rawList = await StudentApiService().getClassRoster(
+        className: className.isNotEmpty ? className : null,
+        classId: classId,
+      );
+      if (mounted && rawList.isNotEmpty) {
         setState(() {
           _roster = rawList
-              .whereType<Map<String, dynamic>>()
               .map((m) => Student.fromJson(m))
               .toList();
           for (final s in _roster) {
@@ -866,15 +872,16 @@ class _DailyRollCallScreenState extends State<DailyRollCallScreen> {
         );
     final bindingName = WidgetsBinding.instance.runtimeType.toString();
     final isTest = bindingName.contains('Test');
+    final liveClassName = auth.userProfile?['class_name']?.toString() ?? auth.userProfile?['assigned_class']?.toString();
     final SchoolClass? assignedClass = widget.classOverride ??
         ((widget.teacherOverride != null)
             ? null
-            : (auth.userProfile?['class_name'] != null
+            : (liveClassName != null && liveClassName.isNotEmpty
                 ? SchoolClass(
-                    id: auth.userProfile?['class_id']?.toString() ?? 'CLS-${teacher.name}',
+                    id: auth.userProfile?['class_id']?.toString() ?? 'CLS-$liveClassName',
                     grade: auth.userProfile?['grade']?.toString() ?? '',
                     section: auth.userProfile?['section']?.toString() ?? '',
-                    className: auth.userProfile!['class_name']!.toString(),
+                    className: liveClassName,
                     classTeacherName: teacher.name,
                   )
                 : (isTest
@@ -990,8 +997,8 @@ class _DailyRollCallScreenState extends State<DailyRollCallScreen> {
           ),
         ),
         bottomNavigationBar: AcademicBottomNavBar.forRole(
-          UserRole.classTeacher,
-          currentIndex: 1, // Attendance Dock tab
+          context.watch<AuthState>().currentRole,
+          currentIndex: context.watch<AuthState>().currentRole == UserRole.classTeacher ? 1 : 2,
           context: context,
         ),
       ),

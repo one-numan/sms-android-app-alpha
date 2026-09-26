@@ -21,12 +21,8 @@ class AccountApiService {
 
   /// Update profile details.
   Future<Map<String, dynamic>> updateProfile(Map<String, dynamic> data) async {
-    try {
-      final response = await _apiClient.patch('/account/profile/', body: data);
-      return response is Map<String, dynamic> ? response : {'status': 'success'};
-    } catch (_) {
-      return {'status': 'success'};
-    }
+    final response = await _apiClient.patch('/account/profile/', body: data);
+    return response is Map<String, dynamic> ? response : {'data': response};
   }
 
   /// Fetch active registered devices and sessions.

@@ -8,6 +8,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../../data/mock/auth_state.dart';
 import '../../data/services/teacher_api_service.dart';
 import '../../data/services/faculty_api_service.dart';
 import '../../models/models.dart';
@@ -185,7 +187,8 @@ class _SubjectTeacherClassesScreenState extends State<SubjectTeacherClassesScree
         showBackButton: true,
       ),
       bottomNavigationBar: AcademicBottomNavBar.forRole(
-        UserRole.subjectTeacher,
+        context.watch<AuthState>().currentRole,
+        currentIndex: context.watch<AuthState>().currentRole == UserRole.classTeacher ? 2 : 1,
         context: context,
       ),
       body: SafeArea(

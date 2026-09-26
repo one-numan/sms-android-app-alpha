@@ -8,9 +8,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../../data/mock/auth_state.dart';
 import '../../data/services/faculty_api_service.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_top_bar.dart';
+import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/shared_widgets.dart';
 
 class TeacherTimetableScreen extends StatefulWidget {
@@ -421,6 +424,11 @@ class _TeacherTimetableScreenState extends State<TeacherTimetableScreen> {
                       ),
                     ],
                   ),
+      ),
+      bottomNavigationBar: AcademicBottomNavBar.forRole(
+        context.watch<AuthState>().currentRole,
+        currentIndex: 3,
+        context: context,
       ),
     );
   }

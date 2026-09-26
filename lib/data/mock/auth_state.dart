@@ -10,6 +10,7 @@ import '../../models/models.dart';
 import '../services/auth_api_service.dart';
 import '../services/account_api_service.dart';
 import '../services/parent_api_service.dart';
+import '../services/teacher_api_service.dart';
 import '../../core/api/api_client.dart';
 import '../../core/api/token_storage.dart';
 
@@ -239,10 +240,33 @@ class AuthState extends ChangeNotifier {
                 _currentRole = UserRole.principal;
                 await TokenStorage.saveActiveRole(UserRole.principal.name);
               } else {
+                if (pRole == 'teacher') {
+                  try {
+                    final classDash = await TeacherApiService().getClassDashboard();
+                    final assignedClass = classDash['assigned_class']?.toString();
+                    if (assignedClass != null && assignedClass.isNotEmpty && assignedClass.toLowerCase() != 'none') {
+                      _userProfile!['assigned_class'] = assignedClass;
+                      _userProfile!['class_name'] = assignedClass;
+                      _userProfile!['is_class_teacher'] = true;
+                      if (classDash.containsKey('total_students')) {
+                        _userProfile!['total_students'] = classDash['total_students'];
+                      }
+                    }
+                  } catch (_) {}
+                }
+
                 final backendRole = resolveRoleFromProfile(_userProfile);
                 if (backendRole != null) {
-                  _currentRole = backendRole;
-                  await TokenStorage.saveActiveRole(backendRole.name);
+                  final isTeacherPersona = (effectiveRole == UserRole.classTeacher || effectiveRole == UserRole.subjectTeacher);
+                  final isBackendTeacher = (backendRole == UserRole.classTeacher || backendRole == UserRole.subjectTeacher);
+
+                  if (isTeacherPersona && isBackendTeacher) {
+                    _currentRole = backendRole;
+                    await TokenStorage.saveActiveRole(backendRole.name);
+                  } else {
+                    _currentRole = backendRole;
+                    await TokenStorage.saveActiveRole(backendRole.name);
+                  }
                 }
               }
             }
@@ -319,7 +343,9 @@ class AuthState extends ChangeNotifier {
       return UserRole.parent;
     }
     if (roleStr == 'teacher') {
-      if (profile['class_id'] != null || profile['is_class_teacher'] == true) {
+      final assignedClass = (profile['assigned_class'] ?? profile['class_name'])?.toString().trim();
+      final hasAssignedClass = assignedClass != null && assignedClass.isNotEmpty && assignedClass.toLowerCase() != 'none';
+      if (profile['class_id'] != null || profile['is_class_teacher'] == true || hasAssignedClass) {
         return UserRole.classTeacher;
       }
       return UserRole.subjectTeacher;
@@ -373,11 +399,7 @@ class AuthState extends ChangeNotifier {
     }
 
     if (roleStr == 'teacher') {
-      final hasClass = profile?['class_id'] != null || profile?['is_class_teacher'] == true;
-      if (hasClass) {
-        return [UserRole.classTeacher, UserRole.subjectTeacher];
-      }
-      return [UserRole.subjectTeacher];
+      return [UserRole.classTeacher, UserRole.subjectTeacher];
     }
 
     if (roleStr == 'parent') {
