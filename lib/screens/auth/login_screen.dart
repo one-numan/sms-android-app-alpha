@@ -113,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (mounted) {
         if (success && auth.isAuthenticated) {
-          _navigateForRole(_selectedRole);
+          _navigateForRole(auth.currentRole);
         } else {
           setState(() {
             _errorMessage = 'Wrong password or invalid credentials. Please try again.';

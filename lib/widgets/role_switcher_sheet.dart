@@ -89,16 +89,26 @@ class RoleSwitcherSheet extends StatelessWidget {
             child: ListView(
               shrinkWrap: true,
               children: [
-                _buildRoleItem(context, authState, UserRole.parent, 'Parent Portal', 'Parent Portal & Student Profiles', Icons.family_restroom),
-                _buildRoleItem(context, authState, UserRole.student, 'Student Hub', 'Student Academic & Fee Portal', Icons.school),
-                _buildRoleItem(context, authState, UserRole.classTeacher, 'Class Teacher Workspace', '${authState.fullName.isNotEmpty ? authState.fullName : 'Class Teacher'} • Class Teacher', Icons.assignment_ind),
-                _buildRoleItem(context, authState, UserRole.subjectTeacher, 'Subject Teacher Desk', 'Subject Faculty Workspace', Icons.science),
-                _buildRoleItem(context, authState, UserRole.principal, 'Principal Executive Command', 'Head of School Workspace', Icons.account_balance),
-                _buildRoleItem(context, authState, UserRole.vicePrincipal, 'Vice Principal Hub', 'Academic Head Workspace', Icons.shield),
-                _buildRoleItem(context, authState, UserRole.accountant, 'Accounts & Fees Desk', 'Head Accountant Workspace', Icons.receipt_long),
-                _buildRoleItem(context, authState, UserRole.librarian, 'Library Circulation Desk', 'Head Librarian Workspace', Icons.local_library),
-                _buildRoleItem(context, authState, UserRole.receptionist, 'Admissions & Front Desk', 'Admissions & Front Desk', Icons.desk),
-                _buildRoleItem(context, authState, UserRole.superAdmin, 'Super Admin Directory', 'System Governance & All Modules', Icons.admin_panel_settings),
+                if (authState.availableRoles.contains(UserRole.parent))
+                  _buildRoleItem(context, authState, UserRole.parent, 'Parent Portal', 'Parent Portal & Student Profiles', Icons.family_restroom),
+                if (authState.availableRoles.contains(UserRole.student))
+                  _buildRoleItem(context, authState, UserRole.student, 'Student Hub', 'Student Academic & Fee Portal', Icons.school),
+                if (authState.availableRoles.contains(UserRole.classTeacher))
+                  _buildRoleItem(context, authState, UserRole.classTeacher, 'Class Teacher Workspace', '${authState.fullName.isNotEmpty ? authState.fullName : 'Class Teacher'} • Class Teacher', Icons.assignment_ind),
+                if (authState.availableRoles.contains(UserRole.subjectTeacher))
+                  _buildRoleItem(context, authState, UserRole.subjectTeacher, 'Subject Teacher Desk', 'Subject Faculty Workspace', Icons.science),
+                if (authState.availableRoles.contains(UserRole.principal))
+                  _buildRoleItem(context, authState, UserRole.principal, 'Principal Executive Command', 'Head of School Workspace', Icons.account_balance),
+                if (authState.availableRoles.contains(UserRole.vicePrincipal))
+                  _buildRoleItem(context, authState, UserRole.vicePrincipal, 'Vice Principal Hub', 'Academic Head Workspace', Icons.shield),
+                if (authState.availableRoles.contains(UserRole.accountant))
+                  _buildRoleItem(context, authState, UserRole.accountant, 'Accounts & Fees Desk', 'Head Accountant Workspace', Icons.receipt_long),
+                if (authState.availableRoles.contains(UserRole.librarian))
+                  _buildRoleItem(context, authState, UserRole.librarian, 'Library Circulation Desk', 'Head Librarian Workspace', Icons.local_library),
+                if (authState.availableRoles.contains(UserRole.receptionist))
+                  _buildRoleItem(context, authState, UserRole.receptionist, 'Admissions & Front Desk', 'Admissions & Front Desk', Icons.desk),
+                if (authState.availableRoles.contains(UserRole.superAdmin))
+                  _buildRoleItem(context, authState, UserRole.superAdmin, 'Super Admin Directory', 'System Governance & All Modules', Icons.admin_panel_settings),
               ],
             ),
           ),

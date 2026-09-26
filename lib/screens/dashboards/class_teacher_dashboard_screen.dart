@@ -182,13 +182,31 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
               )
             : (widget.teacherOverride != null
                 ? null
-                : SchoolClass(
-                    id: auth.userProfile?['class_id']?.toString() ?? 'CLS-${teacher.name}',
-                    grade: auth.userProfile?['grade']?.toString() ?? (teacher.name == 'Washington Sundar' ? 'Nursery' : (teacher.name == 'Shubman Gill' ? 'Nursery' : 'Grade 5')),
-                    section: auth.userProfile?['section']?.toString() ?? (teacher.name == 'Washington Sundar' ? 'A' : (teacher.name == 'Shubman Gill' ? 'B' : 'A')),
-                    className: auth.userProfile?['class_name']?.toString() ?? (teacher.name == 'Washington Sundar' ? 'Nursery A' : (teacher.name == 'Shubman Gill' ? 'Nursery B' : '5-A')),
-                    classTeacherName: teacher.name,
-                  )));
+                : (auth.userProfile?['class_name'] != null
+                    ? SchoolClass(
+                        id: auth.userProfile?['class_id']?.toString() ?? 'CLS-${teacher.name}',
+                        grade: auth.userProfile?['grade']?.toString() ?? 'Grade 5',
+                        section: auth.userProfile?['section']?.toString() ?? 'A',
+                        className: auth.userProfile!['class_name'].toString(),
+                        classTeacherName: teacher.name,
+                      )
+                    : (teacher.name == 'Washington Sundar'
+                        ? const SchoolClass(
+                            id: 'CLS-Nursery-A',
+                            grade: 'Nursery',
+                            section: 'A',
+                            className: 'Nursery A',
+                            classTeacherName: 'Washington Sundar',
+                          )
+                        : (teacher.name == 'Shubman Gill'
+                            ? const SchoolClass(
+                                id: 'CLS-Nursery-B',
+                                grade: 'Nursery',
+                                section: 'B',
+                                className: 'Nursery B',
+                                classTeacherName: 'Shubman Gill',
+                              )
+                            : null)))));
 
     return Scaffold(
       backgroundColor: AcademicColors.canvas,

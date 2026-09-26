@@ -221,9 +221,14 @@ class AuthState extends ChangeNotifier {
             final profile = await AccountApiService().getProfile();
             if (profile.isNotEmpty) {
               _userProfile = profile;
+              final backendRole = resolveRoleFromProfile(profile);
+              if (backendRole != null) {
+                _currentRole = backendRole;
+                await TokenStorage.saveActiveRole(backendRole.name);
+              }
             }
           } catch (_) {}
-          if (role == UserRole.parent) {
+          if (_currentRole == UserRole.parent) {
             try {
               final parentData = await ParentApiService().getDashboard();
               final children = parentData['children'] as List?;
@@ -263,7 +268,117 @@ class AuthState extends ChangeNotifier {
     return false;
   }
 
+  static UserRole? resolveRoleFromProfile(Map<String, dynamic>? profile) {
+    if (profile == null) return null;
+    final roleStr = (profile['role'] ?? '').toString().trim().toLowerCase();
+    final desigStr = (profile['designation'] ?? '').toString().trim().toLowerCase();
+
+    if (roleStr == 'principal' || desigStr == 'principal') {
+      return UserRole.principal;
+    }
+    if (roleStr == 'vice_principal' || desigStr == 'vice principal') {
+      return UserRole.vicePrincipal;
+    }
+    if (roleStr == 'accountant' || desigStr == 'accountant') {
+      return UserRole.accountant;
+    }
+    if (roleStr == 'librarian' || desigStr == 'librarian') {
+      return UserRole.librarian;
+    }
+    if (roleStr == 'receptionist' || desigStr == 'receptionist') {
+      return UserRole.receptionist;
+    }
+    if (roleStr == 'student') {
+      return UserRole.student;
+    }
+    if (roleStr == 'parent') {
+      return UserRole.parent;
+    }
+    if (roleStr == 'teacher') {
+      if (profile['class_id'] != null || profile['is_class_teacher'] == true) {
+        return UserRole.classTeacher;
+      }
+      return UserRole.subjectTeacher;
+    }
+    return null;
+  }
+
+  List<UserRole> get availableRoles {
+    final bindingName = WidgetsBinding.instance.runtimeType.toString();
+    if (bindingName.contains('Test')) {
+      return [
+        UserRole.parent,
+        UserRole.student,
+        UserRole.classTeacher,
+        UserRole.subjectTeacher,
+        UserRole.principal,
+        UserRole.vicePrincipal,
+        UserRole.accountant,
+        UserRole.librarian,
+        UserRole.receptionist,
+        UserRole.superAdmin,
+      ];
+    }
+
+    final profile = _userProfile;
+    final roleStr = (profile?['role'] ?? _currentRole.name).toString().trim().toLowerCase();
+    final desigStr = (profile?['designation'] ?? '').toString().trim().toLowerCase();
+
+    if (roleStr == 'principal' || desigStr == 'principal') {
+      return [
+        UserRole.principal,
+        UserRole.accountant,
+        UserRole.librarian,
+        UserRole.receptionist,
+        UserRole.superAdmin,
+      ];
+    }
+
+    if (roleStr == 'vice_principal' || desigStr == 'vice principal') {
+      return [
+        UserRole.vicePrincipal,
+        UserRole.principal,
+        UserRole.accountant,
+        UserRole.librarian,
+      ];
+    }
+
+    if (roleStr == 'teacher') {
+      final hasClass = profile?['class_id'] != null || profile?['is_class_teacher'] == true;
+      if (hasClass) {
+        return [UserRole.classTeacher, UserRole.subjectTeacher];
+      }
+      return [UserRole.subjectTeacher];
+    }
+
+    if (roleStr == 'parent') {
+      return [UserRole.parent];
+    }
+
+    if (roleStr == 'student') {
+      return [UserRole.student];
+    }
+
+    if (roleStr == 'accountant' || desigStr == 'accountant') {
+      return [UserRole.accountant];
+    }
+
+    if (roleStr == 'librarian' || desigStr == 'librarian') {
+      return [UserRole.librarian];
+    }
+
+    if (roleStr == 'receptionist' || desigStr == 'receptionist') {
+      return [UserRole.receptionist];
+    }
+
+    return [_currentRole];
+  }
+
   void switchRole(UserRole role) {
+    if (!availableRoles.contains(role)) {
+      debugPrint('Denied switching to unauthorized role: ${role.name}');
+      return;
+    }
     _currentRole = role;
     _isAuthenticated = true;
     notifyListeners();

@@ -102,6 +102,16 @@ GoRouter createOnpsRouter(AuthState authState) {
       if (!isAuth && !isPublicRoute) {
         return '/login';
       }
+
+      // Role-guard: Principal/VicePrincipal cannot access Teacher Dashboards
+      if (isAuth && (authState.currentRole == UserRole.principal || authState.currentRole == UserRole.vicePrincipal)) {
+        if (loc.startsWith('/teacher/class-dashboard') ||
+            loc.startsWith('/dashboard/class-teacher') ||
+            loc.startsWith('/teacher/subject-dashboard') ||
+            loc.startsWith('/dashboard/subject-teacher')) {
+          return '/dashboard/principal';
+        }
+      }
       return null;
     },
     routes: [
