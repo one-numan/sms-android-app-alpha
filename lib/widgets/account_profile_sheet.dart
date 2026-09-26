@@ -13,6 +13,7 @@ import '../data/mock/auth_state.dart';
 import '../models/models.dart';
 import '../theme/app_theme.dart';
 import 'account_settings_sheet.dart';
+import 'onps_verified_badge.dart';
 import 'role_switcher_sheet.dart';
 import 'shared_widgets.dart';
 
@@ -80,8 +81,15 @@ class AccountProfileSheet extends StatelessWidget {
         : (auth.userMobile.isNotEmpty ? auth.userMobile : 'Not available');
     final designation = (userProfile?['designation'] as String?)?.trim().isNotEmpty == true
         ? (userProfile!['designation'] as String).trim()
-        : roleTitle;
-    final tier = _getRoleTier(auth.currentRole);
+        : ((auth.currentUsername.toLowerCase().contains('principal') ||
+                userProfile?['email']?.toString().toLowerCase().contains('principal') == true ||
+                auth.currentRole == UserRole.principal)
+            ? 'Principal'
+            : roleTitle);
+    final isPrincipal = designation.toLowerCase().contains('principal') ||
+        auth.currentRole == UserRole.principal ||
+        auth.currentUsername.toLowerCase().contains('principal');
+    final tier = isPrincipal ? 'Executive Tier 0' : _getRoleTier(auth.currentRole);
     final idBadge = (userProfile?['id'] != null)
         ? 'ID #${userProfile!['id']}'
         : (auth.currentUsername.isNotEmpty ? auth.currentUsername.toUpperCase() : 'N/A');
@@ -189,8 +197,15 @@ class AccountProfileSheet extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 6),
-                              PillBadge.success('Verified'),
+                              const SizedBox(width: 8),
+                              OnpsVerifiedBadge(
+                                role: auth.currentRole,
+                                designation: profile.designation,
+                                username: auth.currentUsername,
+                                email: profile.email,
+                                size: 22,
+                                showLabel: true,
+                              ),
                             ],
                           ),
                           const SizedBox(height: 2),

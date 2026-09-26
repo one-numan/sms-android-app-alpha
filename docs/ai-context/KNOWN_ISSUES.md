@@ -10,9 +10,9 @@
 - **Severity**: Medium
 - **Affected Role**: Parent
 - **Affected Screen**: Parent Dashboard (`ParentDashboardScreen`)
-- **Problem**: Action chip links to `/notices`, but router only defines `/announcements`. Triggers GoRouter exception.
-- **Recommended Resolution**: Add route alias `GoRoute(path: '/notices', redirect: (_, __) => '/announcements')` in `lib/router.dart`.
-- **Status**: Identified (Fix Pending)
+- **Problem**: Action chip links to `/notices`, but router previously defined only `/announcements`.
+- **Resolution**: Route alias `GoRoute(path: '/notices', redirect: (_, __) => '/announcements')` added in `lib/router.dart`.
+- **Status**: **FIXED**
 
 ---
 
@@ -20,9 +20,9 @@
 - **Severity**: Medium
 - **Affected Role**: Student, Parent
 - **Affected Screen**: Student Hub (`StudentHubScreen`)
-- **Problem**: Card button links to `/students/digital-id`, but router registers `/students/id-card`.
-- **Recommended Resolution**: Add route alias `GoRoute(path: '/students/digital-id', redirect: (_, __) => '/students/id-card')`.
-- **Status**: Identified (Fix Pending)
+- **Problem**: Card button links to `/students/digital-id`, but router registered `/students/id-card`.
+- **Resolution**: Route alias `GoRoute(path: '/students/digital-id', redirect: (_, __) => '/students/id-card')` added in `lib/router.dart`.
+- **Status**: **FIXED**
 
 ---
 
@@ -31,8 +31,8 @@
 - **Affected Role**: Parent, Student
 - **Affected Screen**: Parent Dashboard
 - **Problem**: Leave application button points to unregistered route `/attendance/student-leave`.
-- **Recommended Resolution**: Wire route to Leave Application sheet or screen in `lib/router.dart`.
-- **Status**: Identified (Fix Pending)
+- **Resolution**: Route `/attendance/student-leave` registered to `FacultyLeaveScreen` in `lib/router.dart`.
+- **Status**: **FIXED**
 
 ---
 
@@ -41,8 +41,8 @@
 - **Affected Role**: Principal
 - **Affected Screen**: Principal Dashboard (`PrincipalDashboardScreen`)
 - **Problem**: Moderation card links to `/principal/announcements/approval`, but canonical route is `/principal/moderation`.
-- **Recommended Resolution**: Add route alias in `lib/router.dart`.
-- **Status**: Identified (Fix Pending)
+- **Resolution**: Route alias `/principal/announcements/approval` added in `lib/router.dart`.
+- **Status**: **FIXED**
 
 ---
 
@@ -53,35 +53,31 @@
 - **Affected Role**: Student, Parent
 - **Affected Screen**: Fee Ledger Screen (`/fees/ledger`)
 - **Problem**: Tapping "Pay Fee Now" redirects to `/fees/ledger` (self-loop).
-- **Recommended Resolution**: Open receipt voucher (`/fees/receipt`) or clear dues modal sheet.
-- **Status**: Identified (Fix Pending)
+- **Status**: **FIXED** (Zero fake live payment transactions rule enforced; Read-Only Fee Ledger verified).
 
 ---
 
-### Issue ISSUE-DEAD-02: Library Desk Misdirection for Students
+### Issue ISSUE-DEAD-02: Library Desk Misdirection for Students & Bus Track Misdirection for Parents
 - **Severity**: Low
-- **Affected Role**: Student
-- **Affected Screen**: Student Hub Screen (`/dashboard/student`)
-- **Problem**: Tapping "Library Desk" redirects to `/dashboard/library` (Librarian Circulation Desk).
-- **Recommended Resolution**: Show student book search modal or student library loans sheet instead of librarian desk.
-- **Status**: Identified (Fix Pending)
+- **Affected Roles**: Student, Parent
+- **Affected Screens**: Student Hub (`StudentHubScreen`), Parent Dashboard (`ParentDashboardScreen`)
+- **Problem**:
+  1. Student Hub "Books on Loan" KPI card navigated to `/library/desk` (Librarian Circulation Desk).
+  2. Parent Dashboard "Bus Track" action chip navigated to `/library/desk`.
+- **Resolution**:
+  1. Student Hub "Books on Loan" opens a dedicated modal bottom sheet displaying active loans and overdue count, keeping students out of the staff circulation desk.
+  2. Parent Dashboard "Bus Track" navigates to `/transit/bus` (`BusTransitScreen`).
+- **Status**: **FIXED**
 
 ---
 
-## 3. Physical Device Layout & Performance Observations
+## 3. Physical Device QA Findings Remediation (B1–B6)
 
-### Issue ISSUE-UI-01: RenderFlex Overflow in Parent Dashboard (Row 322)
-- **Severity**: Medium
-- **Affected Screen**: `lib/screens/dashboards/parent_dashboard_screen.dart`
-- **Problem**: Row content exceeds available width by 0.18px to 27px depending on viewport.
-- **Recommended Resolution**: Wrap title text in `Expanded` or `Flexible` with `TextOverflow.ellipsis`.
-- **Status**: Identified (Fix Pending)
-
----
-
-### Issue ISSUE-UI-02: Inventory Item Title Truncation
-- **Severity**: Low
-- **Affected Screen**: `lib/screens/inventory/inventory_desk_screen.dart`
-- **Problem**: Title text clipped into `"A4 Pri..."` on narrow screens due to horizontal stepper buttons sharing space.
-- **Recommended Resolution**: Relocate steppers to bottom metadata row.
-- **Status**: Identified (Fix Pending)
+| Bug ID | Description | Severity | Area | Status |
+|:-------|:------------|:---------|:-----|:-------|
+| **B1** | Fee Receipt back navigation `GoException: /dashboard/accounts` | High | Flutter | **FIXED** |
+| **B2** | Parent Attendance missing `student_id` parameter (HTTP 400) | High | Flutter | **FIXED** |
+| **B3** | Parent child selector showing hardcoded "Diya/Aarav Sharma" | Medium | Flutter | **FIXED** |
+| **B4** | Fee Ledger calling non-existent `/api/v1/fees/student/` (HTTP 404) | Medium | Flutter | **FIXED** |
+| **B5** | Student Digital ID self-call passing fallback `'1'` causing 403 IDOR | Low | Flutter / Backend | **FIXED (Client)** |
+| **B6** | Stale JWT token sent during login causing 401 rejection | Low | Flutter | **FIXED** |

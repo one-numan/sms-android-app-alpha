@@ -30,7 +30,7 @@ class AcademicReportCardScreen extends StatefulWidget {
 
 class _AcademicReportCardScreenState extends State<AcademicReportCardScreen> {
   String _selectedExamFilter = 'All';
-  int _selectedDayIndex = 1; // 0=Mon, 1=Tue (Today), 2=Wed, 3=Thu, 4=Fri, 5=Sat
+  late int _selectedDayIndex;
 
   final List<String> _weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   Map<String, dynamic>? _apiReportCard;
@@ -39,6 +39,8 @@ class _AcademicReportCardScreenState extends State<AcademicReportCardScreen> {
   @override
   void initState() {
     super.initState();
+    final currentDay = DateTime.now().weekday; // 1=Mon .. 7=Sun
+    _selectedDayIndex = (currentDay >= 1 && currentDay <= 6) ? currentDay - 1 : 0;
     final isTest = WidgetsBinding.instance.runtimeType.toString().contains('Test');
     if (!isTest) {
       _loadReportCard();
@@ -968,7 +970,7 @@ class _AcademicReportCardScreenState extends State<AcademicReportCardScreen> {
               final idx = entry.key;
               final day = entry.value;
               final isSel = _selectedDayIndex == idx;
-              final isToday = idx == 1; // Tuesday is Today in mock
+              final isToday = idx == (DateTime.now().weekday - 1);
 
               return Padding(
                 padding: const EdgeInsets.only(right: 6),
@@ -2090,17 +2092,17 @@ class _AcademicReportCardScreenState extends State<AcademicReportCardScreen> {
   String _getTeacherForSubject(String subject) {
     switch (subject) {
       case 'Mathematics':
-        return 'Mrs. Anita Desai';
+        return 'Mathematics Faculty';
       case 'Science':
-        return 'Dr. Robert Chen';
+        return 'Science Faculty';
       case 'English':
-        return 'Mr. David Miller';
+        return 'English Faculty';
       case 'Social Studies':
-        return 'Mrs. Priya Nair';
+        return 'Social Studies Faculty';
       case 'Hindi':
-        return 'Mrs. Anita Desai';
+        return 'Hindi Faculty';
       default:
-        return 'Staff Faculty';
+        return 'Assigned Faculty';
     }
   }
 

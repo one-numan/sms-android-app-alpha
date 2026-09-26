@@ -260,6 +260,10 @@ class Teacher {
   final String joinDate;
   final Address address;
   final String subjectSpecialization;
+  final String? classTeacherOf;
+  final bool isClassTeacher;
+  final bool isSubjectTeacher;
+  final List<String> subjectsTaught;
 
   const Teacher({
     required this.id,
@@ -272,12 +276,24 @@ class Teacher {
     required this.joinDate,
     required this.address,
     required this.subjectSpecialization,
+    this.classTeacherOf,
+    this.isClassTeacher = false,
+    this.isSubjectTeacher = false,
+    this.subjectsTaught = const [],
   });
 
   String get phone => mobile;
 
   factory Teacher.fromJson(Map<String, dynamic> json) {
     final addrMap = json['address'] is Map ? json['address'] as Map : null;
+    final subjectsList = (json['subjects_taught'] as List<dynamic>?)
+            ?.map((e) => e.toString())
+            .toList() ??
+        (json['subject'] != null ? [json['subject'].toString()] : <String>[]);
+    final classOf = json['class_teacher_of']?.toString();
+    final isCT = json['is_class_teacher'] == true || (classOf != null && classOf.isNotEmpty);
+    final isST = json['is_subject_teacher'] == true || subjectsList.isNotEmpty;
+
     return Teacher(
       id: json['id']?.toString() ?? '',
       name: json['full_name']?.toString() ?? json['name']?.toString() ?? 'Faculty Member',
@@ -302,6 +318,10 @@ class Teacher {
           json['department']?.toString() ??
           json['designation']?.toString() ??
           'General Academics',
+      classTeacherOf: classOf,
+      isClassTeacher: isCT,
+      isSubjectTeacher: isST,
+      subjectsTaught: subjectsList,
     );
   }
 }

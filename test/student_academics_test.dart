@@ -43,10 +43,8 @@ void main() {
     expect(find.text('Science'), findsWidgets);
     expect(find.text('Social Studies'), findsWidgets);
     expect(find.text('Hindi'), findsWidgets);
-    expect(find.textContaining('Mrs. Anita Desai'), findsWidgets);
-    expect(find.textContaining('Mr. David Miller'), findsWidgets);
-    expect(find.textContaining('Dr. Robert Chen'), findsWidgets);
-    expect(find.textContaining('Mrs. Priya Nair'), findsWidgets);
+    expect(find.textContaining('Mathematics Faculty'), findsWidgets);
+    expect(find.textContaining('Science Faculty'), findsWidgets);
 
     // 5. Timetable Section (Class 5-A routine preview)
     expect(find.text("TODAY'S TIMETABLE"), findsOneWidget);

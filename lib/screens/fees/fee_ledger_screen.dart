@@ -79,7 +79,7 @@ class _FeeLedgerScreenState extends State<FeeLedgerScreen> {
         }
       }
 
-      if (auth.currentRole == UserRole.accountant && (resolvedStudentId == null || resolvedStudentId.isEmpty)) {
+      if ((auth.currentRole == UserRole.accountant || auth.currentRole == UserRole.principal) && (resolvedStudentId == null || resolvedStudentId.isEmpty)) {
         final accData = await _accountantApiService.getDashboard();
         if (mounted) {
           setState(() {

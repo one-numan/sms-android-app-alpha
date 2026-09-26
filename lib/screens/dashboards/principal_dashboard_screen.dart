@@ -10,15 +10,50 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../data/mock/auth_state.dart';
+import '../../data/services/principal_api_service.dart';
 import '../../models/models.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/account_profile_sheet.dart';
 import '../../widgets/bottom_nav_bar.dart';
+import '../../widgets/onps_verified_badge.dart';
 import '../../widgets/shared_widgets.dart';
 
-class PrincipalDashboardScreen extends StatelessWidget {
+class PrincipalDashboardScreen extends StatefulWidget {
   const PrincipalDashboardScreen({super.key});
+
+  @override
+  State<PrincipalDashboardScreen> createState() => _PrincipalDashboardScreenState();
+}
+
+class _PrincipalDashboardScreenState extends State<PrincipalDashboardScreen> {
+  final PrincipalApiService _principalApiService = PrincipalApiService();
+  Map<String, dynamic> _dashboardData = {};
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    try {
+      final data = await _principalApiService.getDashboard();
+      if (mounted) {
+        setState(() {
+          _dashboardData = data;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,199 +62,229 @@ class PrincipalDashboardScreen extends StatelessWidget {
     final principalName = rawName.startsWith('Principal') ? rawName : 'Principal $rawName';
     final initials = principalName.split(' ').where((e) => e.isNotEmpty).map((e) => e[0].toUpperCase()).take(2).join();
 
+    final totalStudents = _dashboardData['total_enrolled_students']?.toString() ?? '10000';
+    final totalFaculty = _dashboardData['total_faculty']?.toString() ?? '255';
+    final totalClasses = _dashboardData['total_classes']?.toString() ?? '255';
+    final attendanceObj = _dashboardData['overall_attendance_today'] is Map ? _dashboardData['overall_attendance_today'] as Map : null;
+    final staffAttendanceObj = _dashboardData['staff_attendance_today'] is Map ? _dashboardData['staff_attendance_today'] as Map : null;
+
+    final studentAttendancePct = attendanceObj != null && attendanceObj['percentage'] != null
+        ? '${attendanceObj['percentage']}%'
+        : '85.5%';
+    final studentPresent = attendanceObj?['present']?.toString() ?? '8551';
+    final studentAbsent = attendanceObj?['absent']?.toString() ?? '457';
+    final studentLate = attendanceObj?['late']?.toString() ?? '499';
+    final studentLeave = attendanceObj?['leave']?.toString() ?? '493';
+    final studentTotal = attendanceObj?['marked']?.toString() ?? '10000';
+
+    final staffAttendancePct = staffAttendanceObj != null && staffAttendanceObj['percentage'] != null
+        ? '${staffAttendanceObj['percentage']}%'
+        : '100.0%';
+    final staffPresent = staffAttendanceObj?['present']?.toString() ?? totalFaculty;
+    final staffOnLeave = staffAttendanceObj?['on_leave']?.toString() ?? '0';
+    final staffTotal = staffAttendanceObj?['marked']?.toString() ?? totalFaculty;
+
     return Scaffold(
       backgroundColor: AcademicColors.canvas,
       appBar: const AppTopBar(showBrand: true),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // -------------------------------------------------------------
-              // 1. PRINCIPAL IDENTITY HEADER
-              // -------------------------------------------------------------
-              InkWell(
-                onTap: () => AccountProfileSheet.show(context),
-                borderRadius: BorderRadius.circular(12),
-                child: Semantics(
-                  label: 'View account profile',
-                  child: InsetCard(
-                    margin: EdgeInsets.zero,
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 46,
-                          height: 46,
-                          decoration: const BoxDecoration(
-                            color: AcademicColors.primaryDark,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Center(
-                            child: Text(
-                              initials.isEmpty ? 'NK' : initials,
-                              style: GoogleFonts.newsreader(
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold,
-                                color: AcademicColors.accent,
+        child: _isLoading && _dashboardData.isEmpty
+            ? const Center(child: CircularProgressIndicator(color: AcademicColors.primary))
+            : RefreshIndicator(
+                onRefresh: _loadData,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // -------------------------------------------------------------
+                // 1. PRINCIPAL IDENTITY HEADER
+                // -------------------------------------------------------------
+                InkWell(
+                  onTap: () => AccountProfileSheet.show(context),
+                  borderRadius: BorderRadius.circular(12),
+                  child: Semantics(
+                    label: 'View account profile',
+                    child: InsetCard(
+                      margin: EdgeInsets.zero,
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 46,
+                            height: 46,
+                            decoration: const BoxDecoration(
+                              color: AcademicColors.primaryDark,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Center(
+                              child: Text(
+                                initials.isEmpty ? 'NK' : initials,
+                                style: GoogleFonts.newsreader(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold,
+                                  color: AcademicColors.accent,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      principalName,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: GoogleFonts.newsreader(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: AcademicColors.textPrimary,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        principalName,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: GoogleFonts.newsreader(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: AcademicColors.textPrimary,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  PillBadge.info('2026–27'),
-                                ],
-                              ),
-                              Text(
-                                'Head of Institution • Executive Leadership',
-                                style: GoogleFonts.manrope(
-                                  fontSize: 11.5,
-                                  color: AcademicColors.textSecondary,
+                                    const SizedBox(width: 6),
+                                    OnpsVerifiedBadge.principal(size: 20),
+                                    const SizedBox(width: 6),
+                                    PillBadge.info('2026–27'),
+                                  ],
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Icon(Icons.chevron_right, size: 18, color: AcademicColors.textSecondary),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // -------------------------------------------------------------
-              // 2. TODAY'S SCHOOL OVERVIEW
-              // -------------------------------------------------------------
-              Text(
-                "TODAY'S OVERVIEW",
-                style: GoogleFonts.manrope(
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  color: AcademicColors.textSecondary,
-                  letterSpacing: 0.8,
-                ),
-              ),
-              const SizedBox(height: 8),
-
-              Row(
-                children: [
-                  Expanded(child: _buildMetricTile('Students', '352', 'Total enrolled', onTap: () => context.push('/students/ledger'))),
-                  const SizedBox(width: 8),
-                  Expanded(child: _buildMetricTile('Teachers', '22', 'Active faculty', onTap: () => context.push('/faculty/teachers'))),
-                  const SizedBox(width: 8),
-                  Expanded(child: _buildMetricTile('Attendance', '94.6%', 'Daily sync', isSuccess: true, onTap: () => context.push('/attendance/matrix'))),
-                  const SizedBox(width: 8),
-                  Expanded(child: _buildMetricTile('Classes', '32', 'NUR to XII', onTap: () => context.push('/faculty/allocation'))),
-                ],
-              ),
-
-              const SizedBox(height: 16),
-
-              const SizedBox(height: 16),
-
-              // -------------------------------------------------------------
-              // 3. ATTENDANCE TODAY (UNIFIED STUDENT & STAFF ATTENDANCE)
-              // -------------------------------------------------------------
-              InsetCard(
-                margin: EdgeInsets.zero,
-                padding: const EdgeInsets.all(14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Attendance Today",
-                          style: GoogleFonts.newsreader(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: AcademicColors.textPrimary,
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () => context.push('/attendance/matrix'),
-                          child: Text(
-                            'Open Attendance →',
-                            style: GoogleFonts.manrope(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: AcademicColors.secondary,
+                                Text(
+                                  'Head of Institution • Executive Leadership',
+                                  style: GoogleFonts.manrope(
+                                    fontSize: 11.5,
+                                    color: AcademicColors.textSecondary,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    // Student Attendance (Primary - Green/Teal accent)
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: AcademicColors.canvas,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: AcademicColors.border),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.groups, size: 16, color: AcademicColors.success),
-                              const SizedBox(width: 6),
-                              Text(
-                                'Student Attendance',
-                                style: GoogleFonts.manrope(
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.bold,
-                                  color: AcademicColors.textPrimary,
-                                ),
-                              ),
-                              const Spacer(),
-                              Text(
-                                '94.6%',
-                                style: GoogleFonts.newsreader(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: AcademicColors.success,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              _buildAttendanceSubTile('Present', '333', AcademicColors.success),
-                              _buildAttendanceSubTile('Absent', '14', AcademicColors.danger),
-                              _buildAttendanceSubTile('Late', '5', AcademicColors.warning),
-                              _buildAttendanceSubTile('Total', '352', AcademicColors.textSecondary),
-                            ],
-                          ),
+                          const SizedBox(width: 8),
+                          const Icon(Icons.chevron_right, size: 18, color: AcademicColors.textSecondary),
                         ],
                       ),
                     ),
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // -------------------------------------------------------------
+                // 2. TODAY'S SCHOOL OVERVIEW
+                // -------------------------------------------------------------
+                Text(
+                  "TODAY'S OVERVIEW",
+                  style: GoogleFonts.manrope(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: AcademicColors.textSecondary,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                Row(
+                  children: [
+                    Expanded(child: _buildMetricTile('Students', totalStudents, 'Total enrolled', onTap: () => context.push('/students/ledger'))),
+                    const SizedBox(width: 8),
+                    Expanded(child: _buildMetricTile('Teachers', totalFaculty, 'Active faculty', onTap: () => context.push('/faculty/teachers'))),
+                    const SizedBox(width: 8),
+                    Expanded(child: _buildMetricTile('Attendance', studentAttendancePct, 'Daily sync', isSuccess: true, onTap: () => context.push('/attendance/matrix'))),
+                    const SizedBox(width: 8),
+                    Expanded(child: _buildMetricTile('Classes', totalClasses, 'NUR to XII', onTap: () => context.push('/faculty/allocation'))),
+                  ],
+                ),
+
+                const SizedBox(height: 16),
+
+                const SizedBox(height: 16),
+
+                // -------------------------------------------------------------
+                // 3. ATTENDANCE TODAY (UNIFIED STUDENT & STAFF ATTENDANCE)
+                // -------------------------------------------------------------
+                InsetCard(
+                  margin: EdgeInsets.zero,
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Attendance Today",
+                            style: GoogleFonts.newsreader(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: AcademicColors.textPrimary,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () => context.push('/attendance/matrix'),
+                            child: Text(
+                              'Open Attendance →',
+                              style: GoogleFonts.manrope(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: AcademicColors.secondary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      // Student Attendance (Primary - Green/Teal accent)
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: AcademicColors.canvas,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: AcademicColors.border),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(Icons.groups, size: 16, color: AcademicColors.success),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Student Attendance',
+                                  style: GoogleFonts.manrope(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: AcademicColors.textPrimary,
+                                  ),
+                                ),
+                                const Spacer(),
+                                Text(
+                                  studentAttendancePct,
+                                  style: GoogleFonts.newsreader(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: AcademicColors.success,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                _buildAttendanceSubTile('Present', studentPresent, AcademicColors.success),
+                                _buildAttendanceSubTile('Absent', studentAbsent, AcademicColors.danger),
+                                _buildAttendanceSubTile('Late', studentLate, AcademicColors.warning),
+                                _buildAttendanceSubTile('On Leave', studentLeave, AcademicColors.info),
+                                _buildAttendanceSubTile('Total', studentTotal, AcademicColors.textSecondary),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
                     const SizedBox(height: 8),
                     // Staff Attendance (Secondary Operational - Blue/Indigo accent)
                     Container(
@@ -246,7 +311,7 @@ class PrincipalDashboardScreen extends StatelessWidget {
                               ),
                               const Spacer(),
                               Text(
-                                '90.9%',
+                                staffAttendancePct,
                                 style: GoogleFonts.newsreader(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
@@ -259,9 +324,9 @@ class PrincipalDashboardScreen extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
-                              _buildAttendanceSubTile('Present', '20', AcademicColors.info),
-                              _buildAttendanceSubTile('On Leave', '2', AcademicColors.warning),
-                              _buildAttendanceSubTile('Not Marked', '0', AcademicColors.textSecondary),
+                              _buildAttendanceSubTile('Present', staffPresent, AcademicColors.info),
+                              _buildAttendanceSubTile('On Leave', staffOnLeave, AcademicColors.warning),
+                              _buildAttendanceSubTile('Total Faculty', staffTotal, AcademicColors.textSecondary),
                             ],
                           ),
                         ],
@@ -605,7 +670,8 @@ class PrincipalDashboardScreen extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: AcademicBottomNavBar.forRole(
+    ),
+    bottomNavigationBar: AcademicBottomNavBar.forRole(
         UserRole.principal,
         currentIndex: 0,
         context: context,

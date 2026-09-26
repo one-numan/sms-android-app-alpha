@@ -16,6 +16,7 @@ import '../../theme/app_theme.dart';
 import '../../widgets/account_profile_sheet.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/bottom_nav_bar.dart';
+import '../../widgets/onps_verified_badge.dart';
 import '../../widgets/shared_widgets.dart';
 
 class StudentHubScreen extends StatefulWidget {
@@ -270,12 +271,7 @@ class _StudentHubScreenState extends State<StudentHubScreen> {
                           ),
                         ),
                         const SizedBox(width: 6),
-                        const PillBadge(
-                          text: 'Active',
-                          backgroundColor: AcademicColors.successContainer,
-                          textColor: AcademicColors.success,
-                          fontSize: 9.5,
-                        ),
+                        OnpsVerifiedBadge.student(size: 16, showCategory: true),
                       ],
                     ),
                     const SizedBox(height: 2),

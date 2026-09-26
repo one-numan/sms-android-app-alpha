@@ -613,6 +613,10 @@ GoRouter createOnpsRouter(AuthState authState) {
         builder: (context, state) => const MarksEntryDeskScreen(),
       ),
       GoRoute(
+        path: '/academics/marks-entry',
+        builder: (context, state) => const MarksEntryDeskScreen(),
+      ),
+      GoRoute(
         path: '/teacher/timetable-grid',
         builder: (context, state) {
           final teacher = state.uri.queryParameters['teacher'];

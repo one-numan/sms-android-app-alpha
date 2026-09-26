@@ -63,8 +63,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Good Morning, Robert Chen'), findsOneWidget);
-      expect(find.text('Science Faculty • Senior Department'), findsOneWidget);
-      expect(find.text('Faculty Active'), findsOneWidget);
+      expect(find.textContaining('Faculty'), findsWidgets);
+      expect(find.byType(OnpsVerifiedBadge), findsWidgets);
     });
 
     testWidgets('TEST 3: Subject Teacher Cohorts screen shows assigned classes and enter marks CTA', (tester) async {

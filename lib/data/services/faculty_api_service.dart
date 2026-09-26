@@ -41,8 +41,15 @@ class FacultyApiService {
   }
 
   /// GET /api/v1/faculty/staff/
-  Future<Map<String, dynamic>> getStaffDirectory({int page = 1, String? search}) async {
+  Future<Map<String, dynamic>> getStaffDirectory({
+    int page = 1,
+    int? pageSize,
+    String? role,
+    String? search,
+  }) async {
     final query = <String, dynamic>{'page': page.toString()};
+    if (pageSize != null) query['page_size'] = pageSize.toString();
+    if (role != null && role.isNotEmpty) query['role'] = role;
     if (search != null && search.isNotEmpty) query['search'] = search;
 
     final response = await _apiClient.get('/faculty/staff/', queryParameters: query);

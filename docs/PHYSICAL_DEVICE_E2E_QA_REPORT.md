@@ -212,7 +212,7 @@ All 68 screen captures have been stored in [`docs/evidence/`](file:///Users/onen
 
 ---
 
-## 7. Sign-off & Recommendation
+## 7. Initial Sign-off & Recommendation (Prior to Remediation)
 
 Physical device testing has proven that the core architecture is sound, secure, responsive, and robustly connected to live Django APIs and real database entities.
 
@@ -220,3 +220,31 @@ Physical device testing has proven that the core architecture is sound, secure, 
 1. Release a patch build containing the fix for Bug B1 (already committed in `0c27193`).
 2. Implement fixes for Bugs B2, B3, B4, and B6 in a targeted bug-fix cycle.
 3. Advance to Phase 5 Production Readiness sign-off.
+
+---
+
+## 8. Final Physical Device Regression QA Verification (Post-Remediation)
+
+- **Verification Date**: 25 September 2026, 21:00 – 21:10 IST
+- **Target Device**: Realme RMX5004 / RMX5004IN (realme P1 Speed 5G), Android 16 / API 36
+- **ADB Connection**: Wireless ADB (`192.168.0.240:38863`)
+- **Installed Artifact**: Release APK `build/app/outputs/flutter-apk/app-arm64-v8a-release.apk` (`v2.4.0-PROD`, Commit: `74082bd`)
+- **Authoritative Backend**: Live Production Endpoint `https://alpha.onenuman.com/api/v1`
+- **Final Verdict**: **PHYSICAL_QA_PASS** (100% Verified on Physical Hardware)
+
+### 8.1 Regression Test Matrix & Verification Results
+
+| Item / Finding | Defect Area | Physical Test Procedure & Observation | Status | Evidence File |
+| :--- | :--- | :--- | :--- | :--- |
+| **B1** | Accountant Back Nav | Signed in as `accountantpriyamenon`, switched to `Accounts & Fees Desk`, navigated to `Official Fee Receipt` (`/fees/receipt`), tapped TopBar back button. Navigated cleanly back to `/dashboard/accountant` without `GoException` or crash. | **PASS** | [`physical_b1_fee_receipt_back.png`](file:///Users/onenuman/Documents/GitHub/sms-android-app/docs/evidence/physical_b1_fee_receipt_back.png) |
+| **B2** | Parent Attendance Dynamic Resolution | Signed in as `nawazuddinsiddiqui`, opened Parent Attendance tab. Automatically resolved active child `Bushra Malik (Nursery A)`, fetched dynamic register (`9 Present, 0 Absent, 1 Late, 1 Leave`). No HTTP 400 error. | **PASS** | [`physical_b2_parent_attendance.png`](file:///Users/onenuman/Documents/GitHub/sms-android-app/docs/evidence/physical_b2_parent_attendance.png) |
+| **B3** | Parent Child Selector Integrity | Inspected Parent Dashboard, Attendance, and Academic Report Card. Hardcoded `"Diya Sharma"` and `"Aarav Sharma"` chips are completely eliminated; dynamically binds to authentic enrolled child `Bushra Malik (Nursery A)`. | **PASS** | [`physical_b3_parent_children.png`](file:///Users/onenuman/Documents/GitHub/sms-android-app/docs/evidence/physical_b3_parent_children.png)<br>[`physical_b3_academics.png`](file:///Users/onenuman/Documents/GitHub/sms-android-app/docs/evidence/physical_b3_academics.png) |
+| **B4** | Fee Ledger Canonical Endpoint | Navigated to `Fee Ledger & Dues` from Parent portal. Live fee summary loaded from canonical `/api/v1/fees/ledger/?student_id=...` without HTTP 404 (Total Fee `₹60,900`, Paid `₹7,320`, Outstanding `₹53,579`). | **PASS** | [`physical_b4_fee_ledger.png`](file:///Users/onenuman/Documents/GitHub/sms-android-app/docs/evidence/physical_b4_fee_ledger.png) |
+| **B5** | Student Digital ID Self-Access | Authenticated as student `yasminmalik011122`, navigated to `Digital Student ID` from Student Hub. Self-retrieval via `GET /api/v1/students/id-card/` returned HTTP 200 OK. Rendered Yasmin Malik, Nursery N, ADM-2024-517, DOB 2022-11-01, Session 2026-27, and live QR code without HTTP 403 or fallback ID '1'. | **PASS** | [`physical_b5_student_digital_id.png`](file:///Users/onenuman/Documents/GitHub/sms-android-app/docs/evidence/physical_b5_student_digital_id.png) |
+| **B6** | Stale JWT Login Resilience | Executed multiple persona sign-out and re-authentication cycles across Accountant, Parent, and Student. Login requests to `/api/v1/auth/login/` strictly omitted stale Authorization headers, eliminating `token_not_valid` HTTP 401 login rejections. | **PASS** | [`physical_b6_stale_token_login.png`](file:///Users/onenuman/Documents/GitHub/sms-android-app/docs/evidence/physical_b6_stale_token_login.png) |
+| **ISSUE-DEAD-02** | Navigation Disambiguation | **Parent**: Tapping "Bus Track" opened `/transit/bus` (`Bus Route & Transit`), did NOT open Library Desk.<br>**Student**: Tapping "Books on Loan" opened dedicated `Library Loans & Status` bottom sheet, did NOT open Librarian Circulation Desk. | **PASS** | [`physical_dead02_bus_track.png`](file:///Users/onenuman/Documents/GitHub/sms-android-app/docs/evidence/physical_dead02_bus_track.png)<br>[`physical_dead02_books_loan.png`](file:///Users/onenuman/Documents/GitHub/sms-android-app/docs/evidence/physical_dead02_books_loan.png) |
+
+### 8.2 Final Physical QA Summary & Sign-off
+
+All 6 remediated physical QA findings (B1–B6) along with navigation disambiguation (ISSUE-DEAD-02) have been thoroughly exercised and verified on the actual physical handheld hardware running Android 16. No regressions, rendering glitches, route routing failures, or unhandled exceptions occurred. The release build is fully verified and ready for deployment.
+

@@ -14,6 +14,7 @@ import '../../data/services/account_api_service.dart';
 import '../../models/models.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_top_bar.dart';
+import '../../widgets/onps_verified_badge.dart';
 import '../../widgets/role_switcher_sheet.dart';
 import '../../widgets/shared_widgets.dart';
 
@@ -103,8 +104,15 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
         : AuthState.roleTitle(auth.currentRole).toUpperCase();
     final designation = (userProfile?['designation'] as String?)?.trim().isNotEmpty == true
         ? (userProfile!['designation'] as String).trim()
-        : AuthState.roleTitle(auth.currentRole);
-    final tier = _getRoleTier(auth.currentRole);
+        : ((auth.currentUsername.toLowerCase().contains('principal') ||
+                userProfile?['email']?.toString().toLowerCase().contains('principal') == true ||
+                auth.currentRole == UserRole.principal)
+            ? 'Principal'
+            : AuthState.roleTitle(auth.currentRole));
+    final isPrincipal = designation.toLowerCase().contains('principal') ||
+        auth.currentRole == UserRole.principal ||
+        auth.currentUsername.toLowerCase().contains('principal');
+    final tier = isPrincipal ? 'Executive Tier 0' : _getRoleTier(auth.currentRole);
     final initials = fullName != 'Not available' && fullName.isNotEmpty
         ? fullName.split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join()
         : (auth.currentUsername.isNotEmpty ? auth.currentUsername[0].toUpperCase() : 'U');
@@ -162,19 +170,14 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
                           ),
                         ),
                         Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: const BoxDecoration(
-                              color: AcademicColors.surface,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.verified,
-                              color: AcademicColors.success,
-                              size: 22,
-                            ),
+                          bottom: -2,
+                          right: -2,
+                          child: OnpsVerifiedBadge(
+                            role: auth.currentRole,
+                            designation: designation,
+                            username: auth.currentUsername,
+                            email: email,
+                            size: 26,
                           ),
                         ),
                       ],
@@ -204,7 +207,15 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
                       spacing: 8,
                       runSpacing: 6,
                       children: [
-                        PillBadge.info(role.toString().toUpperCase()),
+                        OnpsVerifiedBadge(
+                          role: auth.currentRole,
+                          designation: designation,
+                          username: auth.currentUsername,
+                          email: email,
+                          size: 18,
+                          showCategory: true,
+                        ),
+                        PillBadge.info(role),
                         PillBadge.neutral(tier),
                       ],
                     ),

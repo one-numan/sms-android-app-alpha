@@ -300,7 +300,11 @@ class _PrincipalTeachersScreenState extends State<PrincipalTeachersScreen> {
     }
 
     try {
-      final staffResp = await _facultyApi.getStaffDirectory();
+      final staffResp = await _facultyApi.getStaffDirectory(
+        page: 1,
+        pageSize: 500,
+        role: 'teacher',
+      );
       final results = staffResp['results'] as List<dynamic>? ?? [];
       final List<Teacher> teachers = [];
       for (final item in results) {
@@ -312,14 +316,12 @@ class _PrincipalTeachersScreenState extends State<PrincipalTeachersScreen> {
       if (mounted) {
         setState(() {
           _teachersList = teachers;
-          _classesList = [];
         });
       }
     } catch (_) {
       if (mounted) {
         setState(() {
           _teachersList = [];
-          _classesList = [];
         });
       }
     }
@@ -340,6 +342,17 @@ class _PrincipalTeachersScreenState extends State<PrincipalTeachersScreen> {
 
   // Helper: Find class where teacher is assigned as class teacher
   SchoolClass? _getClassTeacherAssignment(String teacherName) {
+    final matched = _teachersList.where((t) => t.name.trim().toLowerCase() == teacherName.trim().toLowerCase()).firstOrNull;
+    if (matched?.classTeacherOf != null && matched!.classTeacherOf!.isNotEmpty) {
+      final cName = matched.classTeacherOf!.startsWith('Grade') ? matched.classTeacherOf! : 'Grade ${matched.classTeacherOf}';
+      return SchoolClass(
+        id: matched.classTeacherOf!,
+        className: cName,
+        grade: matched.classTeacherOf!,
+        section: '',
+        classTeacherName: matched.name,
+      );
+    }
     return _classesList.where((c) {
       return c.classTeacherName.trim().toLowerCase() ==
           teacherName.trim().toLowerCase();
@@ -348,6 +361,9 @@ class _PrincipalTeachersScreenState extends State<PrincipalTeachersScreen> {
 
   // Helper: Find subject teaching assignments for a teacher
   List<String> _getSubjectTeachingAssignments(Teacher teacher) {
+    if (teacher.subjectsTaught.isNotEmpty) {
+      return teacher.subjectsTaught.map((s) => '$s (Assigned Subject)').toList();
+    }
     final List<String> assignments = [];
     final spec = teacher.subjectSpecialization.toLowerCase();
 
@@ -386,21 +402,25 @@ class _PrincipalTeachersScreenState extends State<PrincipalTeachersScreen> {
           t.name.toLowerCase().contains(query) ||
           t.email.toLowerCase().contains(query) ||
           t.mobile.replaceAll(' ', '').contains(query.replaceAll(' ', '')) ||
-          t.subjectSpecialization.toLowerCase().contains(query);
+          t.subjectSpecialization.toLowerCase().contains(query) ||
+          (t.classTeacherOf != null && t.classTeacherOf!.toLowerCase().contains(query)) ||
+          t.subjectsTaught.any((s) => s.toLowerCase().contains(query));
 
       if (!matchesSearch) return false;
 
       // Filter matches
       if (_selectedFilter == 'All') return true;
       if (_selectedFilter == 'Class Teachers') {
-        return _getClassTeacherAssignment(t.name) != null;
+        return t.isClassTeacher || _getClassTeacherAssignment(t.name) != null;
       }
       if (_selectedFilter == 'Subject Teachers') {
-        return true;
+        return t.isSubjectTeacher || t.subjectsTaught.isNotEmpty;
       }
+      final filterLower = _selectedFilter.toLowerCase();
       return t.subjectSpecialization
           .toLowerCase()
-          .contains(_selectedFilter.toLowerCase());
+          .contains(filterLower) ||
+          t.subjectsTaught.any((s) => s.toLowerCase().contains(filterLower));
     }).toList();
   }
 

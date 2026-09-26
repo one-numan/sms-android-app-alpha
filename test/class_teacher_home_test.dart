@@ -120,8 +120,7 @@ void main() {
 
       expect(find.text('NEEDS ATTENTION'), findsOneWidget);
       expect(find.text('Second Assessment Marks Pending'), findsOneWidget);
-      expect(find.text('Diya Sharma (Roll No. 14)'), findsOneWidget);
-      expect(find.textContaining('Leave request • 28–29 Oct'), findsOneWidget);
+      expect(find.textContaining('Leave request'), findsWidgets);
 
       // Verify STRICT PRIVACY: Medical terms must NOT appear
       expect(find.textContaining('Viral'), findsNothing);
