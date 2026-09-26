@@ -13,6 +13,7 @@ import 'package:sms_android_app_alpha/models/models.dart';
 import 'package:sms_android_app_alpha/screens/dashboards/subject_teacher_cohorts_screen.dart';
 import 'package:sms_android_app_alpha/screens/dashboards/subject_teacher_dashboard_screen.dart';
 import 'package:sms_android_app_alpha/widgets/bottom_nav_bar.dart';
+import 'package:sms_android_app_alpha/widgets/onps_verified_badge.dart';
 
 Widget createTestApp(Widget child, AuthState authState) {
   return ChangeNotifierProvider<AuthState>.value(
