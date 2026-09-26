@@ -19,7 +19,6 @@ import '../../widgets/app_top_bar.dart';
 import '../../widgets/account_profile_sheet.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/empty_state_widget.dart';
-import '../../widgets/onps_verified_badge.dart';
 import '../../widgets/shared_widgets.dart';
 
 class SubjectTeacherDashboardScreen extends StatefulWidget {
@@ -156,7 +155,42 @@ class _SubjectTeacherDashboardScreenState extends State<SubjectTeacherDashboardS
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Teacher Greeting Card
+                // ── Card 1: Time-Aware Greeting ──────────────────────────
+                Builder(builder: (context) {
+                  final hour = DateTime.now().hour;
+                  final greeting = hour < 12
+                      ? 'Good Morning'
+                      : hour < 17
+                          ? 'Good Afternoon'
+                          : 'Good Evening';
+                  final greetIcon = hour < 12
+                      ? Icons.wb_sunny_outlined
+                      : hour < 17
+                          ? Icons.light_mode_outlined
+                          : Icons.nights_stay_outlined;
+                  return InsetCard(
+                    margin: EdgeInsets.zero,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    child: Row(
+                      children: [
+                        Icon(greetIcon, size: 20, color: AcademicColors.secondary),
+                        const SizedBox(width: 10),
+                        Text(
+                          greeting,
+                          style: GoogleFonts.newsreader(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: AcademicColors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+
+                const SizedBox(height: 10),
+
+                // ── Card 2: Teacher Identity ──────────────────────────────
                 InsetCard(
                   margin: EdgeInsets.zero,
                   padding: const EdgeInsets.all(16),
@@ -194,44 +228,38 @@ class _SubjectTeacherDashboardScreenState extends State<SubjectTeacherDashboardS
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Good Morning,',
-                                      style: GoogleFonts.manrope(
-                                        fontSize: 12,
-                                        color: AcademicColors.textSecondary,
+                                      teacherName,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: GoogleFonts.newsreader(
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.bold,
+                                        color: AcademicColors.textPrimary,
                                       ),
                                     ),
-                                    const SizedBox(height: 2),
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            teacherName,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: GoogleFonts.newsreader(
-                                              fontSize: 17,
-                                              fontWeight: FontWeight.bold,
-                                              color: AcademicColors.textPrimary,
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 6),
-                                        OnpsVerifiedBadge.teacher(size: 16),
-                                      ],
-                                    ),
+                                    const SizedBox(height: 3),
                                     Text(
-                                      _assignedSubjects.isNotEmpty
-                                          ? '${_assignedSubjects.join(" • ")} Faculty'
-                                          : 'Subject Faculty • Academic Department',
+                                      'Subject Teacher',
                                       style: GoogleFonts.manrope(
                                         fontSize: 11.5,
-                                        color: AcademicColors.textSecondary,
+                                        fontWeight: FontWeight.w600,
+                                        color: AcademicColors.secondary,
                                       ),
                                     ),
+                                    if (_assignedSubjects.isNotEmpty) ...[
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        _assignedSubjects.join(' • '),
+                                        style: GoogleFonts.manrope(
+                                          fontSize: 11,
+                                          color: AcademicColors.textSecondary,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
                                   ],
                                 ),
                               ),
-                              const SizedBox(width: 6),
-                              OnpsVerifiedBadge.teacher(size: 18, showCategory: true),
                               const SizedBox(width: 4),
                               const Icon(Icons.chevron_right, size: 18, color: AcademicColors.textSecondary),
                             ],
@@ -353,13 +381,39 @@ class _SubjectTeacherDashboardScreenState extends State<SubjectTeacherDashboardS
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'ASSIGNED TEACHING CLASSES',
-                      style: GoogleFonts.manrope(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: AcademicColors.textSecondary,
-                        letterSpacing: 0.8,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'ASSIGNED TEACHING CLASSES',
+                            style: GoogleFonts.manrope(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: AcademicColors.textSecondary,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              Icon(
+                                _errorMessage != null ? Icons.storage_outlined : Icons.cloud_done_outlined,
+                                size: 11,
+                                color: _errorMessage != null ? AcademicColors.warning : AcademicColors.success,
+                              ),
+                              const SizedBox(width: 3),
+                              Text(
+                                _errorMessage != null ? 'Mock Data (API unavailable)' : 'Live API',
+                                style: GoogleFonts.manrope(
+                                  fontSize: 10,
+                                  color: _errorMessage != null ? AcademicColors.warning : AcademicColors.success,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                     GestureDetector(

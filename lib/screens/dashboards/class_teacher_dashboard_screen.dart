@@ -19,7 +19,6 @@ import '../../data/services/announcement_api_service.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/account_profile_sheet.dart';
 import '../../widgets/bottom_nav_bar.dart';
-import '../../widgets/onps_verified_badge.dart';
 import '../../widgets/shared_widgets.dart';
 
 enum AttendanceMarkingState {
@@ -269,68 +268,106 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
   // ===========================================================================
   Widget _buildTeacherGreetingCard(Teacher teacher, SchoolClass? assignedClass) {
     final initials = teacher.name.split(' ').map((n) => n.isNotEmpty ? n[0] : '').take(2).join();
+    final hour = DateTime.now().hour;
+    final greeting = hour < 12
+        ? 'Good Morning'
+        : hour < 17
+            ? 'Good Afternoon'
+            : 'Good Evening';
+    final greetIcon = hour < 12
+        ? Icons.wb_sunny_outlined
+        : hour < 17
+            ? Icons.light_mode_outlined
+            : Icons.nights_stay_outlined;
 
-    return InkWell(
-      onTap: () => AccountProfileSheet.show(context),
-      borderRadius: BorderRadius.circular(12),
-      child: Semantics(
-        label: 'View account profile',
-        child: InsetCard(
+    final String roleLabel = assignedClass != null
+        ? 'Class Teacher • ${assignedClass.className}'
+        : 'Class Teacher';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // ── Card 1: Time-Aware Greeting ───────────────────────────
+        InsetCard(
           margin: EdgeInsets.zero,
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // Initials Avatar with Faculty Active Badge
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: const BoxDecoration(
-                    color: AcademicColors.primaryDark,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text(
-                      initials.isEmpty ? 'T' : initials,
-                      style: GoogleFonts.newsreader(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AcademicColors.accent,
-                      ),
-                    ),
-                  ),
+            children: [
+              Icon(greetIcon, size: 20, color: AcademicColors.secondary),
+              const SizedBox(width: 10),
+              Text(
+                greeting,
+                style: GoogleFonts.newsreader(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AcademicColors.textPrimary,
                 ),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: Container(
-                    width: 14,
-                    height: 14,
-                    decoration: BoxDecoration(
-                      color: AcademicColors.success,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(width: 14),
+              ),
+            ],
+          ),
+        ),
 
-            // Teacher Name and Context
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
+        const SizedBox(height: 10),
+
+        // ── Card 2: Teacher Identity ──────────────────────────────
+        InkWell(
+          onTap: () => AccountProfileSheet.show(context),
+          borderRadius: BorderRadius.circular(12),
+          child: Semantics(
+            label: 'View account profile',
+            child: InsetCard(
+              margin: EdgeInsets.zero,
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Row(
+                  // Initials Avatar with active dot
+                  Stack(
+                    clipBehavior: Clip.none,
                     children: [
-                      Expanded(
-                        child: Text(
-                          'Good Morning, ${teacher.name}',
+                      Container(
+                        width: 50,
+                        height: 50,
+                        decoration: const BoxDecoration(
+                          color: AcademicColors.primaryDark,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: Text(
+                            initials.isEmpty ? 'T' : initials,
+                            style: GoogleFonts.newsreader(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AcademicColors.accent,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: Container(
+                          width: 14,
+                          height: 14,
+                          decoration: BoxDecoration(
+                            color: AcademicColors.success,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 2),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(width: 14),
+
+                  // Name, Role, Class
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          teacher.name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.newsreader(
@@ -339,58 +376,42 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
                             color: AcademicColors.textPrimary,
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 6),
-                      OnpsVerifiedBadge.classTeacher(size: 18),
-                    ],
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '${teacher.subjectSpecialization} Faculty • AY 2026–27',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.manrope(
-                      fontSize: 11,
-                      color: AcademicColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  if (assignedClass != null)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: AcademicColors.primaryDark.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          OnpsVerifiedBadge.classTeacher(size: 13),
-                          const SizedBox(width: 4),
+                        const SizedBox(height: 3),
+                        Text(
+                          roleLabel,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.manrope(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w600,
+                            color: AcademicColors.secondary,
+                          ),
+                        ),
+                        if (teacher.subjectSpecialization.isNotEmpty) ...[
+                          const SizedBox(height: 2),
                           Text(
-                            'Class Teacher • Grade ${assignedClass.className}',
+                            teacher.subjectSpecialization,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.manrope(
                               fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: AcademicColors.primaryDark,
-                              letterSpacing: 0.2,
+                              color: AcademicColors.textSecondary,
                             ),
                           ),
                         ],
-                      ),
-                    )
-                  else
-                    PillBadge.neutral('No Assigned Homeroom'),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.chevron_right, size: 18, color: AcademicColors.textSecondary),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, size: 18, color: AcademicColors.textSecondary),
-          ],
+          ),
         ),
-      ),
-    ),
-  );
-}
+      ],
+    );
+  }
+
 
   // ===========================================================================
   // SECTION 2: MY CLASS CONTEXT SUMMARY
