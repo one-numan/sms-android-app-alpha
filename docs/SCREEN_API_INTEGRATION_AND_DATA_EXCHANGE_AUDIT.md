@@ -359,3 +359,117 @@
 2. **Step 2 (Backend)**: Deploy `GET /api/v1/attendance/institutional-matrix/` for instant Principal roll call matrix loading.
 3. **Step 3 (Backend)**: Add `DELETE /api/v1/account/devices/{session_id}/` to support remote session revocation.
 4. **Step 4 (Mobile Client)**: Implement local SQLite/Hive offline caching for `DailyRollCallScreen` and `MarksEntryDeskScreen` to enable seamless offline classroom operation.
+
+---
+
+## 15. Verified Teacher & Academics API Contracts & Active Mobile Action Items
+
+*Audited & Verified with live database on September 26, 2026.*
+
+### 15.1 Real Backend Endpoint Contracts
+
+#### 1. Bulk Marks Entry (`POST /api/v1/academics/marks-entry/`) — Production Live
+* **Status**: Fully implemented on backend.
+* **Permissions**: Authenticated Subject Teacher assigned to `class_subject_id` or School Admin. Class teachers not assigned to the subject are rejected.
+* **Contract Specification**:
+  ```json
+  POST /api/v1/academics/marks-entry/
+  Headers:
+    Authorization: Bearer <TEACHER_JWT>
+    Content-Type: application/json
+  Body:
+  {
+    "class_subject_id": 5713,
+    "assessment": "second_assessment",
+    "session_id": 3,
+    "marks": [
+      {"student_id": 10023, "marks_obtained": 46.5},
+      {"student_id": 10025, "marks_obtained": 42.0}
+    ]
+  }
+  ```
+* **Constraints**:
+  - `assessment` must strictly belong to the enum: `first_assessment`, `half_yearly`, `second_assessment`, `final_exam`.
+  - `student_id` expects the numeric integer primary key (e.g. `10023`), NOT synthetic string codes (e.g. `"ADM-2024-0023"`).
+  - Columns strictly persisted: `marks_obtained`. No `remarks`, `max_marks`, or `is_finalized` columns exist on the database `Marks` model.
+* **Response**:
+  ```json
+  {
+    "success": true,
+    "status": "success",
+    "message": "Marks submitted successfully.",
+    "data": {
+      "records_saved": 2,
+      "skipped_not_in_class": []
+    }
+  }
+  ```
+
+#### 2. Class Student Roster (`GET /api/v1/classes/{class_id}/students/`) — Production Live
+* **Status**: Fully implemented on backend.
+* **Permissions**: Any operational role (Class Teacher, Subject Teacher, Admin, Office Staff).
+* **Contract Specification**:
+  ```bash
+  GET /api/v1/classes/{class_id}/students/?search={query}
+  Headers:
+    Authorization: Bearer <TEACHER_JWT>
+  ```
+* **Response Fields per Student**:
+  - `id`: Synthetic admission string (e.g. `"ADM-2024-0023"`).
+  - `roll_number`, `full_name`, `gender`, `guardian_name`, `guardian_mobile`, `attendance_percentage`, `fee_status`.
+* **Data Lineage Note**: Client must resolve/retain underlying numeric integer PK for downstream `marks-entry` consumption.
+
+#### 3. Teacher's Assigned Classes (`GET /api/v1/faculty/my-classes/`) — Production Live
+* **Status**: Built and deployed (`apps/teachers/api_views.py::my_classes`, reusing `teaching_summary` selector).
+* **Permissions**: Authenticated Teacher. Scoped to teaching allocations.
+* **Contract Specification**:
+  ```bash
+  GET /api/v1/faculty/my-classes/
+  Headers:
+    Authorization: Bearer <TEACHER_JWT>
+  ```
+* **Verified Live Response**:
+  ```json
+  {
+    "success": true,
+    "status": "success",
+    "data": {
+      "teacher_id": 766,
+      "teacher_name": "Washington Sundar",
+      "total_classes": 8,
+      "total_students": 315,
+      "classes": [
+        {
+          "class_id": 766,
+          "class_name": "Nursery A",
+          "grade": "Nursery",
+          "section": "A",
+          "is_class_teacher": true,
+          "student_count": 40,
+          "subjects": [
+            {
+              "class_subject_id": 5713,
+              "subject_id": 46,
+              "subject_name": "English"
+            }
+          ]
+        }
+      ]
+    }
+  }
+  ```
+* **Design Boundary**: Clean zero-mock contract. Schema does not track `avg_score`, `assessment_status`, or `subject_code`, ensuring no synthetic or fabricated properties are introduced.
+
+---
+
+### 15.2 Active Mobile Application Action Items
+
+| ID | Module / Screen | Action Item Description | Target Endpoint | Priority |
+|---|---|---|---|:---:|
+| **ACT-TCH-01** | `FacultyApiService` | Add `getMyClasses()` method calling `GET /api/v1/faculty/my-classes/` returning typed model or map. | `GET /faculty/my-classes/` | P0 |
+| **ACT-TCH-02** | `SubjectTeacherCohortsScreen` | Wire class cards to consume `getMyClasses()` payload directly. Use `class_id`, `class_name`, `student_count`, and `subjects[0].subject_name`. Remove synthetic metric labels. | `GET /faculty/my-classes/` | P0 |
+| **ACT-TCH-03** | `ClassStudentDirectoryScreen` | Pass the numeric `class_id` from `my-classes` directly into `GET /api/v1/classes/{class_id}/students/?search=...`. | `GET /classes/{class_id}/students/` | P0 |
+| **ACT-TCH-04** | `StudentApiService` & `MarksEntryDeskScreen` | Update `submitMarks()` signature and request body to match live contract (`class_subject_id`, `assessment` enum, `session_id`, `marks: [{"student_id", "marks_obtained"}]`). | `POST /academics/marks-entry/` | P0 |
+| **ACT-TCH-05** | `MarksEntryDeskScreen` | Resolve numeric PK from roster (extract integer suffix or use raw PK) so `student_id` sent to `marks-entry` is an integer (e.g. `10023`), preventing rejection. | `POST /academics/marks-entry/` | P0 |
+| **ACT-TCH-06** | `MarksEntryDeskScreen` | Bind the "Lock & Finalize" button to execute live `StudentApiService.submitMarks()` with visual loading/success feedback. | `POST /academics/marks-entry/` | P0 |
+
