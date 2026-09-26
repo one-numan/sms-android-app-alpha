@@ -3,7 +3,7 @@
 **Audit Date:** September 26, 2026  
 **Auditor:** Antigravity Autonomous QA & Release Verification Agent  
 **Target Environment:** Production Live API (`https://alpha.onenuman.com/api/v1`)  
-**Target Physical Device:** Realme RMX5004 (Android 16, Wireless ADB `192.168.0.240:38261`)
+**Target Physical Device:** Realme ;ges   0-=] R4EWQARMX5004 (Android 16, Wireless ADB `192.168.0.240:38261`)
 
 ---
 
