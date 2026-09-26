@@ -59,7 +59,7 @@ class _OnpsErpAppState extends State<OnpsErpApp> {
     return ChangeNotifierProvider<AuthState>.value(
       value: _authState,
       child: MaterialApp.router(
-        title: 'One Numan Public School ERP',
+        title: 'One Numan Alpha',
         debugShowCheckedModeBanner: false,
         theme: AcademicTheme.themeData,
         routerConfig: _router,
