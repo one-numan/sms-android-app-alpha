@@ -313,11 +313,16 @@ class AuthState extends ChangeNotifier {
 
   static UserRole? resolveRoleFromProfile(Map<String, dynamic>? profile) {
     if (profile == null) return null;
-    final roleStr = (profile['role'] ?? '').toString().trim().toLowerCase();
+    final userMap = profile['user'] is Map ? (profile['user'] as Map) : null;
+    final userType = (userMap?['user_type'] ?? profile['user_type'] ?? '').toString().trim().toLowerCase();
+    final roleStr = (profile['role'] ?? userType).toString().trim().toLowerCase();
     final desigStr = (profile['designation'] ?? '').toString().trim().toLowerCase();
-    final username = (profile['username'] ?? '').toString().trim().toLowerCase();
-    final email = (profile['email'] ?? '').toString().trim().toLowerCase();
+    final username = (userMap?['username'] ?? profile['username'] ?? '').toString().trim().toLowerCase();
+    final email = (userMap?['email'] ?? profile['email'] ?? '').toString().trim().toLowerCase();
 
+    if (roleStr == 'superadmin' || roleStr == 'super_admin') {
+      return UserRole.superAdmin;
+    }
     if (roleStr == 'principal' ||
         desigStr == 'principal' ||
         username.contains('principal') ||
@@ -342,9 +347,20 @@ class AuthState extends ChangeNotifier {
     if (roleStr == 'parent') {
       return UserRole.parent;
     }
-    if (roleStr == 'teacher') {
-      final assignedClass = (profile['assigned_class'] ?? profile['class_name'])?.toString().trim();
-      final hasAssignedClass = assignedClass != null && assignedClass.isNotEmpty && assignedClass.toLowerCase() != 'none';
+    if (roleStr == 'class_teacher') {
+      return UserRole.classTeacher;
+    }
+    if (roleStr == 'subject_teacher') {
+      return UserRole.subjectTeacher;
+    }
+    if (roleStr == 'teacher' || roleStr == 'faculty' || userType == 'faculty') {
+      final rawAssigned = profile['assigned_class'] ?? profile['class_name'];
+      bool hasAssignedClass = false;
+      if (rawAssigned is Map) {
+        hasAssignedClass = rawAssigned.isNotEmpty;
+      } else if (rawAssigned is String) {
+        hasAssignedClass = rawAssigned.trim().isNotEmpty && rawAssigned.trim().toLowerCase() != 'none';
+      }
       if (profile['class_id'] != null || profile['is_class_teacher'] == true || hasAssignedClass) {
         return UserRole.classTeacher;
       }
