@@ -493,14 +493,22 @@ GoRouter createOnpsRouter(AuthState authState) {
         path: '/teacher/class-students',
         builder: (context, state) {
           final cls = state.uri.queryParameters['class'];
-          return ClassStudentDirectoryScreen(initialClass: cls);
+          final classId = state.uri.queryParameters['classId'];
+          return ClassStudentDirectoryScreen(
+            initialClass: cls,
+            classIdOverride: classId,
+          );
         },
       ),
       GoRoute(
         path: '/teacher/student-directory',
         builder: (context, state) {
           final cls = state.uri.queryParameters['class'];
-          return ClassStudentDirectoryScreen(initialClass: cls);
+          final classId = state.uri.queryParameters['classId'];
+          return ClassStudentDirectoryScreen(
+            initialClass: cls,
+            classIdOverride: classId,
+          );
         },
       ),
       GoRoute(

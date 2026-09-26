@@ -447,7 +447,9 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
                 ],
               ),
               GestureDetector(
-                onTap: () => context.push('/students/ledger'),
+                onTap: () => context.push(
+                  '/teacher/class-students?class=${Uri.encodeComponent(assignedClass.className)}',
+                ),
                 child: Row(
                   children: [
                     Text(
@@ -985,7 +987,13 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
             _buildActionTile(
               label: 'My\nClass',
               icon: Icons.groups,
-              onTap: () => context.push('/students/ledger'),
+              onTap: () {
+                final auth = context.read<AuthState>();
+                final clsName = _dashboardData?['assigned_class'] ?? auth.userProfile?['class_name'] ?? 'Class';
+                context.push(
+                  '/teacher/class-students?class=${Uri.encodeComponent(clsName.toString())}',
+                );
+              },
             ),
             const SizedBox(width: 8),
             _buildActionTile(

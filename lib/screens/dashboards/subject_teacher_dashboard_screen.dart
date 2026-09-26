@@ -462,11 +462,16 @@ class _SubjectTeacherDashboardScreenState extends State<SubjectTeacherDashboardS
                 else
                   ...(_assignedClasses.isNotEmpty
                       ? _assignedClasses.map((cls) {
+                          final rawName = cls['className']?.toString() ?? 'CLS';
+                          final cleanName = rawName.replaceAll('Grade', '').replaceAll('Class', '').trim();
+                          final displayName = 'Class $cleanName';
+                          final initials = cleanName.split(' ').last;
+
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 8),
                             child: InsetCard(
                               margin: EdgeInsets.zero,
-                              padding: const EdgeInsets.all(14),
+                              padding: const EdgeInsets.all(12),
                               onTap: () => context.push('/students/marks-entry'),
                               child: Row(
                                 children: [
@@ -479,7 +484,7 @@ class _SubjectTeacherDashboardScreenState extends State<SubjectTeacherDashboardS
                                     ),
                                     child: Center(
                                       child: Text(
-                                        cls['className']?.toString() ?? 'CLS',
+                                        initials,
                                         style: GoogleFonts.newsreader(
                                           fontSize: 13,
                                           fontWeight: FontWeight.bold,
@@ -494,7 +499,7 @@ class _SubjectTeacherDashboardScreenState extends State<SubjectTeacherDashboardS
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          'Class ${cls['className']} • ${cls['subjectName']}',
+                                          '$displayName • ${cls['subjectName']}',
                                           style: GoogleFonts.manrope(
                                             fontSize: 13,
                                             fontWeight: FontWeight.bold,

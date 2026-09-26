@@ -19,6 +19,7 @@ import '../../widgets/app_top_bar.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/empty_state_widget.dart';
 import '../../widgets/shared_widgets.dart';
+import '../../widgets/students_taught_sheet.dart';
 
 class SubjectTeacherCohortsScreen extends StatefulWidget {
   const SubjectTeacherCohortsScreen({super.key});
@@ -170,13 +171,18 @@ class _SubjectTeacherCohortsScreenState extends State<SubjectTeacherCohortsScree
             .toList() ??
         [];
 
+    final isClassTeacher = auth.currentRole == UserRole.classTeacher;
+    final navRole = isClassTeacher ? UserRole.classTeacher : UserRole.subjectTeacher;
+    final navIndex = isClassTeacher ? 2 : 1;
+
     return Scaffold(
       backgroundColor: AcademicColors.canvas,
       appBar: const AppTopBar(
         title: 'My Classes',
       ),
       bottomNavigationBar: AcademicBottomNavBar.forRole(
-        UserRole.subjectTeacher,
+        navRole,
+        currentIndex: navIndex,
         context: context,
       ),
       body: SafeArea(
@@ -282,7 +288,11 @@ class _SubjectTeacherCohortsScreenState extends State<SubjectTeacherCohortsScree
                       'Assigned Classes',
                       subtitle: 'My Classes',
                       accentColor: AcademicColors.primaryDark,
-                      onTap: () => _showStudentsTaughtDetailsSheet(totalStudentsCount, _cohorts),
+                      onTap: () => StudentsTaughtSheet.show(
+                        context,
+                        totalStudents: totalStudentsCount,
+                        cohorts: _cohorts,
+                      ),
                     ),
                     const SizedBox(width: 8),
                     _buildSummaryBox(
@@ -290,7 +300,11 @@ class _SubjectTeacherCohortsScreenState extends State<SubjectTeacherCohortsScree
                       'Total Students',
                       subtitle: 'Taught by You',
                       accentColor: AcademicColors.primaryDark,
-                      onTap: () => _showStudentsTaughtDetailsSheet(totalStudentsCount, _cohorts),
+                      onTap: () => StudentsTaughtSheet.show(
+                        context,
+                        totalStudents: totalStudentsCount,
+                        cohorts: _cohorts,
+                      ),
                     ),
                     const SizedBox(width: 8),
                     _buildSummaryBox(
@@ -298,37 +312,13 @@ class _SubjectTeacherCohortsScreenState extends State<SubjectTeacherCohortsScree
                       'Periods / Week',
                       subtitle: 'Weekly Load',
                       accentColor: AcademicColors.primaryDark,
-                      onTap: () => _showStudentsTaughtDetailsSheet(totalStudentsCount, _cohorts),
+                      onTap: () => StudentsTaughtSheet.show(
+                        context,
+                        totalStudents: totalStudentsCount,
+                        cohorts: _cohorts,
+                      ),
                     ),
                   ],
-                ),
-
-                const SizedBox(height: 12),
-
-                // Teaching Roster vs Total School Population Comparison Capsule
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: AcademicColors.primaryDark.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AcademicColors.primaryDark.withValues(alpha: 0.15)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.info_outline, size: 14, color: AcademicColors.primaryDark),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Teaching Roster: $totalStudentsCount Students in $assignedClassesCount Classes • School Enrollment: 10,000',
-                          style: GoogleFonts.manrope(
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.w600,
-                            color: AcademicColors.primaryDark,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
 
                 const SizedBox(height: 18),
@@ -357,7 +347,9 @@ class _SubjectTeacherCohortsScreenState extends State<SubjectTeacherCohortsScree
                   )
                 else
                   ..._cohorts.map((cls) {
-                    final className = cls['className']?.toString() ?? 'Class';
+                    final rawClassName = cls['className']?.toString() ?? 'Class';
+                    final cleanClassName = rawClassName.replaceAll('Grade', '').replaceAll('Class', '').trim();
+                    final displayClassName = 'Class $cleanClassName';
                     final subjectName = cls['subjectName']?.toString() ?? 'General';
                     final studentsCount = cls['students']?.toString() ?? '32';
                     final attendance = cls['attendance']?.toString() ?? '95%';
@@ -383,7 +375,7 @@ class _SubjectTeacherCohortsScreenState extends State<SubjectTeacherCohortsScree
                                   ),
                                   child: Center(
                                     child: Text(
-                                      className.split(' ').last,
+                                      rawClassName.split(' ').last,
                                       style: GoogleFonts.newsreader(
                                         fontSize: 14,
                                         fontWeight: FontWeight.bold,
@@ -398,7 +390,7 @@ class _SubjectTeacherCohortsScreenState extends State<SubjectTeacherCohortsScree
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'Class $className • $subjectName',
+                                        '$displayClassName • $subjectName',
                                         style: GoogleFonts.manrope(
                                           fontSize: 13.5,
                                           fontWeight: FontWeight.bold,
@@ -421,7 +413,7 @@ class _SubjectTeacherCohortsScreenState extends State<SubjectTeacherCohortsScree
                                   ),
                                 ),
                                 const SizedBox(width: 8),
-                                PillBadge.success('$studentsCount Enrolled'),
+                                PillBadge.success('$studentsCount Students'),
                               ],
                             ),
 
@@ -453,7 +445,12 @@ class _SubjectTeacherCohortsScreenState extends State<SubjectTeacherCohortsScree
                                       side: const BorderSide(color: AcademicColors.border),
                                       padding: const EdgeInsets.symmetric(vertical: 8),
                                     ),
-                                    onPressed: () => context.push('/students/all-students'),
+                                    onPressed: () {
+                                      final classId = cls['classId']?.toString() ?? '';
+                                      context.push(
+                                        '/teacher/class-students?class=${Uri.encodeComponent(displayClassName)}&classId=${Uri.encodeComponent(classId)}',
+                                      );
+                                    },
                                     child: Text(
                                       'Student List',
                                       style: GoogleFonts.manrope(
@@ -565,144 +562,7 @@ class _SubjectTeacherCohortsScreenState extends State<SubjectTeacherCohortsScree
     );
   }
 
-  void _showStudentsTaughtDetailsSheet(String totalStudents, List<Map<String, dynamic>> cohorts) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AcademicColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 36,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: AcademicColors.border,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AcademicColors.primaryDark.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(Icons.groups, color: AcademicColors.primaryDark, size: 24),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Students Taught By You',
-                            style: GoogleFonts.newsreader(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: AcademicColors.textPrimary,
-                            ),
-                          ),
-                          Text(
-                            '$totalStudents Students across your assigned classes',
-                            style: GoogleFonts.manrope(
-                              fontSize: 12,
-                              color: AcademicColors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: AcademicColors.canvas,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AcademicColors.border),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Total School Enrollment (255 Classes):',
-                          style: GoogleFonts.manrope(fontSize: 12, color: AcademicColors.textSecondary),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        '10,000 Students',
-                        style: GoogleFonts.manrope(fontSize: 12, fontWeight: FontWeight.bold, color: AcademicColors.primaryDark),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Text(
-                  'Your Assigned Class Roster Breakdown:',
-                  style: GoogleFonts.manrope(fontSize: 12, fontWeight: FontWeight.bold, color: AcademicColors.textPrimary),
-                ),
-                const SizedBox(height: 8),
-                Flexible(
-                  child: ListView.separated(
-                    shrinkWrap: true,
-                    itemCount: cohorts.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1),
-                    itemBuilder: (context, idx) {
-                      final c = cohorts[idx];
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                '${c['className']} • ${c['subjectName']}',
-                                style: GoogleFonts.manrope(fontSize: 13, fontWeight: FontWeight.w500, color: AcademicColors.textPrimary),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: AcademicColors.canvas,
-                                borderRadius: BorderRadius.circular(6),
-                                border: Border.all(color: AcademicColors.border),
-                              ),
-                              child: Text(
-                                '${c['students']} Students',
-                                style: GoogleFonts.manrope(fontSize: 12, fontWeight: FontWeight.bold, color: AcademicColors.caramelDark),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
+
 
   Widget _buildMetricItem(String label, String value) {
     return Column(

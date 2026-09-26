@@ -320,34 +320,6 @@ class _SubjectTeacherClassesScreenState extends State<SubjectTeacherClassesScree
                         ),
                       ),
 
-                      const SizedBox(height: 12),
-
-                      // Teaching Roster Context Capsule
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: AcademicColors.primaryDark.withValues(alpha: 0.05),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: AcademicColors.primaryDark.withValues(alpha: 0.15)),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.info_outline, size: 14, color: AcademicColors.primaryDark),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                'Personal Teaching Roster: $totalStudents Students Taught in $totalClassesCount Sections • School-Wide: 10,000 Enrolled',
-                                style: GoogleFonts.manrope(
-                                  fontSize: 10.5,
-                                  fontWeight: FontWeight.w600,
-                                  color: AcademicColors.primaryDark,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
                       const SizedBox(height: 18),
 
                       // Section Header

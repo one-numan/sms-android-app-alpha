@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 
-/// Reusable bottom sheet displaying the Subject Teacher's students taught
-/// and class roster breakdown.
+/// Reusable bottom sheet displaying the Subject/Class Teacher's teaching overview
+/// and class & subject breakdown.
 class StudentsTaughtSheet {
   static void show(
     BuildContext context, {
@@ -52,7 +52,7 @@ class StudentsTaughtSheet {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Students Taught By You',
+                            'Teaching Overview',
                             style: GoogleFonts.newsreader(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -71,46 +71,16 @@ class StudentsTaughtSheet {
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: AcademicColors.canvas,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AcademicColors.border),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Total School Enrollment (255 Classes):',
-                          style: GoogleFonts.manrope(fontSize: 12, color: AcademicColors.textSecondary),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        '10,000 Students',
-                        style: GoogleFonts.manrope(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: AcademicColors.primaryDark,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 18),
                 Text(
-                  'Your Assigned Class Roster Breakdown:',
+                  'Class & Subject Breakdown',
                   style: GoogleFonts.manrope(
-                    fontSize: 12,
+                    fontSize: 13,
                     fontWeight: FontWeight.bold,
                     color: AcademicColors.textPrimary,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
                 if (cohorts.isEmpty)
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -129,18 +99,19 @@ class StudentsTaughtSheet {
                       separatorBuilder: (_, __) => const Divider(height: 1),
                       itemBuilder: (context, idx) {
                         final c = cohorts[idx];
-                        final className = c['className']?.toString() ?? 'Class';
+                        final rawClassName = c['className']?.toString() ?? 'Class';
+                        final className = rawClassName.replaceAll('Grade', 'Class');
                         final subjectName = c['subjectName']?.toString() ?? 'General';
                         final count = c['students']?.toString() ?? '0';
                         return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
                           child: Row(
                             children: [
                               Expanded(
                                 child: Text(
                                   '$className • $subjectName',
                                   style: GoogleFonts.manrope(
-                                    fontSize: 13,
+                                    fontSize: 13.5,
                                     fontWeight: FontWeight.w500,
                                     color: AcademicColors.textPrimary,
                                   ),
@@ -150,7 +121,7 @@ class StudentsTaughtSheet {
                               ),
                               const SizedBox(width: 12),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                                 decoration: BoxDecoration(
                                   color: AcademicColors.canvas,
                                   borderRadius: BorderRadius.circular(6),
