@@ -20,6 +20,7 @@ import '../../widgets/account_profile_sheet.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/empty_state_widget.dart';
 import '../../widgets/shared_widgets.dart';
+import '../../widgets/students_taught_sheet.dart';
 
 class SubjectTeacherDashboardScreen extends StatefulWidget {
   const SubjectTeacherDashboardScreen({super.key});
@@ -346,6 +347,11 @@ class _SubjectTeacherDashboardScreenState extends State<SubjectTeacherDashboardS
                       value: totalSubjectsCount,
                       subtitle: _assignedSubjects.isNotEmpty ? _assignedSubjects.take(2).join(' & ') : 'Assigned Domains',
                       icon: Icons.menu_book,
+                      onTap: () => StudentsTaughtSheet.show(
+                        context,
+                        totalStudents: totalStudentsCount,
+                        cohorts: _assignedClasses,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     _buildKpiCard(
@@ -353,6 +359,11 @@ class _SubjectTeacherDashboardScreenState extends State<SubjectTeacherDashboardS
                       value: totalClassesCount,
                       subtitle: 'Active Allocations',
                       icon: Icons.meeting_room,
+                      onTap: () => StudentsTaughtSheet.show(
+                        context,
+                        totalStudents: totalStudentsCount,
+                        cohorts: _assignedClasses,
+                      ),
                     ),
                   ],
                 ),
@@ -364,6 +375,11 @@ class _SubjectTeacherDashboardScreenState extends State<SubjectTeacherDashboardS
                       value: totalStudentsCount,
                       subtitle: 'Across Sections',
                       icon: Icons.groups,
+                      onTap: () => StudentsTaughtSheet.show(
+                        context,
+                        totalStudents: totalStudentsCount,
+                        cohorts: _assignedClasses,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     _buildKpiCard(
@@ -371,6 +387,7 @@ class _SubjectTeacherDashboardScreenState extends State<SubjectTeacherDashboardS
                       value: gradingStatus,
                       subtitle: 'Assessments Logged',
                       icon: Icons.analytics_outlined,
+                      onTap: () => context.push('/students/marks-entry'),
                     ),
                   ],
                 ),
@@ -603,42 +620,51 @@ class _SubjectTeacherDashboardScreenState extends State<SubjectTeacherDashboardS
     required String value,
     required String subtitle,
     required IconData icon,
+    VoidCallback? onTap,
   }) {
-    return Expanded(
-      child: InsetCard(
-        margin: EdgeInsets.zero,
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  title,
-                  style: GoogleFonts.manrope(fontSize: 10.5, color: AcademicColors.textSecondary),
-                ),
-                Icon(icon, size: 18, color: AcademicColors.secondary),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: GoogleFonts.newsreader(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AcademicColors.textPrimary,
+    final card = InsetCard(
+      margin: EdgeInsets.zero,
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.manrope(fontSize: 10.5, color: AcademicColors.textSecondary),
               ),
+              Icon(icon, size: 18, color: AcademicColors.secondary),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: GoogleFonts.newsreader(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: AcademicColors.textPrimary,
             ),
-            Text(
-              subtitle,
-              style: GoogleFonts.manrope(fontSize: 10.5, color: AcademicColors.textSecondary),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
+          ),
+          Text(
+            subtitle,
+            style: GoogleFonts.manrope(fontSize: 10.5, color: AcademicColors.textSecondary),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
+    );
+
+    return Expanded(
+      child: onTap != null
+          ? InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(10),
+              child: card,
+            )
+          : card,
     );
   }
 }

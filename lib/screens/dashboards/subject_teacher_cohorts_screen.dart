@@ -281,6 +281,8 @@ class _SubjectTeacherCohortsScreenState extends State<SubjectTeacherCohortsScree
                       assignedClassesCount,
                       'Assigned Classes',
                       subtitle: 'My Classes',
+                      accentColor: AcademicColors.primaryDark,
+                      onTap: () => _showStudentsTaughtDetailsSheet(totalStudentsCount, _cohorts),
                     ),
                     const SizedBox(width: 8),
                     _buildSummaryBox(
@@ -295,6 +297,8 @@ class _SubjectTeacherCohortsScreenState extends State<SubjectTeacherCohortsScree
                       periodsPerWeek,
                       'Periods / Week',
                       subtitle: 'Weekly Load',
+                      accentColor: AcademicColors.primaryDark,
+                      onTap: () => _showStudentsTaughtDetailsSheet(totalStudentsCount, _cohorts),
                     ),
                   ],
                 ),

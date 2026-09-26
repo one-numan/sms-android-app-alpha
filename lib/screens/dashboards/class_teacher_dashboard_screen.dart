@@ -195,7 +195,7 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
                       )
                     : MockData.classes.cast<SchoolClass?>().firstWhere(
                           (c) => c?.classTeacherName == teacher.name,
-                          orElse: () => MockData.classes.isNotEmpty ? MockData.classes.first : null,
+                          orElse: () => null,
                         ))));
 
     return Scaffold(
