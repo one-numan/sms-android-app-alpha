@@ -27,10 +27,10 @@ void main() {
     final signInButton = find.textContaining('Sign in as Staff');
     expect(signInButton, findsOneWidget);
     await tester.tap(signInButton);
-
-    // Settle transition
-    await tester.pump(const Duration(milliseconds: 1600));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 2000));
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump(const Duration(milliseconds: 500));
 
     // Verify we are on PrincipalDashboardScreen
     expect(find.byType(PrincipalDashboardScreen), findsOneWidget);

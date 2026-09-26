@@ -63,7 +63,8 @@ void main() {
       await tester.pumpWidget(createTestApp(const SubjectTeacherDashboardScreen(), authState));
       await tester.pumpAndSettle();
 
-      expect(find.text('Good Morning, Robert Chen'), findsOneWidget);
+      expect(find.text('Good Morning,'), findsOneWidget);
+      expect(find.textContaining('Robert Chen'), findsAtLeastNWidgets(1));
       expect(find.textContaining('Faculty'), findsWidgets);
       expect(find.byType(OnpsVerifiedBadge), findsWidgets);
     });

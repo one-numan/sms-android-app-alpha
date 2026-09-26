@@ -21,7 +21,8 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(find.textContaining('Sign in as Staff'));
-    await tester.pump(const Duration(milliseconds: 1600));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 2000));
     await tester.pumpAndSettle();
 
     // Tap Academics in bottom navigation
@@ -133,7 +134,8 @@ void main() {
     await tester.ensureVisible(signInBtn);
     await tester.pumpAndSettle();
     await tester.tap(signInBtn);
-    await tester.pump(const Duration(milliseconds: 1600));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 2000));
     await tester.pumpAndSettle();
 
     // Navigate to Academics

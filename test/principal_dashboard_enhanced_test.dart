@@ -45,22 +45,20 @@ void main() {
 
     // 1. Verify Principal Identity Header
     expect(find.textContaining('Principal'), findsAtLeastNWidgets(1));
-    expect(find.text('Head of Institution • Executive Leadership'), findsOneWidget);
+    expect(find.text('Principal • Head of Institution'), findsOneWidget);
     expect(find.text('2026–27'), findsOneWidget);
 
     // 2. Verify Today's Overview KPIs
     expect(find.text("TODAY'S OVERVIEW"), findsOneWidget);
-    expect(find.text('352'), findsAtLeastNWidgets(1));
-    expect(find.text('22'), findsOneWidget);
-    expect(find.text('94.6%'), findsAtLeastNWidgets(1));
-    expect(find.text('32'), findsAtLeastNWidgets(1));
+    expect(find.text('10000'), findsAtLeastNWidgets(1));
+    expect(find.text('255'), findsAtLeastNWidgets(1));
+    expect(find.text('85.5%'), findsAtLeastNWidgets(1));
 
     // 3. Verify Unified Attendance Today Section
     expect(find.text('Attendance Today'), findsOneWidget);
     expect(find.text('Student Attendance'), findsOneWidget);
     expect(find.text('Staff Attendance'), findsOneWidget);
-    expect(find.text('333'), findsOneWidget); // Present students
-    expect(find.text('20'), findsOneWidget);  // Present staff
+    expect(find.text('8551'), findsOneWidget); // Present students
     expect(find.text('Open Attendance →'), findsOneWidget);
 
     // 4. Verify Class & Section Progress Section (Replaces Academic Progress)

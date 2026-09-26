@@ -204,7 +204,8 @@ void main() {
       await tester.pumpWidget(wrapWithAuth(const SubjectTeacherDashboardScreen(), authState));
       await tester.pumpAndSettle();
 
-      expect(find.text('Good Morning, Robert Chen'), findsOneWidget);
+      expect(find.text('Good Morning,'), findsOneWidget);
+      expect(find.textContaining('Robert Chen'), findsAtLeastNWidgets(1));
       expect(find.text('My Subjects'), findsOneWidget);
       expect(find.text('Teaching Classes'), findsOneWidget);
 

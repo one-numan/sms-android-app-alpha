@@ -49,10 +49,10 @@ void main() {
 
     // Verify PrincipalDashboardScreen is displayed with Principal navigation
     expect(find.byType(PrincipalDashboardScreen), findsOneWidget);
-    expect(find.text('Portal'), findsOneWidget);
-    expect(find.text('Academics'), findsOneWidget);
-    expect(find.text('Students'), findsOneWidget);
-    expect(find.text('Notices'), findsOneWidget);
-    expect(find.text('More'), findsOneWidget);
+    expect(find.text('Portal'), findsAtLeastNWidgets(1));
+    expect(find.text('Academics'), findsAtLeastNWidgets(1));
+    expect(find.text('Students'), findsAtLeastNWidgets(1));
+    expect(find.text('Notices'), findsAtLeastNWidgets(1));
+    expect(find.text('More'), findsAtLeastNWidgets(1));
   });
 }

@@ -38,9 +38,8 @@ void main() {
     final signInButton = find.textContaining('Sign in as Staff');
     expect(signInButton, findsOneWidget);
     await tester.tap(signInButton);
-
-    // Settle transition
-    await tester.pump(const Duration(milliseconds: 1600));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 2000));
     await tester.pumpAndSettle();
 
     // 2. Navigate to Principal More tab and open Faculty & Teaching (/faculty/teachers)
@@ -140,9 +139,8 @@ void main() {
     final signInButton = find.textContaining('Sign in as Staff');
     expect(signInButton, findsOneWidget);
     await tester.tap(signInButton);
-
-    // Settle transition
-    await tester.pump(const Duration(milliseconds: 1600));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 2000));
     await tester.pumpAndSettle();
 
     // Navigate to Teachers

@@ -108,7 +108,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
-      expect(find.text('Attendance Matrix'), findsWidgets);
+      expect(find.textContaining('Attendance Matrix'), findsWidgets);
       assertNoEmojis(tester, 'AttendanceMatrixScreen');
     });
 

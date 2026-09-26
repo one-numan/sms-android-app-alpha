@@ -193,11 +193,19 @@ class _SubjectTeacherDashboardScreenState extends State<SubjectTeacherDashboardS
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
+                                    Text(
+                                      'Good Morning,',
+                                      style: GoogleFonts.manrope(
+                                        fontSize: 12,
+                                        color: AcademicColors.textSecondary,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
                                     Row(
                                       children: [
                                         Expanded(
                                           child: Text(
-                                            'Good Morning, $teacherName',
+                                            teacherName,
                                             overflow: TextOverflow.ellipsis,
                                             style: GoogleFonts.newsreader(
                                               fontSize: 17,

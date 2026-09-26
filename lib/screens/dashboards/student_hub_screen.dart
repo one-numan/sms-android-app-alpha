@@ -271,7 +271,7 @@ class _StudentHubScreenState extends State<StudentHubScreen> {
                           ),
                         ),
                         const SizedBox(width: 6),
-                        OnpsVerifiedBadge.student(size: 16, showCategory: true),
+                        OnpsVerifiedBadge.student(size: 16),
                       ],
                     ),
                     const SizedBox(height: 2),

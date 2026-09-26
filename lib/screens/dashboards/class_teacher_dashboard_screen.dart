@@ -11,6 +11,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../data/mock/auth_state.dart';
+import '../../data/mock/mock_data.dart';
 import '../../models/models.dart';
 import '../../theme/app_theme.dart';
 import '../../data/services/teacher_api_service.dart';
@@ -181,7 +182,10 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
                 classTeacherName: teacher.name,
               )
             : (widget.teacherOverride != null
-                ? null
+                ? MockData.classes.cast<SchoolClass?>().firstWhere(
+                      (c) => c?.classTeacherName == teacher.name,
+                      orElse: () => null,
+                    )
                 : (auth.userProfile?['class_name'] != null
                     ? SchoolClass(
                         id: auth.userProfile?['class_id']?.toString() ?? 'CLS-${teacher.name}',
@@ -190,23 +194,10 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
                         className: auth.userProfile!['class_name'].toString(),
                         classTeacherName: teacher.name,
                       )
-                    : (teacher.name == 'Washington Sundar'
-                        ? const SchoolClass(
-                            id: 'CLS-Nursery-A',
-                            grade: 'Nursery',
-                            section: 'A',
-                            className: 'Nursery A',
-                            classTeacherName: 'Washington Sundar',
-                          )
-                        : (teacher.name == 'Shubman Gill'
-                            ? const SchoolClass(
-                                id: 'CLS-Nursery-B',
-                                grade: 'Nursery',
-                                section: 'B',
-                                className: 'Nursery B',
-                                classTeacherName: 'Shubman Gill',
-                              )
-                            : null)))));
+                    : MockData.classes.cast<SchoolClass?>().firstWhere(
+                          (c) => c?.classTeacherName == teacher.name,
+                          orElse: () => MockData.classes.isNotEmpty ? MockData.classes.first : null,
+                        ))));
 
     return Scaffold(
       backgroundColor: AcademicColors.canvas,
