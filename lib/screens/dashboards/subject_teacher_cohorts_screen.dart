@@ -98,6 +98,11 @@ class _SubjectTeacherCohortsScreenState extends State<SubjectTeacherCohortsScree
       return;
     }
 
+    final auth = context.read<AuthState>();
+    final profileEmail = auth.userProfile?['email']?.toString();
+    final profileUsername = auth.currentUsername;
+    final initialProfileClassId = auth.userProfile?['class_id']?.toString();
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -128,19 +133,50 @@ class _SubjectTeacherCohortsScreenState extends State<SubjectTeacherCohortsScree
         homeroomClass = classDashboard['class_name']?.toString() ?? classDashboard['homeroom_class']?.toString();
         homeroomClassId = classDashboard['class_id']?.toString() ?? classDashboard['homeroom_class_id']?.toString();
       }
-      if ((homeroomClassId == null || homeroomClassId.isEmpty) && homeroomClass != null) {
-        if (homeroomClass.toLowerCase().contains('nursery b')) {
-          homeroomClassId = '2';
-        } else if (homeroomClass.toLowerCase().contains('nursery a')) {
-          homeroomClassId = '1';
+
+      // Dynamically resolve homeroomClassId from auth profile or API if not yet in classDashboard
+      if (homeroomClassId == null || homeroomClassId.isEmpty) {
+        if (initialProfileClassId != null && initialProfileClassId.isNotEmpty) {
+          homeroomClassId = initialProfileClassId;
+        } else if (homeroomClass != null && homeroomClass.isNotEmpty) {
+          try {
+            final assignment = await _teacherApi.resolveClassTeacherAssignment(
+              email: profileEmail,
+              username: profileUsername,
+            );
+            homeroomClassId = assignment['class_id']?.toString();
+            final assignedName = assignment['assigned_class']?.toString();
+            if (homeroomClass.isEmpty && assignedName != null && assignedName.isNotEmpty) {
+              homeroomClass = assignedName;
+            }
+          } catch (_) {}
         }
       }
 
+      final resolvedHrClass = homeroomClass;
+      final resolvedHrClassId = homeroomClassId;
+      final bool hasHrClass = resolvedHrClass != null && resolvedHrClass.isNotEmpty;
+      final bool hasHrId = resolvedHrClassId != null && resolvedHrClassId.isNotEmpty;
+
+      bool checkIsClassTeacher(String cId, String cName) {
+        if (hasHrId) {
+          if (cId == resolvedHrClassId) return true;
+          final digitsOnlyA = cId.replaceAll(RegExp(r'[^0-9]'), '');
+          final digitsOnlyB = resolvedHrClassId.replaceAll(RegExp(r'[^0-9]'), '');
+          if (digitsOnlyA.isNotEmpty && digitsOnlyA == digitsOnlyB) return true;
+        }
+        if (hasHrClass && cName.toLowerCase().contains(resolvedHrClass.toLowerCase())) {
+          return true;
+        }
+        return false;
+      }
+
+      final Map<String, Map<String, dynamic>> unique = {};
+
+      // 1. Process subject teaching classes from dashboard if present
       final assignedClassesRaw = (dashboardData['assigned_classes'] as List?) ??
           (dashboardData['classes'] as List?) ??
           [];
-      final Map<String, Map<String, dynamic>> unique = {};
-
       if (assignedClassesRaw.isNotEmpty) {
         for (final item in assignedClassesRaw) {
           if (item is Map) {
@@ -151,21 +187,18 @@ class _SubjectTeacherCohortsScreenState extends State<SubjectTeacherCohortsScree
             final cId = item['class_id']?.toString() ??
                 item['id']?.toString() ??
                 '';
-            final studentCnt = (item['students'] as num?)?.toInt() ?? 39;
-            final isClassTchr = (homeroomClass != null &&
-                    homeroomClass.isNotEmpty &&
-                    cName.toLowerCase().contains(homeroomClass.toLowerCase())) ||
-                (homeroomClassId != null &&
-                    homeroomClassId.isNotEmpty &&
-                    cId == homeroomClassId);
+            final studentCnt = (item['students'] as num?)?.toInt() ?? 0;
+            final isClassTchr = checkIsClassTeacher(cId, cName);
 
-            unique[cName] = {
+            final key = cId.isNotEmpty ? '${cId}_$sName' : '${cName}_$sName';
+            unique[key] = {
               'classId': cId,
               'className': cName,
               'subjectName': sName,
               'room': item['room']?.toString() ?? 'Allocated Room',
               'students': studentCnt,
-              'attendance': item['attendance']?.toString() ?? '89.7%',
+              'periodsPerWeek': (item['periods_per_week'] as num?)?.toInt() ?? 6,
+              'attendance': item['attendance']?.toString() ?? '95.0%',
               'avgScore': item['avg_score']?.toString() ?? '78.0%',
               'fa2Status': item['fa2_status']?.toString() ?? 'Completed',
               'isClassTeacher': isClassTchr,
@@ -175,14 +208,57 @@ class _SubjectTeacherCohortsScreenState extends State<SubjectTeacherCohortsScree
         }
       }
 
-      // Add homeroom class if teacher is Class Teacher and it wasn't already in timetable
-      if (homeroomClass != null && homeroomClass.isNotEmpty && !unique.containsKey(homeroomClass)) {
-        unique[homeroomClass] = {
-          'classId': homeroomClassId ?? '',
-          'className': homeroomClass,
+      // 2. Parse timetable schedule entries
+      final schedule = (timetable['schedule'] as List?) ?? [];
+      for (final item in schedule) {
+        if (item is Map) {
+          final className = item['class_name']?.toString() ?? '';
+          final cId = item['class_id']?.toString() ?? '';
+          final sName = item['subject_name']?.toString() ?? item['subject']?.toString() ?? 'General';
+          final room = item['room_number']?.toString() ?? item['room']?.toString() ?? '';
+          if (className.isNotEmpty) {
+            final key = cId.isNotEmpty ? '${cId}_$sName' : '${className}_$sName';
+            final isClassTchr = checkIsClassTeacher(cId, className);
+
+            if (!unique.containsKey(key)) {
+              unique[key] = {
+                'classId': cId,
+                'className': className,
+                'subjectName': sName,
+                'room': room.isNotEmpty ? room : 'Allocated Room',
+                'students': 0,
+                'periodsPerWeek': 1,
+                'attendance': '95.0%',
+                'avgScore': '78.0%',
+                'fa2Status': 'Completed',
+                'isClassTeacher': isClassTchr,
+                'isSubjectTeacher': true,
+              };
+            } else {
+              unique[key]!['periodsPerWeek'] = (unique[key]!['periodsPerWeek'] as int? ?? 0) + 1;
+              if (isClassTchr) {
+                unique[key]!['isClassTeacher'] = true;
+              }
+            }
+          }
+        }
+      }
+
+      // 3. Add homeroom class if teacher is Class Teacher and homeroom class is not already represented
+      final hasHomeroomInCohorts = unique.values.any((item) =>
+          item['isClassTeacher'] == true ||
+          (hasHrId && item['classId'] == resolvedHrClassId) ||
+          (hasHrClass && item['className'].toString().toLowerCase().contains(resolvedHrClass.toLowerCase())));
+
+      if (hasHrClass && !hasHomeroomInCohorts) {
+        final key = hasHrId ? '${resolvedHrClassId}_Homeroom' : '${resolvedHrClass}_Homeroom';
+        unique[key] = {
+          'classId': resolvedHrClassId ?? '',
+          'className': resolvedHrClass,
           'subjectName': 'Homeroom',
           'room': 'Assigned Section',
-          'students': 40,
+          'students': (classDashboard['total_students'] as num?)?.toInt() ?? 40,
+          'periodsPerWeek': 0,
           'attendance': '91.2%',
           'avgScore': '80.0%',
           'fa2Status': 'Completed',
@@ -191,63 +267,42 @@ class _SubjectTeacherCohortsScreenState extends State<SubjectTeacherCohortsScree
         };
       }
 
-      // Also parse timetable schedule if unique is empty
-      if (unique.isEmpty) {
-        final schedule = (timetable['schedule'] as List?) ?? [];
-        for (final item in schedule) {
-          if (item is Map) {
-            final className = item['class_name']?.toString() ?? '';
-            final cId = item['class_id']?.toString() ?? '';
-            if (className.isNotEmpty && !unique.containsKey(className)) {
-              final isClassTchr = (homeroomClass != null &&
-                      homeroomClass.isNotEmpty &&
-                      className.toLowerCase().contains(homeroomClass.toLowerCase())) ||
-                  (homeroomClassId != null &&
-                      homeroomClassId.isNotEmpty &&
-                      cId == homeroomClassId);
-              unique[className] = {
-                'classId': cId,
-                'className': className,
-                'subjectName': item['subject_name']?.toString() ?? 'General',
-                'room': item['room_number']?.toString() ?? '',
-                'students': 39,
-                'attendance': '89.5%',
-                'avgScore': '78.0%',
-                'fa2Status': 'Completed',
-                'isClassTeacher': isClassTchr,
-                'isSubjectTeacher': true,
-              };
-            }
-          }
-        }
-      }
-
-      // Asynchronously fetch live student counts for cohorts to guarantee 100% data integrity with Student Directory
-      for (final entry in unique.entries) {
-        final cId = entry.value['classId']?.toString();
+      // 4. Asynchronously fetch live student counts for all cohorts in parallel
+      await Future.wait(unique.values.map((cohort) async {
+        final cId = cohort['classId']?.toString();
         if (cId != null && cId.isNotEmpty) {
           try {
             final studentsData = await _facultyApi.getClassStudents(cId);
-            final roster = (studentsData['roster'] as List?) ?? [];
-            if (roster.isNotEmpty) {
-              entry.value['students'] = roster.length;
+            final count = (studentsData['total_students'] as num?)?.toInt() ??
+                ((studentsData['roster'] as List?)?.length ??
+                ((studentsData['students'] as List?)?.length ?? 0));
+            if (count > 0) {
+              cohort['students'] = count;
             }
           } catch (_) {}
         }
-      }
+      }));
+
+      // 5. Sort cohorts: Homeroom / Class Teacher first, then by class name
+      final cohortsList = unique.values.toList();
+      cohortsList.sort((a, b) {
+        if (a['isClassTeacher'] == true && b['isClassTeacher'] != true) return -1;
+        if (a['isClassTeacher'] != true && b['isClassTeacher'] == true) return 1;
+        return (a['className']?.toString() ?? '').compareTo(b['className']?.toString() ?? '');
+      });
 
       if (mounted) {
         setState(() {
           _dashboardData = dashboardData;
           _timetableData = timetable;
-          _cohorts = unique.values.toList();
+          _cohorts = cohortsList;
           _isLoading = false;
         });
       }
-    } catch (e) {
+    } catch (_) {
       if (mounted) {
         setState(() {
-          _errorMessage = e.toString();
+          _errorMessage = 'Unable to load your classes. Please try again.';
           _isLoading = false;
         });
       }
@@ -307,7 +362,7 @@ class _SubjectTeacherCohortsScreenState extends State<SubjectTeacherCohortsScree
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'Unable to load cohorts: ${_errorMessage!}',
+                            _errorMessage!,
                             style: GoogleFonts.manrope(fontSize: 11, color: AcademicColors.error),
                           ),
                         ),
