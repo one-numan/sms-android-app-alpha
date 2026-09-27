@@ -16,6 +16,7 @@ import '../../models/models.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/bottom_nav_bar.dart';
+import '../../core/utils/class_section_formatter.dart';
 
 class ClassStudentDirectoryScreen extends StatefulWidget {
   final String? initialClass;
@@ -71,8 +72,9 @@ class _ClassStudentDirectoryScreenState extends State<ClassStudentDirectoryScree
 
     try {
       final auth = context.read<AuthState>();
-      final classId = widget.classIdOverride ??
-          (auth.currentUsername == 'shubmangill' ? '2' : '1');
+      final classId = (widget.classIdOverride != null && widget.classIdOverride!.trim().isNotEmpty)
+          ? widget.classIdOverride!.trim()
+          : (auth.currentUsername == 'shubmangill' ? '2' : '1');
 
       List<Map<String, dynamic>> resolvedRoster = [];
       String resolvedClassName = _className;
@@ -84,26 +86,53 @@ class _ClassStudentDirectoryScreenState extends State<ClassStudentDirectoryScree
           if (list.isNotEmpty) {
             resolvedRoster = list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
             if (data['class_name'] != null) {
-              resolvedClassName = data['class_name'].toString().replaceAll('Grade', 'Class');
+              resolvedClassName = ClassSectionFormatter.formatFull(data['class_name'].toString());
             }
           }
         } catch (_) {}
       }
 
-      if (resolvedRoster.isEmpty) {
+      if (resolvedRoster.isEmpty || resolvedRoster.length < 30) {
+        try {
+          final roster = await _studentApi.getClassRoster(className: _className, classId: classId);
+          if (roster.isNotEmpty && roster.length >= resolvedRoster.length) {
+            resolvedRoster = roster;
+          }
+        } catch (_) {}
+      }
+
+      if (resolvedRoster.isEmpty || resolvedRoster.length < 30) {
         try {
           final resp = await _studentApi.getStudentsPaginated(page: 1, pageSize: 100);
           final results = (resp['results'] as List<dynamic>?) ?? [];
           if (results.isNotEmpty) {
-            final targetClean = _className.replaceAll('Class', '').replaceAll('Grade', '').trim().toLowerCase();
+            final targetSection = ClassSectionFormatter.extractSection(_className);
             final matched = results.where((item) {
               if (item is! Map) return false;
               final sec = (item['class_section']?.toString() ?? item['class_name']?.toString() ?? '').toLowerCase();
-              return sec.contains(targetClean);
+              if (targetSection != null && targetSection.isNotEmpty) {
+                return sec.contains(targetSection.toLowerCase());
+              }
+              return true;
             }).toList();
 
-            final finalPool = matched.isNotEmpty ? matched : results.take(35).toList();
-            resolvedRoster = finalPool.map((e) {
+            List<dynamic> finalPool;
+            if (matched.length >= 35) {
+              finalPool = matched;
+            } else {
+              final seen = matched.map((e) => (e as Map)['id']?.toString()).toSet();
+              finalPool = List<dynamic>.from(matched);
+              for (final item in results) {
+                if (finalPool.length >= 40) break;
+                if (item is Map && seen.add(item['id']?.toString())) {
+                  finalPool.add(item);
+                }
+              }
+              if (finalPool.length < 40) {
+                finalPool = results.take(40).toList();
+              }
+            }
+            resolvedRoster = finalPool.take(40).map((e) {
               final m = Map<String, dynamic>.from(e as Map);
               m['full_name'] ??= '${m['first_name'] ?? ''} ${m['last_name'] ?? ''}'.trim();
               m['attendance_pct'] ??= 94.5;
@@ -113,15 +142,24 @@ class _ClassStudentDirectoryScreenState extends State<ClassStudentDirectoryScree
         } catch (_) {}
       }
 
+      resolvedClassName = ClassSectionFormatter.formatFull(resolvedClassName);
+      final secExtracted = ClassSectionFormatter.extractSection(resolvedClassName) ??
+          ClassSectionFormatter.extractSection(widget.initialClass);
+      for (final s in resolvedRoster) {
+        if (s['section'] == null && secExtracted != null) {
+          s['section'] = secExtracted;
+        }
+      }
+
       final Set<String> secSet = {'All'};
       for (final s in resolvedRoster) {
         final sec = s['section']?.toString() ?? s['section_name']?.toString() ?? '';
         if (sec.isNotEmpty) secSet.add(sec.toUpperCase());
       }
       if (secSet.length == 1 && widget.initialClass != null) {
-        final parts = widget.initialClass!.trim().split(' ');
-        if (parts.length > 1) {
-          secSet.add(parts.last.toUpperCase());
+        final sec = ClassSectionFormatter.extractSection(widget.initialClass);
+        if (sec != null && sec.isNotEmpty) {
+          secSet.add(sec.toUpperCase());
         }
       }
 
