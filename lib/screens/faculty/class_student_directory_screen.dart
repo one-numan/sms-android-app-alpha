@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import '../../data/mock/auth_state.dart';
 import '../../data/services/faculty_api_service.dart';
 import '../../data/services/student_api_service.dart';
+import '../../data/services/teacher_api_service.dart';
 import '../../models/models.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_top_bar.dart';
@@ -40,13 +41,16 @@ class _ClassStudentDirectoryScreenState extends State<ClassStudentDirectoryScree
 
   bool _isLoading = true;
   String? _errorMessage;
-  String _className = 'Class 1-A';
+  String _className = 'Class';
   List<Map<String, dynamic>> _roster = [];
 
   @override
   void initState() {
     super.initState();
-    _className = (widget.initialClass ?? 'Class 1-A').replaceAll('Grade', 'Class');
+    final auth = context.read<AuthState>();
+    final assigned = auth.userProfile?['class_name']?.toString() ??
+        auth.userProfile?['assigned_class']?.toString();
+    _className = (widget.initialClass ?? assigned ?? 'Class').replaceAll('Grade', 'Class');
     _fetchClassRoster();
   }
 
@@ -72,74 +76,48 @@ class _ClassStudentDirectoryScreenState extends State<ClassStudentDirectoryScree
 
     try {
       final auth = context.read<AuthState>();
-      final classId = (widget.classIdOverride != null && widget.classIdOverride!.trim().isNotEmpty)
-          ? widget.classIdOverride!.trim()
-          : (auth.currentUsername == 'shubmangill' ? '2' : '1');
+      String? classId = widget.classIdOverride?.trim();
+      if (classId == null || classId.isEmpty) {
+        classId = auth.userProfile?['class_id']?.toString();
+      }
+
+      if (classId == null || classId.isEmpty) {
+        final teacherApi = TeacherApiService();
+        final assignment = await teacherApi.resolveClassTeacherAssignment(
+          email: auth.userEmail,
+          username: auth.currentUsername,
+        );
+        classId = assignment['class_id']?.toString();
+      }
+
+      if (classId == null || classId.isEmpty) {
+        throw Exception('Student information is currently unavailable.');
+      }
 
       List<Map<String, dynamic>> resolvedRoster = [];
       String resolvedClassName = _className;
 
-      if (classId.isNotEmpty) {
-        try {
-          final data = await _facultyApi.getClassStudents(classId);
-          final list = (data['roster'] as List<dynamic>?) ?? [];
-          if (list.isNotEmpty) {
-            resolvedRoster = list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
-            if (data['class_name'] != null) {
-              resolvedClassName = ClassSectionFormatter.formatFull(data['class_name'].toString());
-            }
-          }
-        } catch (_) {}
+      final data = await _facultyApi.getClassStudents(classId);
+      final list = (data['roster'] as List<dynamic>?) ?? [];
+      if (list.isNotEmpty) {
+        resolvedRoster = list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+      } else if (!data.containsKey('roster')) {
+        final roster = await _studentApi.getClassRoster(classId: classId);
+        if (roster.isNotEmpty) {
+          resolvedRoster = roster;
+        } else {
+          throw Exception('Student information is currently unavailable.');
+        }
       }
 
-      if (resolvedRoster.isEmpty || resolvedRoster.length < 30) {
-        try {
-          final roster = await _studentApi.getClassRoster(className: _className, classId: classId);
-          if (roster.isNotEmpty && roster.length >= resolvedRoster.length) {
-            resolvedRoster = roster;
-          }
-        } catch (_) {}
-      }
-
-      if (resolvedRoster.isEmpty || resolvedRoster.length < 30) {
-        try {
-          final resp = await _studentApi.getStudentsPaginated(page: 1, pageSize: 100);
-          final results = (resp['results'] as List<dynamic>?) ?? [];
-          if (results.isNotEmpty) {
-            final targetSection = ClassSectionFormatter.extractSection(_className);
-            final matched = results.where((item) {
-              if (item is! Map) return false;
-              final sec = (item['class_section']?.toString() ?? item['class_name']?.toString() ?? '').toLowerCase();
-              if (targetSection != null && targetSection.isNotEmpty) {
-                return sec.contains(targetSection.toLowerCase());
-              }
-              return true;
-            }).toList();
-
-            List<dynamic> finalPool;
-            if (matched.length >= 35) {
-              finalPool = matched;
-            } else {
-              final seen = matched.map((e) => (e as Map)['id']?.toString()).toSet();
-              finalPool = List<dynamic>.from(matched);
-              for (final item in results) {
-                if (finalPool.length >= 40) break;
-                if (item is Map && seen.add(item['id']?.toString())) {
-                  finalPool.add(item);
-                }
-              }
-              if (finalPool.length < 40) {
-                finalPool = results.take(40).toList();
-              }
-            }
-            resolvedRoster = finalPool.take(40).map((e) {
-              final m = Map<String, dynamic>.from(e as Map);
-              m['full_name'] ??= '${m['first_name'] ?? ''} ${m['last_name'] ?? ''}'.trim();
-              m['attendance_pct'] ??= 94.5;
-              return m;
-            }).toList();
-          }
-        } catch (_) {}
+      if (data['class_name'] != null) {
+        resolvedClassName = ClassSectionFormatter.formatFull(data['class_name'].toString());
+      } else if (resolvedRoster.isNotEmpty) {
+        final firstStudent = resolvedRoster.first;
+        final studentCls = firstStudent['class_section']?.toString() ?? firstStudent['class_name']?.toString();
+        if (studentCls != null && studentCls.isNotEmpty) {
+          resolvedClassName = ClassSectionFormatter.formatFull(studentCls);
+        }
       }
 
       resolvedClassName = ClassSectionFormatter.formatFull(resolvedClassName);
@@ -171,10 +149,10 @@ class _ClassStudentDirectoryScreenState extends State<ClassStudentDirectoryScree
           _isLoading = false;
         });
       }
-    } catch (e) {
+    } catch (_) {
       if (mounted) {
         setState(() {
-          _errorMessage = e.toString();
+          _errorMessage = 'Student information is currently unavailable.';
           _isLoading = false;
         });
       }
@@ -374,14 +352,14 @@ class _ClassStudentDirectoryScreenState extends State<ClassStudentDirectoryScree
                                 const Icon(Icons.error_outline, size: 48, color: AcademicColors.error),
                                 const SizedBox(height: 12),
                                 Text(
-                                  'Error loading student roster',
+                                  'Student Directory',
                                   style: GoogleFonts.newsreader(fontSize: 18, fontWeight: FontWeight.bold),
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
                                   _errorMessage!,
                                   textAlign: TextAlign.center,
-                                  style: GoogleFonts.manrope(fontSize: 12, color: AcademicColors.textSecondary),
+                                  style: GoogleFonts.manrope(fontSize: 14, color: AcademicColors.textSecondary),
                                 ),
                                 const SizedBox(height: 16),
                                 ElevatedButton.icon(
@@ -402,7 +380,9 @@ class _ClassStudentDirectoryScreenState extends State<ClassStudentDirectoryScree
                                   Icon(Icons.person_search_outlined, size: 48, color: AcademicColors.textSecondary.withValues(alpha: 0.5)),
                                   const SizedBox(height: 12),
                                   Text(
-                                    'No students found matching "$_searchQuery"',
+                                    _roster.isEmpty
+                                        ? 'No students found for this class.'
+                                        : 'No students found matching "$_searchQuery"',
                                     style: GoogleFonts.newsreader(
                                       fontSize: 16,
                                       color: AcademicColors.textSecondary,

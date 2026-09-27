@@ -486,7 +486,11 @@ GoRouter createOnpsRouter(AuthState authState) {
         path: '/teacher/class-info',
         builder: (context, state) {
           final cls = state.uri.queryParameters['class'];
-          return ClassInfoScreen(classNameOverride: cls);
+          final classId = state.uri.queryParameters['classId'];
+          return ClassInfoScreen(
+            classNameOverride: cls,
+            classIdOverride: classId,
+          );
         },
       ),
       GoRoute(

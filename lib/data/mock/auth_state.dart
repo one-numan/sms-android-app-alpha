@@ -242,14 +242,19 @@ class AuthState extends ChangeNotifier {
               } else {
                 if (pRole == 'teacher') {
                   try {
-                    final classDash = await TeacherApiService().getClassDashboard();
-                    final assignedClass = classDash['assigned_class']?.toString();
-                    if (assignedClass != null && assignedClass.isNotEmpty && assignedClass.toLowerCase() != 'none') {
-                      _userProfile!['assigned_class'] = assignedClass;
-                      _userProfile!['class_name'] = assignedClass;
+                    final assignment = await TeacherApiService().resolveClassTeacherAssignment(
+                      email: pEmail,
+                      username: pName,
+                    );
+                    if (assignment.isNotEmpty) {
+                      _userProfile!['assigned_class'] = assignment['assigned_class'];
+                      _userProfile!['class_name'] = assignment['class_name'];
+                      _userProfile!['class_id'] = assignment['class_id'];
+                      if (assignment['grade'] != null) _userProfile!['grade'] = assignment['grade'];
+                      if (assignment['section'] != null) _userProfile!['section'] = assignment['section'];
                       _userProfile!['is_class_teacher'] = true;
-                      if (classDash.containsKey('total_students')) {
-                        _userProfile!['total_students'] = classDash['total_students'];
+                      if (assignment.containsKey('total_students')) {
+                        _userProfile!['total_students'] = assignment['total_students'];
                       }
                     }
                   } catch (_) {}
@@ -501,4 +506,32 @@ class AuthState extends ChangeNotifier {
         return 'Super Admin';
     }
   }
+
+  /// Ensure Class Teacher assignment is populated if missing.
+  Future<void> ensureClassTeacherAssignment() async {
+    if (_userProfile == null || _currentRole != UserRole.classTeacher) return;
+    if (_userProfile!['class_id'] != null && (_userProfile!['class_id'] as String).isNotEmpty) return;
+
+    try {
+      final pEmail = (_userProfile!['email'] ?? '').toString();
+      final pUsername = (_userProfile!['username'] ?? _currentUsername).toString();
+      final assignment = await TeacherApiService().resolveClassTeacherAssignment(
+        email: pEmail,
+        username: pUsername,
+      );
+      if (assignment.isNotEmpty) {
+        _userProfile!['assigned_class'] = assignment['assigned_class'];
+        _userProfile!['class_name'] = assignment['class_name'];
+        _userProfile!['class_id'] = assignment['class_id'];
+        if (assignment['grade'] != null) _userProfile!['grade'] = assignment['grade'];
+        if (assignment['section'] != null) _userProfile!['section'] = assignment['section'];
+        _userProfile!['is_class_teacher'] = true;
+        if (assignment.containsKey('total_students')) {
+          _userProfile!['total_students'] = assignment['total_students'];
+        }
+        notifyListeners();
+      }
+    } catch (_) {}
+  }
 }
+

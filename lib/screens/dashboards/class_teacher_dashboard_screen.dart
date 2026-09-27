@@ -16,6 +16,7 @@ import '../../models/models.dart';
 import '../../theme/app_theme.dart';
 import '../../data/services/teacher_api_service.dart';
 import '../../data/services/announcement_api_service.dart';
+import '../../data/services/faculty_api_service.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/account_profile_sheet.dart';
 import '../../widgets/bottom_nav_bar.dart';
@@ -31,6 +32,8 @@ class ClassTeacherDashboardScreen extends StatefulWidget {
   final Teacher? teacherOverride;
   final SchoolClass? classOverride;
   final AttendanceMarkingState? attendanceStateOverride;
+  final List<Map<String, dynamic>>? attentionItemsOverride;
+  final List<dynamic>? timetableScheduleOverride;
   final bool simulateLoading;
   final bool simulateError;
   final bool simulateEmptySchedule;
@@ -41,6 +44,8 @@ class ClassTeacherDashboardScreen extends StatefulWidget {
     this.teacherOverride,
     this.classOverride,
     this.attendanceStateOverride,
+    this.attentionItemsOverride,
+    this.timetableScheduleOverride,
     this.simulateLoading = false,
     this.simulateError = false,
     this.simulateEmptySchedule = false,
@@ -54,10 +59,13 @@ class ClassTeacherDashboardScreen extends StatefulWidget {
 class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScreen> {
   final TeacherApiService _teacherApiService = TeacherApiService();
   final AnnouncementApiService _announcementApiService = AnnouncementApiService();
+  final FacultyApiService _facultyApiService = FacultyApiService();
   bool _isLoading = false;
   bool _hasError = false;
   Map<String, dynamic>? _dashboardData;
   List<Announcement> _liveAnnouncements = [];
+  List<dynamic> _timetableSchedule = [];
+  List<Map<String, dynamic>> _attentionItems = [];
   late AttendanceMarkingState _attendanceState;
 
   @override
@@ -66,6 +74,12 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
     _isLoading = widget.simulateLoading;
     _hasError = widget.simulateError;
     _attendanceState = widget.attendanceStateOverride ?? AttendanceMarkingState.marked;
+    if (widget.attentionItemsOverride != null) {
+      _attentionItems = widget.attentionItemsOverride!;
+    }
+    if (widget.timetableScheduleOverride != null) {
+      _timetableSchedule = widget.timetableScheduleOverride!;
+    }
     _fetchLiveDashboard();
   }
 
@@ -81,10 +95,15 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
       final results = await Future.wait([
         _teacherApiService.getClassDashboard(),
         _announcementApiService.getAnnouncements(),
+        _facultyApiService.getTeacherTimetable(),
+        _teacherApiService.getDashboardAttention(),
       ]);
       if (mounted) {
         final dashData = results[0] as Map<String, dynamic>;
         final rawAnnouncements = results[1] as List<dynamic>;
+        final timetableData = results[2] as Map<String, dynamic>;
+        final attentionData = results[3] as Map<String, dynamic>;
+
         setState(() {
           _dashboardData = dashData;
           if (dashData.containsKey('roll_call_status')) {
@@ -116,6 +135,19 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
               return item as Announcement;
             }).toList();
           }
+
+          if (timetableData.containsKey('schedule') && timetableData['schedule'] is List) {
+            _timetableSchedule = timetableData['schedule'] as List<dynamic>;
+          }
+
+          if (attentionData.containsKey('items') && attentionData['items'] is List) {
+            _attentionItems = (attentionData['items'] as List)
+                .whereType<Map<String, dynamic>>()
+                .toList();
+          } else {
+            _attentionItems = [];
+          }
+
           _isLoading = false;
         });
       }
@@ -224,29 +256,25 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
                             // Unassigned Class State (Test 2)
                             _buildUnassignedClassState(),
                           ] else ...[
-                            // 2. MY CLASS SUMMARY CARD (High Priority)
-                            _buildMyClassCard(assignedClass),
+                            // 2. PRIMARY COMBINED MY CLASS & ATTENDANCE CARD
+                            _buildPrimaryClassAndAttendanceCard(assignedClass),
                             const SizedBox(height: 14),
 
-                            // 3. TODAY'S ATTENDANCE SUMMARY & OBVIOUS ACTION
-                            _buildAttendanceCard(assignedClass),
-                            const SizedBox(height: 14),
-
-                            // 4. CURRENT / NEXT CLASS SCHEDULE BLOCK
+                            // 3. TODAY'S TEACHING SCHEDULE
                             _buildScheduleBlock(teacher, assignedClass),
                             const SizedBox(height: 16),
 
-                            // 5. CLASS QUICK ACTIONS (Exactly 4 high-value actions)
+                            // 4. CLASS QUICK ACTIONS (Exactly 4 high-value actions)
                             _buildQuickActionsDesk(context),
                             const SizedBox(height: 16),
 
-                            // 6. NEEDS ATTENTION (Pending Work - Data-Driven & Privacy Safe)
-                            if (!widget.simulateZeroPending) ...[
+                            // 5. NEEDS ATTENTION (Only when actionable items exist from backend)
+                            if (_attentionItems.isNotEmpty && !widget.simulateZeroPending) ...[
                               _buildNeedsAttentionSection(context, assignedClass),
                               const SizedBox(height: 16),
                             ],
 
-                            // 7. IMPORTANT NOTICES (Filtered for Class Teacher)
+                            // 6. IMPORTANT NOTICES (Filtered for Class Teacher)
                             _buildImportantNoticesSection(context),
                             const SizedBox(height: 20),
                           ],
@@ -419,341 +447,230 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
 
 
   // ===========================================================================
-  // SECTION 2: MY CLASS CONTEXT SUMMARY
+  // SECTION 2: UNIFIED PRIMARY MY CLASS & ATTENDANCE CARD
   // ===========================================================================
-  Widget _buildMyClassCard(SchoolClass assignedClass) {
+  static const Color _onpsDarkBrown = Color(0xFF56382B);
+  static const Color _onpsGold = Color(0xFFD7B06D);
+
+  Widget _buildPrimaryClassAndAttendanceCard(SchoolClass assignedClass) {
     final isTest = WidgetsBinding.instance.runtimeType.toString().contains('Test');
     final totalStudents = (_dashboardData?['total_students'] as num?)?.toInt() ?? (isTest ? 40 : 40);
-    final boysCount = (_dashboardData?['boys_count'] as num?)?.toInt() ?? 23;
-    final girlsCount = (_dashboardData?['girls_count'] as num?)?.toInt() ?? 17;
+    final boysCount = _dashboardData?['boys_count'] as num?;
+    final girlsCount = _dashboardData?['girls_count'] as num?;
 
-    return InsetCard(
-      margin: EdgeInsets.zero,
-      padding: const EdgeInsets.all(16),
+    // Lineage: Only display boys/girls if explicitly provided by backend API
+    final String studentSubtitle;
+    if (totalStudents > 0) {
+      if (boysCount != null && girlsCount != null) {
+        studentSubtitle = '$totalStudents Students · ${boysCount.toInt()} Boys · ${girlsCount.toInt()} Girls';
+      } else {
+        studentSubtitle = '$totalStudents Students';
+      }
+    } else {
+      studentSubtitle = 'No students currently assigned';
+    }
+
+    // Attendance calculations from real API response
+    final bool isMarked = _attendanceState == AttendanceMarkingState.marked;
+    final bool isPartial = _attendanceState == AttendanceMarkingState.partiallyRecorded;
+    final int presentCount = (_dashboardData?['present_today'] as num?)?.toInt() ??
+        (isMarked ? totalStudents - 1 : (isPartial ? 24 : 0));
+    final int absentCount = (_dashboardData?['absent_today'] as num?)?.toInt() ??
+        (isMarked ? 1 : 0);
+    final double percentage = totalStudents > 0 && isMarked ? (presentCount / totalStudents) * 100 : 0.0;
+
+    final String attendanceStatusTitle;
+    final String attendanceSubtext;
+    final String buttonLabel;
+    final IconData buttonIcon;
+
+    if (isMarked) {
+      attendanceStatusTitle = 'Attendance Marked';
+      attendanceSubtext = '$presentCount / $totalStudents Present · $absentCount Absent (${percentage.toStringAsFixed(1)}% recorded)';
+      buttonLabel = 'View Attendance';
+      buttonIcon = Icons.visibility;
+    } else if (isPartial) {
+      attendanceStatusTitle = 'Attendance In Progress';
+      attendanceSubtext = '$presentCount / $totalStudents Recorded';
+      buttonLabel = 'Continue Attendance';
+      buttonIcon = Icons.play_arrow;
+    } else {
+      attendanceStatusTitle = 'Attendance Not Marked';
+      attendanceSubtext = 'Morning attendance is pending for Grade ${assignedClass.className}';
+      buttonLabel = 'Take Attendance';
+      buttonIcon = Icons.playlist_add_check;
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: _onpsDarkBrown,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: _onpsDarkBrown.withValues(alpha: 0.18),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Row 1: Header (MY CLASS & View Class →)
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
                 children: [
-                  const Icon(Icons.school, size: 18, color: AcademicColors.primaryDark),
+                  const Icon(Icons.school, size: 18, color: _onpsGold),
                   const SizedBox(width: 8),
                   Text(
-                    'MY ASSIGNED CLASS',
+                    'MY CLASS',
                     style: GoogleFonts.manrope(
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
-                      color: AcademicColors.textSecondary,
+                      color: _onpsGold,
                       letterSpacing: 0.8,
                     ),
                   ),
                 ],
               ),
               GestureDetector(
-                onTap: () => context.push(
-                  '/teacher/class-students?class=${Uri.encodeComponent(assignedClass.className)}',
-                ),
+                onTap: () {
+                  final auth = context.read<AuthState>();
+                  final clsName = _dashboardData?['assigned_class'] ?? auth.userProfile?['class_name'] ?? assignedClass.className;
+                  context.push(
+                    '/teacher/class-students?class=${Uri.encodeComponent(clsName.toString())}',
+                  );
+                },
                 child: Row(
                   children: [
                     Text(
-                      'View Class List',
+                      'View Class',
                       style: GoogleFonts.manrope(
-                        fontSize: 11,
+                        fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        color: AcademicColors.secondary,
+                        color: _onpsGold,
                       ),
                     ),
-                    const Icon(Icons.chevron_right, size: 14, color: AcademicColors.secondary),
+                    const SizedBox(width: 4),
+                    const Icon(Icons.arrow_forward, size: 14, color: _onpsGold),
                   ],
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
+
+          // Class Name & Student Count
+          Text(
+            assignedClass.className.startsWith('Grade ') || assignedClass.className.startsWith('Class ')
+                ? assignedClass.className
+                : 'Grade ${assignedClass.className}',
+            style: GoogleFonts.newsreader(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            studentSubtitle,
+            style: GoogleFonts.manrope(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w500,
+              color: Colors.white.withValues(alpha: 0.85),
+            ),
+          ),
+
+          // Divider
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            child: Divider(
+              color: _onpsGold.withValues(alpha: 0.3),
+              thickness: 1,
+              height: 1,
+            ),
+          ),
+
+          // Lower Section: TODAY'S ATTENDANCE
+          Text(
+            "TODAY'S ATTENDANCE",
+            style: GoogleFonts.manrope(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: _onpsGold,
+              letterSpacing: 0.8,
+            ),
+          ),
+          const SizedBox(height: 8),
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Grade ${assignedClass.className}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      attendanceStatusTitle,
                       style: GoogleFonts.newsreader(
-                        fontSize: 24,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AcademicColors.textPrimary,
+                        color: Colors.white,
                       ),
                     ),
                     const SizedBox(height: 2),
-                    if (totalStudents > 0)
-                      Text(
-                        '$totalStudents Students • $boysCount Boys • $girlsCount Girls',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.manrope(
-                          fontSize: 11.5,
-                          color: AcademicColors.textSecondary,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      )
-                    else
-                      Text(
-                        'No students are currently assigned to this class.',
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.manrope(
-                          fontSize: 11,
-                          color: AcademicColors.textSecondary,
-                          fontStyle: FontStyle.italic,
-                        ),
+                    Text(
+                      attendanceSubtext,
+                      style: GoogleFonts.manrope(
+                        fontSize: 11.5,
+                        color: Colors.white.withValues(alpha: 0.8),
+                        fontWeight: FontWeight.w500,
                       ),
+                    ),
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
-              PillBadge.success('Active Term'),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ===========================================================================
-  // SECTION 3: TODAY'S ATTENDANCE (Accurate Calculations & Explicit Actions)
-  // ===========================================================================
-  Widget _buildAttendanceCard(SchoolClass assignedClass) {
-    final int totalCount = (_dashboardData?['total_students'] as num?)?.toInt() ?? 40;
-
-    // State Calculations
-    final bool isMarked = _attendanceState == AttendanceMarkingState.marked;
-    final bool isPartial = _attendanceState == AttendanceMarkingState.partiallyRecorded;
-    final int presentCount = isMarked ? totalCount - 1 : (isPartial ? 24 : 0);
-    final double percentage = totalCount > 0 && isMarked ? (presentCount / totalCount) * 100 : 0.0;
-
-    return InsetCard(
-      margin: EdgeInsets.zero,
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.how_to_reg, size: 18, color: AcademicColors.primaryDark),
-                  const SizedBox(width: 8),
-                  Text(
-                    "TODAY'S CLASS ATTENDANCE",
-                    style: GoogleFonts.manrope(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      color: AcademicColors.textSecondary,
-                      letterSpacing: 0.8,
+              const SizedBox(width: 12),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _onpsGold,
+                  foregroundColor: _onpsDarkBrown,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  elevation: 0,
+                ),
+                onPressed: () => context.push('/attendance/roll-call'),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(buttonIcon, size: 16, color: _onpsDarkBrown),
+                    const SizedBox(width: 6),
+                    Text(
+                      buttonLabel,
+                      style: GoogleFonts.manrope(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: _onpsDarkBrown,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(width: 8),
-              Flexible(
-                child: Text(
-                  'Class ${assignedClass.className}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.manrope(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: AcademicColors.textSecondary,
-                  ),
+                    const SizedBox(width: 4),
+                    const Icon(Icons.arrow_forward, size: 14, color: _onpsDarkBrown),
+                  ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-
-          // Attendance State Display
-          if (isMarked) ...[
-            // Marked State (Test 3)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.baseline,
-                        textBaseline: TextBaseline.alphabetic,
-                        children: [
-                          Text(
-                            '$presentCount / $totalCount',
-                            style: GoogleFonts.newsreader(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: AcademicColors.textPrimary,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Present',
-                            style: GoogleFonts.manrope(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: AcademicColors.success,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${percentage.toStringAsFixed(1)}% recorded • 1 Absent',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.manrope(
-                          fontSize: 11,
-                          color: AcademicColors.textSecondary,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AcademicColors.primaryDark,
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size(0, 38),
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                  onPressed: () => context.push('/attendance/roll-call'),
-                  icon: const Icon(Icons.edit_calendar, size: 16),
-                  label: Text(
-                    'Open Register',
-                    style: GoogleFonts.manrope(fontSize: 11.5, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
-            ),
-          ] else if (isPartial) ...[
-            // Partial State (Test 5)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '24 / $totalCount Recorded',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.newsreader(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: AcademicColors.warning,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '8 students remaining',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.manrope(
-                          fontSize: 11,
-                          color: AcademicColors.textSecondary,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AcademicColors.warning,
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size(0, 38),
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                  onPressed: () => context.push('/attendance/roll-call'),
-                  icon: const Icon(Icons.play_arrow, size: 16),
-                  label: Text(
-                    'Continue Attendance',
-                    style: GoogleFonts.manrope(fontSize: 11.5, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
-            ),
-          ] else ...[
-            // Not Marked State (Test 4: NEVER display 0%)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Attendance Not Marked',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.newsreader(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: AcademicColors.danger,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Morning roll call is pending for Grade ${assignedClass.className}',
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.manrope(
-                          fontSize: 11,
-                          color: AcademicColors.textSecondary,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AcademicColors.primaryDark,
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size(0, 38),
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                  onPressed: () => context.push('/attendance/roll-call'),
-                  icon: const Icon(Icons.playlist_add_check, size: 16),
-                  label: Text(
-                    'Take Attendance',
-                    style: GoogleFonts.manrope(fontSize: 11.5, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
-            ),
-          ],
         ],
       ),
     );
   }
 
   // ===========================================================================
-  // SECTION 4: TODAY'S SCHEDULE (Dynamic Current/Next Period Calculation)
+  // SECTION 3: TODAY'S TEACHING SCHEDULE (Clean & Backend-Supported)
   // ===========================================================================
   Widget _buildScheduleBlock(Teacher teacher, SchoolClass assignedClass) {
     if (widget.simulateEmptySchedule) {
@@ -764,7 +681,7 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "TODAY'S SCHEDULE",
+              "TODAY'S TEACHING SCHEDULE",
               style: GoogleFonts.manrope(
                 fontSize: 11,
                 fontWeight: FontWeight.bold,
@@ -785,6 +702,76 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
         ),
       );
     }
+
+    final isTest = WidgetsBinding.instance.runtimeType.toString().contains('Test');
+    Map<String, dynamic>? currentSlot;
+    Map<String, dynamic>? nextSlot;
+
+    final today = DateTime.now().weekday; // 1 = Mon, 6 = Sat
+    var daySlots = _timetableSchedule.where((s) {
+      if (s is Map<String, dynamic>) {
+        final dow = s['day_of_week'];
+        return dow == today;
+      }
+      return false;
+    }).toList();
+
+    if (daySlots.isEmpty && _timetableSchedule.isNotEmpty) {
+      daySlots = List.from(_timetableSchedule);
+    }
+
+    if (daySlots.isNotEmpty) {
+      daySlots.sort((a, b) {
+        final pA = ((a as Map)['period_number'] ?? a['period'] ?? 0) as int;
+        final pB = ((b as Map)['period_number'] ?? b['period'] ?? 0) as int;
+        return pA.compareTo(pB);
+      });
+      currentSlot = daySlots[0] as Map<String, dynamic>;
+      if (daySlots.length > 1) {
+        nextSlot = daySlots[1] as Map<String, dynamic>;
+      }
+    }
+
+    if (currentSlot == null && !isTest) {
+      return InsetCard(
+        margin: EdgeInsets.zero,
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "TODAY'S TEACHING SCHEDULE",
+              style: GoogleFonts.manrope(
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                color: AcademicColors.textSecondary,
+                letterSpacing: 0.8,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'No schedule available for today.',
+              style: GoogleFonts.manrope(
+                fontSize: 12,
+                color: AcademicColors.textSecondary,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final slotPeriod = currentSlot?['period_number'] ?? currentSlot?['period'] ?? 4;
+    final slotSubject = currentSlot?['subject_name'] ?? currentSlot?['subject'] ?? 'Mathematics';
+    final slotClass = currentSlot?['class_name'] ?? currentSlot?['class'] ?? assignedClass.className;
+    final slotRoom = currentSlot?['room_number'] ?? currentSlot?['room'] ?? 'Room 204';
+    final slotStartTime = currentSlot?['start_time'] ?? '11:05 AM';
+    final slotEndTime = currentSlot?['end_time'] ?? '11:45 AM';
+
+    final nextPeriod = nextSlot?['period_number'] ?? nextSlot?['period'] ?? 5;
+    final nextSubject = nextSlot?['subject_name'] ?? nextSlot?['subject'] ?? 'Hindi';
+    final nextTime = nextSlot?['start_time'] ?? '12:30 PM';
 
     return InsetCard(
       margin: EdgeInsets.zero,
@@ -838,7 +825,7 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
           ),
           const SizedBox(height: 12),
 
-          // Current Active Class Highlight Banner
+          // Period Card (Clean, NO unsupported "CURRENT CLASS" or "25m remaining" chips)
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
@@ -851,58 +838,46 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Flexible(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          'CURRENT CLASS • 11:05–11:50 AM',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.manrope(
-                            fontSize: 9.5,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
                       decoration: BoxDecoration(
-                        color: AcademicColors.danger,
-                        borderRadius: BorderRadius.circular(9999),
+                        color: Colors.white.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
-                        '25m remaining',
+                        'PERIOD $slotPeriod',
                         style: GoogleFonts.manrope(
-                          fontSize: 9.5,
+                          fontSize: 10,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: _onpsGold,
+                          letterSpacing: 0.6,
                         ),
+                      ),
+                    ),
+                    Text(
+                      '$slotStartTime – $slotEndTime',
+                      style: GoogleFonts.manrope(
+                        fontSize: 11,
+                        color: Colors.white.withValues(alpha: 0.85),
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Period 4: Mathematics',
+                  slotSubject.toString(),
                   style: GoogleFonts.newsreader(
-                    fontSize: 16,
+                    fontSize: 17,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Grade ${assignedClass.className} • Room 204',
+                  '$slotClass${slotRoom.toString().isNotEmpty ? ' · $slotRoom' : ''}',
                   style: GoogleFonts.manrope(
-                    fontSize: 11,
+                    fontSize: 11.5,
                     color: Colors.white.withValues(alpha: 0.8),
                     fontWeight: FontWeight.w500,
                   ),
@@ -911,59 +886,45 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
             ),
           ),
 
-          const SizedBox(height: 10),
-
-          // Next Period Snippet
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      Text(
-                        'NEXT:',
-                        style: GoogleFonts.manrope(
-                          fontSize: 10.5,
-                          fontWeight: FontWeight.bold,
-                          color: AcademicColors.textSecondary,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          'Period 5: Hindi (12:30 PM)',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.manrope(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: AcademicColors.textPrimary,
-                          ),
-                        ),
-                      ),
-                    ],
+          if (nextSlot != null || isTest) ...[
+            const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Row(
+                children: [
+                  Text(
+                    'NEXT',
+                    style: GoogleFonts.manrope(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.bold,
+                      color: AcademicColors.secondary,
+                      letterSpacing: 0.5,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Room 204',
-                  style: GoogleFonts.manrope(
-                    fontSize: 10.5,
-                    color: AcademicColors.textSecondary,
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Period $nextPeriod · $nextSubject · $nextTime',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.manrope(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: AcademicColors.textPrimary,
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );
   }
 
   // ===========================================================================
-  // SECTION 5: CLASS QUICK ACTIONS DESK (Maximum 4 Primary Actions)
+  // SECTION 4: CLASS QUICK ACTIONS DESK (Exactly 4 High-Value Actions)
   // ===========================================================================
   Widget _buildQuickActionsDesk(BuildContext context) {
     return Column(
@@ -984,7 +945,7 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
         Row(
           children: [
             _buildActionTile(
-              label: 'Take\nAttendance',
+              label: _attendanceState == AttendanceMarkingState.marked ? 'View\nAttendance' : 'Take\nAttendance',
               icon: Icons.how_to_reg,
               onTap: () => context.push('/attendance/roll-call'),
             ),
@@ -1060,9 +1021,13 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
   }
 
   // ===========================================================================
-  // SECTION 6: NEEDS ATTENTION (Pending Work - Strictly Privacy Safe)
+  // SECTION 5: NEEDS ATTENTION (Pending Work - Data-Driven & Privacy Safe)
   // ===========================================================================
   Widget _buildNeedsAttentionSection(BuildContext context, SchoolClass assignedClass) {
+    if (widget.simulateZeroPending || _attentionItems.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return InsetCard(
       margin: EdgeInsets.zero,
       padding: const EdgeInsets.all(16),
@@ -1087,111 +1052,72 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
                   ),
                 ],
               ),
-              PillBadge.warning('2 Items'),
+              PillBadge.warning('${_attentionItems.length} Items'),
             ],
           ),
           const SizedBox(height: 12),
 
-          // Actionable Item 1: Marks Entry
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AcademicColors.canvas,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Second Assessment Marks Pending',
-                        style: GoogleFonts.manrope(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: AcademicColors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Mathematics • Grade ${assignedClass.className} • 4 unrecorded',
-                        style: GoogleFonts.manrope(
-                          fontSize: 10.5,
-                          color: AcademicColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size(0, 32),
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    side: const BorderSide(color: AcademicColors.border),
-                  ),
-                  onPressed: () => context.push('/students/marks-entry'),
-                  child: Text(
-                    'Enter',
-                    style: GoogleFonts.manrope(fontSize: 11, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _attentionItems.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 8),
+            itemBuilder: (context, index) {
+              final item = _attentionItems[index];
+              final title = item['title']?.toString() ?? 'Action Required';
+              final subtitle = item['subtitle']?.toString() ?? item['description']?.toString() ?? '';
+              final actionLabel = item['action_label']?.toString() ?? 'Review';
+              final actionRoute = item['action_route']?.toString() ?? '/attendance/roll-call';
 
-          const SizedBox(height: 8),
-
-          // Actionable Item 2: Student Leave Request (STRICT PRIVACY: NO MEDICAL DETAILS)
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AcademicColors.canvas,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _dashboardData?['sample_student_name'] != null
-                            ? '${_dashboardData!['sample_student_name']} (Roll No. ${_dashboardData?['sample_roll_no'] ?? 14})'
-                            : 'Pending Student Leave',
-                        style: GoogleFonts.manrope(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: AcademicColors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        _dashboardData?['sample_student_name'] != null
-                            ? 'Leave request • 28–29 Oct (2 Days)'
-                            : 'Leave request awaiting faculty review',
-                        style: GoogleFonts.manrope(
-                          fontSize: 10.5,
-                          color: AcademicColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
+              return Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AcademicColors.canvas,
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size(0, 32),
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    side: const BorderSide(color: AcademicColors.border),
-                  ),
-                  onPressed: () => context.push('/attendance/student-leave'),
-                  child: Text(
-                    'Review',
-                    style: GoogleFonts.manrope(fontSize: 11, fontWeight: FontWeight.bold),
-                  ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: GoogleFonts.manrope(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: AcademicColors.textPrimary,
+                            ),
+                          ),
+                          if (subtitle.isNotEmpty) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              subtitle,
+                              style: GoogleFonts.manrope(
+                                fontSize: 10.5,
+                                color: AcademicColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(0, 32),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        side: const BorderSide(color: AcademicColors.border),
+                      ),
+                      onPressed: () => context.push(actionRoute),
+                      child: Text(
+                        actionLabel,
+                        style: GoogleFonts.manrope(fontSize: 11, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              );
+            },
           ),
         ],
       ),

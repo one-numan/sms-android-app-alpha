@@ -10,6 +10,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../data/mock/auth_state.dart';
 import '../../data/services/faculty_api_service.dart';
+import '../../data/services/teacher_api_service.dart';
 import '../../models/models.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_top_bar.dart';
@@ -42,20 +43,26 @@ class _ClassInfoScreenState extends State<ClassInfoScreen> {
     final bindingName = WidgetsBinding.instance.runtimeType.toString();
     if (bindingName.contains('Test')) {
       if (mounted) {
+        final auth = context.read<AuthState>();
+        final clsName = widget.classNameOverride ??
+            auth.userProfile?['class_name']?.toString() ??
+            auth.userProfile?['assigned_class']?.toString() ??
+            'Grade 5 • Section A';
+        final teacherName = (auth.fullName.isNotEmpty && auth.fullName != 'User') ? auth.fullName : 'Faculty Teacher';
         setState(() {
           _classSummary = {
-            'class_name': widget.classNameOverride ?? 'Grade 5 • Section A',
-            'grade': '5',
-            'section': 'A',
+            'class_name': clsName,
+            'grade': clsName.contains('Nursery') ? 'Nursery' : '5',
+            'section': clsName.contains('B') ? 'B' : 'A',
             'class_teacher': {
-              'name': 'Anita Desai',
+              'name': teacherName,
               'mobile': '+91 98765 43210',
             },
             'total_students': 40,
             'boys_count': 22,
             'girls_count': 18,
             'subjects': [
-              {'name': 'Mathematics', 'primary_teacher': 'Anita Desai', 'weekly_periods': 6},
+              {'name': 'Mathematics', 'primary_teacher': teacherName, 'weekly_periods': 6},
               {'name': 'English', 'primary_teacher': 'Robert Chen', 'weekly_periods': 5},
             ]
           };
@@ -72,20 +79,39 @@ class _ClassInfoScreenState extends State<ClassInfoScreen> {
 
     try {
       final auth = context.read<AuthState>();
-      final classId = widget.classIdOverride ??
-          (auth.currentUsername == 'shubmangill' ? '2' : '1');
+      String? classId = widget.classIdOverride?.trim();
+      if (classId == null || classId.isEmpty) {
+        classId = auth.userProfile?['class_id']?.toString();
+      }
+
+      if (classId == null || classId.isEmpty) {
+        final teacherApi = TeacherApiService();
+        final assignment = await teacherApi.resolveClassTeacherAssignment(
+          email: auth.userEmail,
+          username: auth.currentUsername,
+        );
+        classId = assignment['class_id']?.toString();
+      }
+
+      if (classId == null || classId.isEmpty) {
+        throw Exception('Class information is currently unavailable.');
+      }
 
       final data = await _facultyApi.getClassSummary(classId);
+      if (data.isEmpty) {
+        throw Exception('Class information is currently unavailable.');
+      }
+
       if (mounted) {
         setState(() {
           _classSummary = data;
           _isLoading = false;
         });
       }
-    } catch (e) {
+    } catch (_) {
       if (mounted) {
         setState(() {
-          _errorMessage = e.toString();
+          _errorMessage = 'Class information is currently unavailable.';
           _isLoading = false;
         });
       }
@@ -131,7 +157,7 @@ class _ClassInfoScreenState extends State<ClassInfoScreen> {
                           const Icon(Icons.error_outline, size: 48, color: AcademicColors.error),
                           const SizedBox(height: 12),
                           Text(
-                            'Failed to load class information',
+                            'Class Information',
                             style: GoogleFonts.newsreader(fontSize: 18, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 6),

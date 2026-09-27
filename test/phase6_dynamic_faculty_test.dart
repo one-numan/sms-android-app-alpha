@@ -48,8 +48,8 @@ void main() {
 
       expect(find.text('My Classes'), findsWidgets);
       expect(find.text('ASSIGNED TEACHING CLASSES'), findsOneWidget);
-      expect(find.text('5-A'), findsOneWidget);
-      expect(find.text('2-B'), findsOneWidget);
+      expect(find.textContaining('5 - A'), findsWidgets);
+      expect(find.textContaining('2 - B'), findsWidgets);
     });
 
     testWidgets('SubjectTeacherClassesScreen mounts and shows dynamic assigned classes and summary', (tester) async {
@@ -78,7 +78,16 @@ void main() {
       final auth = AuthState();
       auth.login(role: UserRole.classTeacher, username: 'shubmangill');
 
-      await tester.pumpWidget(createTestApp(const ClassTeacherDashboardScreen(), authState: auth));
+      await tester.pumpWidget(createTestApp(const ClassTeacherDashboardScreen(
+        attentionItemsOverride: [
+          {
+            'title': 'Pending Student Leave',
+            'subtitle': 'Leave request awaiting faculty review',
+            'action_label': 'Review',
+            'action_route': '/attendance/student-leave',
+          },
+        ],
+      ), authState: auth));
       await tester.pumpAndSettle();
 
       // Ensure "Diya Sharma" is NOT present anywhere as hardcoded persona

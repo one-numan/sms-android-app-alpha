@@ -57,7 +57,7 @@ class ModuleGridSheet extends StatefulWidget {
     );
   }
 
-  static List<ModuleDescriptor> getModulesForRole(UserRole role) => _ModuleGridSheetState._modulesForRole(role);
+  static List<ModuleDescriptor> getModulesForRole(UserRole role, [AuthState? authState]) => _ModuleGridSheetState._modulesForRole(role, authState);
 
   @override
   State<ModuleGridSheet> createState() => _ModuleGridSheetState();
@@ -73,6 +73,14 @@ class _ModuleGridSheetState extends State<ModuleGridSheet> {
   void initState() {
     super.initState();
     _searchFocusNode.addListener(_onFocusChange);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final auth = context.read<AuthState>();
+        if (auth.currentRole == UserRole.classTeacher) {
+          auth.ensureClassTeacherAssignment();
+        }
+      }
+    });
   }
 
   void _onFocusChange() {
@@ -89,7 +97,7 @@ class _ModuleGridSheetState extends State<ModuleGridSheet> {
     super.dispose();
   }
 
-  static List<ModuleDescriptor> _modulesForRole(UserRole role) {
+  static List<ModuleDescriptor> _modulesForRole(UserRole role, [AuthState? authState]) {
     switch (role) {
       // Principal & Vice Principal: Full Administrative & Operational Hub
       case UserRole.principal:
@@ -389,21 +397,35 @@ class _ModuleGridSheetState extends State<ModuleGridSheet> {
 
       // Class Teacher
       case UserRole.classTeacher:
-        return const [
+        final rawClass = authState?.userProfile?['assigned_class']?.toString() ??
+            authState?.userProfile?['class_name']?.toString() ??
+            '';
+        final classId = authState?.userProfile?['class_id']?.toString() ?? '';
+        final displayClass = rawClass.isNotEmpty ? rawClass : 'Class';
+
+        return [
           // MY CLASS
           ModuleDescriptor(
             label: 'Class Information',
-            subtitle: 'Class 5-A details & enrollment overview',
+            subtitle: '$displayClass details & enrollment overview',
             icon: Icons.meeting_room_outlined,
-            route: '/teacher/class-info',
+            route: classId.isNotEmpty
+                ? '/teacher/class-info?class=${Uri.encodeComponent(displayClass)}&classId=${Uri.encodeComponent(classId)}'
+                : (displayClass.isNotEmpty && displayClass != 'Class'
+                    ? '/teacher/class-info?class=${Uri.encodeComponent(displayClass)}'
+                    : '/teacher/class-info'),
             categoryKey: 'class',
             categoryLabel: 'MY CLASS',
           ),
           ModuleDescriptor(
             label: 'Student Directory',
-            subtitle: 'Class 5-A student list & profiles',
+            subtitle: '$displayClass student list & profiles',
             icon: Icons.contacts_outlined,
-            route: '/teacher/class-students',
+            route: classId.isNotEmpty
+                ? '/teacher/class-students?class=${Uri.encodeComponent(displayClass)}&classId=${Uri.encodeComponent(classId)}'
+                : (displayClass.isNotEmpty && displayClass != 'Class'
+                    ? '/teacher/class-students?class=${Uri.encodeComponent(displayClass)}'
+                    : '/teacher/class-students'),
             categoryKey: 'class',
             categoryLabel: 'MY CLASS',
           ),
@@ -411,13 +433,17 @@ class _ModuleGridSheetState extends State<ModuleGridSheet> {
             label: 'Class Subjects',
             subtitle: 'Subject mapping & teaching faculty',
             icon: Icons.menu_book_outlined,
-            route: '/teacher/class-subjects',
+            route: classId.isNotEmpty
+                ? '/teacher/class-subjects?class=${Uri.encodeComponent(displayClass)}&classId=${Uri.encodeComponent(classId)}'
+                : (displayClass.isNotEmpty && displayClass != 'Class'
+                    ? '/teacher/class-subjects?class=${Uri.encodeComponent(displayClass)}'
+                    : '/teacher/class-subjects'),
             categoryKey: 'class',
             categoryLabel: 'MY CLASS',
           ),
 
           // SCHOOL
-          ModuleDescriptor(
+          const ModuleDescriptor(
             label: 'Notices & Circulars',
             subtitle: 'Official circulars & announcements',
             icon: Icons.campaign_outlined,
@@ -425,7 +451,7 @@ class _ModuleGridSheetState extends State<ModuleGridSheet> {
             categoryKey: 'school',
             categoryLabel: 'SCHOOL',
           ),
-          ModuleDescriptor(
+          const ModuleDescriptor(
             label: 'Academic Calendar',
             subtitle: 'Holidays, examinations & events',
             icon: Icons.event_outlined,
@@ -433,7 +459,7 @@ class _ModuleGridSheetState extends State<ModuleGridSheet> {
             categoryKey: 'school',
             categoryLabel: 'SCHOOL',
           ),
-          ModuleDescriptor(
+          const ModuleDescriptor(
             label: 'My Leave Requests',
             subtitle: 'Apply casual & medical leave',
             icon: Icons.event_busy_outlined,
@@ -443,7 +469,7 @@ class _ModuleGridSheetState extends State<ModuleGridSheet> {
           ),
 
           // ACCOUNT
-          ModuleDescriptor(
+          const ModuleDescriptor(
             label: 'Teacher Profile',
             subtitle: 'Faculty identity & contact details',
             icon: Icons.person_outline,
@@ -451,7 +477,7 @@ class _ModuleGridSheetState extends State<ModuleGridSheet> {
             categoryKey: 'account',
             categoryLabel: 'ACCOUNT',
           ),
-          ModuleDescriptor(
+          const ModuleDescriptor(
             label: 'App Settings',
             subtitle: 'Notifications & preferences',
             icon: Icons.settings_outlined,
@@ -527,8 +553,9 @@ class _ModuleGridSheetState extends State<ModuleGridSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final role = context.watch<AuthState>().currentRole;
-    final allModules = _modulesForRole(role);
+    final auth = context.watch<AuthState>();
+    final role = auth.currentRole;
+    final allModules = _modulesForRole(role, auth);
 
     // Extract unique categories in order
     final categories = <String, String>{};
@@ -920,13 +947,17 @@ class _ModuleGridSheetState extends State<ModuleGridSheet> {
         borderRadius: BorderRadius.circular(12),
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
-          onTap: () {
+          onTap: () async {
             final router = GoRouter.of(context);
+            final parentCtx = widget.parentContext ?? context;
             Navigator.pop(context);
             if (module.route.contains('dashboard') || module.route == '/student/hub') {
               router.go(module.route);
             } else {
-              router.push(module.route);
+              await router.push(module.route);
+              if (parentCtx.mounted) {
+                ModuleGridSheet.show(parentCtx);
+              }
             }
           },
           child: Container(

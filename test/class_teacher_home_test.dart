@@ -33,7 +33,7 @@ void main() {
       expect(find.textContaining('Class Teacher • Grade 5-A'), findsOneWidget);
 
       // Verify My Class Section
-      expect(find.text('MY ASSIGNED CLASS'), findsOneWidget);
+      expect(find.text('MY CLASS'), findsOneWidget);
       expect(find.text('Grade 5-A'), findsOneWidget);
       expect(find.textContaining('Students'), findsOneWidget);
     });
@@ -60,16 +60,16 @@ void main() {
       expect(find.text('Go to Subject Teacher Desk'), findsOneWidget);
     });
 
-    testWidgets('TEST 3: Fully marked attendance displays present/total, calculated %, and Open Register', (tester) async {
+    testWidgets('TEST 3: Fully marked attendance displays present/total, calculated %, and View Attendance', (tester) async {
       await tester.pumpWidget(createTestWidget(const ClassTeacherDashboardScreen(
         attendanceStateOverride: AttendanceMarkingState.marked,
       )));
       await tester.pumpAndSettle();
 
-      expect(find.text("TODAY'S CLASS ATTENDANCE"), findsOneWidget);
-      expect(find.text('Present'), findsOneWidget);
+      expect(find.text("TODAY'S ATTENDANCE"), findsOneWidget);
+      expect(find.textContaining('Present'), findsOneWidget);
       expect(find.textContaining('% recorded'), findsOneWidget);
-      expect(find.text('Open Register'), findsOneWidget);
+      expect(find.text('View Attendance'), findsOneWidget);
     });
 
     testWidgets('TEST 4: Attendance not marked shows "Attendance Not Marked" and NEVER displays 0%', (tester) async {
@@ -101,8 +101,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text("TODAY'S TEACHING SCHEDULE"), findsOneWidget);
-      expect(find.textContaining('CURRENT CLASS'), findsOneWidget);
-      expect(find.textContaining('NEXT:'), findsOneWidget);
+      expect(find.textContaining('PERIOD 4'), findsOneWidget);
+      expect(find.textContaining('NEXT'), findsOneWidget);
     });
 
     testWidgets('TEST 10: Empty schedule state displays clean message', (tester) async {
@@ -115,7 +115,22 @@ void main() {
     });
 
     testWidgets('TEST 11 & 16: Pending work shows without exposing medical diagnoses (Privacy rule)', (tester) async {
-      await tester.pumpWidget(createTestWidget(const ClassTeacherDashboardScreen()));
+      await tester.pumpWidget(createTestWidget(const ClassTeacherDashboardScreen(
+        attentionItemsOverride: [
+          {
+            'title': 'Second Assessment Marks Pending',
+            'subtitle': 'Mathematics • Grade 5-A • 4 unrecorded',
+            'action_label': 'Enter',
+            'action_route': '/students/marks-entry',
+          },
+          {
+            'title': 'Pending Student Leave',
+            'subtitle': 'Leave request awaiting faculty review',
+            'action_label': 'Review',
+            'action_route': '/attendance/student-leave',
+          },
+        ],
+      )));
       await tester.pumpAndSettle();
 
       expect(find.text('NEEDS ATTENTION'), findsOneWidget);

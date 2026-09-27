@@ -141,7 +141,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.textContaining('Good Morning, Anita Desai'), findsOneWidget);
-      expect(find.text('MY ASSIGNED CLASS'), findsOneWidget);
+      expect(find.text('MY CLASS'), findsOneWidget);
       expect(find.text('Grade 5-A'), findsWidgets);
 
       assertNoEmojis(tester, 'ClassTeacherDashboardScreen');
