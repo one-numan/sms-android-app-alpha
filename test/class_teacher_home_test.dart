@@ -96,6 +96,17 @@ void main() {
       expect(find.text('Continue Attendance'), findsOneWidget);
     });
 
+    testWidgets('TEST 5b: Non-teaching day (Weekly Off / Holiday) displays not-applicable status and Timetable action', (tester) async {
+      await tester.pumpWidget(createTestWidget(const ClassTeacherDashboardScreen(
+        attendanceStateOverride: AttendanceMarkingState.notApplicable,
+      )));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Weekly Off'), findsOneWidget);
+      expect(find.textContaining('School is closed today'), findsOneWidget);
+      expect(find.widgetWithText(ElevatedButton, 'Timetable'), findsOneWidget);
+    });
+
     testWidgets('TEST 6 & 8: Current and next period schedule is displayed', (tester) async {
       await tester.pumpWidget(createTestWidget(const ClassTeacherDashboardScreen()));
       await tester.pumpAndSettle();

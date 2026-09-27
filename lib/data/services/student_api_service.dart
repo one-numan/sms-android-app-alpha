@@ -178,19 +178,59 @@ class StudentApiService {
 
   /// Submit or update student examination marks (`POST /api/v1/academics/marks-entry/`).
   Future<Map<String, dynamic>> submitMarks({
-    required String classId,
-    required String subjectId,
+    int? classSubjectId,
+    String? classId,
+    String? subjectId,
     required String examType,
     required List<Map<String, dynamic>> marksList,
   }) async {
+    // Map human-readable exam names to backend enum choices
+    String assessment;
+    final normalizedExam = examType.toLowerCase().replaceAll(' ', '_');
+    if (normalizedExam.contains('first') || normalizedExam.contains('fa1')) {
+      assessment = 'first_assessment';
+    } else if (normalizedExam.contains('half') || normalizedExam.contains('mid')) {
+      assessment = 'half_yearly';
+    } else if (normalizedExam.contains('final') || normalizedExam.contains('annual')) {
+      assessment = 'final_exam';
+    } else {
+      assessment = 'second_assessment';
+    }
+
+    final mappedMarks = marksList.map((m) {
+      final sId = m['student_id'];
+      int parsedId = 0;
+      if (sId is int) {
+        parsedId = sId;
+      } else if (sId is String) {
+        parsedId = int.tryParse(_resolveStudentId(sId)) ?? 0;
+      }
+      final scoreVal = m['marks_obtained'] ?? m['score'] ?? 0;
+      final numericScore = scoreVal is num ? scoreVal.toDouble() : (double.tryParse(scoreVal.toString()) ?? 0.0);
+      return {
+        'student_id': parsedId,
+        'marks_obtained': numericScore.toStringAsFixed(1),
+      };
+    }).toList();
+
+    final body = <String, dynamic>{
+      'assessment': assessment,
+      'marks': mappedMarks,
+    };
+    if (classSubjectId != null && classSubjectId > 0) {
+      body['class_subject_id'] = classSubjectId;
+    } else {
+      final parsedCsId = int.tryParse(classId ?? '') ?? int.tryParse(subjectId ?? '');
+      if (parsedCsId != null && parsedCsId > 0) {
+        body['class_subject_id'] = parsedCsId;
+      } else {
+        body['class_subject_id'] = 1;
+      }
+    }
+
     final response = await _apiClient.post(
       '/academics/marks-entry/',
-      body: {
-        'class_id': classId,
-        'subject_id': subjectId,
-        'exam_type': examType,
-        'marks': marksList,
-      },
+      body: body,
     );
     return response is Map<String, dynamic> ? response : {'data': response};
   }

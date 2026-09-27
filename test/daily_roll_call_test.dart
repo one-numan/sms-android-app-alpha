@@ -342,7 +342,7 @@ void main() {
           await tester.pumpAndSettle();
 
           expect(tester.takeException(), isNull, reason: 'Failed at width $w');
-          expect(find.text('Attendance 5-A'), findsOneWidget);
+          expect(find.text('Class 5-A'), findsOneWidget);
           expect(find.text('Mark All Present'), findsOneWidget);
           expect(find.text('Submit Attendance'), findsOneWidget);
         }

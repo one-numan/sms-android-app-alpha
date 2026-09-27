@@ -38,6 +38,20 @@ class TeacherApiService {
     }
   }
 
+  /// Fetch Teacher Today Status (Consolidated schedule, day type, attendance status).
+  /// GET /teacher/today-status/
+  Future<Map<String, dynamic>> getTodayStatus() async {
+    try {
+      final response = await _apiClient.get('/teacher/today-status/');
+      if (response is Map<String, dynamic> && response.containsKey('data')) {
+        return response['data'] is Map<String, dynamic> ? response['data'] : response;
+      }
+      return response is Map<String, dynamic> ? response : {};
+    } catch (_) {
+      return {};
+    }
+  }
+
   /// Authoritatively resolve assigned class and class ID for a Class Teacher.
   Future<Map<String, dynamic>> resolveClassTeacherAssignment({String? email, String? username}) async {
     try {

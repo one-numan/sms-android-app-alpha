@@ -1,8 +1,8 @@
 /// Configuration file for ONPS ERP Backend API integration.
 class ApiConfig {
   /// Base URL for the running backend server.
-  /// Production server running on: `https://alpha.onenuman.com/api/v1`
-  static String baseUrl = 'https://alpha.onenuman.com/api/v1';
+  /// Local backend running on: `http://127.0.0.1:8000/api/v1` via adb reverse
+  static String baseUrl = 'http://127.0.0.1:8000/api/v1';
 
   /// Connection timeout in seconds.
   static const int connectTimeoutSeconds = 45;

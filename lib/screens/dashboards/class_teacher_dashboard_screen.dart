@@ -26,6 +26,7 @@ enum AttendanceMarkingState {
   marked,
   notMarked,
   partiallyRecorded,
+  notApplicable,
 }
 
 class ClassTeacherDashboardScreen extends StatefulWidget {
@@ -63,6 +64,7 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
   bool _isLoading = false;
   bool _hasError = false;
   Map<String, dynamic>? _dashboardData;
+  Map<String, dynamic>? _todayStatus;
   List<Announcement> _liveAnnouncements = [];
   List<dynamic> _timetableSchedule = [];
   List<Map<String, dynamic>> _attentionItems = [];
@@ -97,16 +99,35 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
         _announcementApiService.getAnnouncements(),
         _facultyApiService.getTeacherTimetable(),
         _teacherApiService.getDashboardAttention(),
+        _teacherApiService.getTodayStatus(),
       ]);
       if (mounted) {
         final dashData = results[0] as Map<String, dynamic>;
         final rawAnnouncements = results[1] as List<dynamic>;
         final timetableData = results[2] as Map<String, dynamic>;
         final attentionData = results[3] as Map<String, dynamic>;
+        final todayStatusData = results[4] as Map<String, dynamic>;
 
         setState(() {
           _dashboardData = dashData;
-          if (dashData.containsKey('roll_call_status')) {
+          _todayStatus = todayStatusData;
+          if (todayStatusData.isNotEmpty &&
+              todayStatusData.containsKey('attendance') &&
+              todayStatusData['attendance'] is Map) {
+            final att = todayStatusData['attendance'] as Map<String, dynamic>;
+            final attStatus = att['status']?.toString().toUpperCase();
+            if (attStatus == 'MARKED' || attStatus == 'SUBMITTED' || attStatus == 'COMPLETED') {
+              _attendanceState = AttendanceMarkingState.marked;
+            } else if (attStatus == 'PARTIAL') {
+              _attendanceState = AttendanceMarkingState.partiallyRecorded;
+            } else if (attStatus == 'NOT_APPLICABLE' || todayStatusData['is_teaching_day'] == false) {
+              _attendanceState = AttendanceMarkingState.notApplicable;
+            } else {
+              _attendanceState = AttendanceMarkingState.notMarked;
+            }
+          } else if (todayStatusData['is_teaching_day'] == false) {
+            _attendanceState = AttendanceMarkingState.notApplicable;
+          } else if (dashData.containsKey('roll_call_status')) {
             final status = dashData['roll_call_status'].toString().toUpperCase();
             if (status == 'SUBMITTED' || status == 'COMPLETED') {
               _attendanceState = AttendanceMarkingState.marked;
@@ -473,6 +494,7 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
     // Attendance calculations from real API response
     final bool isMarked = _attendanceState == AttendanceMarkingState.marked;
     final bool isPartial = _attendanceState == AttendanceMarkingState.partiallyRecorded;
+    final bool isNotApplicable = _attendanceState == AttendanceMarkingState.notApplicable;
     final int presentCount = (_dashboardData?['present_today'] as num?)?.toInt() ??
         (isMarked ? totalStudents - 1 : (isPartial ? 24 : 0));
     final int absentCount = (_dashboardData?['absent_today'] as num?)?.toInt() ??
@@ -484,7 +506,13 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
     final String buttonLabel;
     final IconData buttonIcon;
 
-    if (isMarked) {
+    if (isNotApplicable) {
+      final reason = _todayStatus?['reason']?.toString() ?? 'Weekly Off (Sunday)';
+      attendanceStatusTitle = reason;
+      attendanceSubtext = 'School is closed today · No attendance required';
+      buttonLabel = 'Timetable';
+      buttonIcon = Icons.calendar_today;
+    } else if (isMarked) {
       attendanceStatusTitle = 'Attendance Marked';
       attendanceSubtext = '$presentCount / $totalStudents Present · $absentCount Absent (${percentage.toStringAsFixed(1)}% recorded)';
       buttonLabel = 'View Attendance';
@@ -643,7 +671,13 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   elevation: 0,
                 ),
-                onPressed: () => context.push('/attendance/roll-call'),
+                onPressed: () {
+                  if (isNotApplicable) {
+                    context.push('/faculty/timetable');
+                  } else {
+                    context.push('/attendance/roll-call');
+                  }
+                },
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [

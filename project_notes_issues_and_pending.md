@@ -92,12 +92,24 @@ During live execution on the physical Android hardware, the following UI/UX issu
 - [ ] Currently all data is held in-memory via `MockData`. Any newly added enquiries, adjusted inventory items, or submitted circulars reset on app restart.
 - [ ] Implement local SQLite / Hive / SharedPreferences storage to persist state changes locally on the device.
 
-### Priority 3: Django Backend REST API Integration
+### Priority 3: Django Backend REST API Integration & Critical Feeds
 - [ ] Connect repository implementations (`lib/data/repositories/`) to Django 5.1.4 backend REST endpoints (`http://<backend-host>/api/v1/...`).
 - [ ] Add JWT authentication token storage and auto-refresh interceptors.
 - [ ] Wire multi-device session management to Django `DeviceSession` model.
+- [ ] **Needs Attention Feed Integration (`GET /api/v1/attention/`)**:
+  - Spec Reference: [`docs/attention_api_android.md`](file:///Users/onenuman/Documents/GitHub/sms-android-app-alpha/docs/attention_api_android.md)
+  - Live, shipped endpoint. Needs client-side integration across all 7 role dashboards (`leadership`, `accountant`, `librarian`, `receptionist`, `teacher`, `parent`, `student`).
+  - Render dynamically by `type` (`actionable_queue`, `alert_count`, `reminder`), not by hardcoded `id`/`domain`.
+  - Handle `count: null` (non-count items like currency/holiday), use `summary` for badge counts, and respect server sort order (severity: critical -> warning -> info).
+  - Implement full deep linking support for all 11 destination keys (`faculty_leave_review`, `my_leave_requests`, `moderation_queue`, `admissions_applications`, `fee_defaulters`, `fee_ledger`, `library_overdue`, `my_library_loans`, `inventory_low_stock`, `calendar`, `birthdays`).
+  - Render genuine empty state ("You're all caught up") when `items: []`.
+- [ ] **Teacher "Today" Status Integration (`GET /api/v1/teacher/today-status/`)**:
+  - Spec Reference: [`docs/today_status_api_android.md`](file:///Users/onenuman/Documents/GitHub/sms-android-app-alpha/docs/today_status_api_android.md)
+  - Consolidates school operational status (`is_teaching_day`, `day_type`: `WORKING`/`WEEKLY_OFF`/`HOLIDAY`, `reason`), time-aware current & next periods (`current_period`, `next_period`), and authoritative homeroom attendance state (`attendance`: `status`: `NOT_MARKED`/`PARTIAL`/`MARKED`/`NOT_APPLICABLE`, `can_take_attendance`).
+  - Eliminates client-side week-dump fallback bugs and list-index guessing on Class Teacher & Subject Teacher dashboards (enforcing Rule 21 & Master Principle).
 
 ### Priority 4: Native Device Capabilities
 - [ ] **PDF Export:** Connect PDF export buttons (Fee Receipt, Report Card, Timetable) to `pdf` and `path_provider` packages to generate and save signed `.pdf` files to device Downloads.
 - [ ] **Barcode / QR Scanner:** Integrate camera permissions and `mobile_scanner` for student ID attendance scanning and inventory asset tagging.
 - [ ] **Push Notifications:** Wire Firebase Cloud Messaging (FCM) or WebSocket push for real-time school circular broadcasts.
+

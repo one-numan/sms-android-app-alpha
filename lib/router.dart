@@ -361,7 +361,17 @@ GoRouter createOnpsRouter(AuthState authState) {
       ),
       GoRoute(
         path: '/students/marks-entry',
-        builder: (context, state) => const MarksEntryDeskScreen(),
+        builder: (context, state) {
+          final query = state.uri.queryParameters;
+          final extra = state.extra is Map<String, dynamic> ? state.extra as Map<String, dynamic> : null;
+          return MarksEntryDeskScreen(
+            classId: extra?['class_id']?.toString() ?? extra?['classId']?.toString() ?? query['class_id'] ?? query['classId'],
+            className: extra?['class_name']?.toString() ?? extra?['className']?.toString() ?? query['class_name'] ?? query['className'] ?? query['class'],
+            subjectId: extra?['subject_id']?.toString() ?? extra?['subjectId']?.toString() ?? query['subject_id'] ?? query['subjectId'],
+            subjectName: extra?['subject_name']?.toString() ?? extra?['subjectName']?.toString() ?? query['subject_name'] ?? query['subjectName'] ?? query['subject'],
+            examType: extra?['exam_type']?.toString() ?? extra?['examType']?.toString() ?? query['exam_type'] ?? query['examType'],
+          );
+        },
       ),
       GoRoute(
         path: '/students/ledger',
@@ -632,11 +642,31 @@ GoRouter createOnpsRouter(AuthState authState) {
       ),
       GoRoute(
         path: '/academics/marks/entry-desk',
-        builder: (context, state) => const MarksEntryDeskScreen(),
+        builder: (context, state) {
+          final query = state.uri.queryParameters;
+          final extra = state.extra is Map<String, dynamic> ? state.extra as Map<String, dynamic> : null;
+          return MarksEntryDeskScreen(
+            classId: extra?['class_id']?.toString() ?? extra?['classId']?.toString() ?? query['class_id'] ?? query['classId'],
+            className: extra?['class_name']?.toString() ?? extra?['className']?.toString() ?? query['class_name'] ?? query['className'] ?? query['class'],
+            subjectId: extra?['subject_id']?.toString() ?? extra?['subjectId']?.toString() ?? query['subject_id'] ?? query['subjectId'],
+            subjectName: extra?['subject_name']?.toString() ?? extra?['subjectName']?.toString() ?? query['subject_name'] ?? query['subjectName'] ?? query['subject'],
+            examType: extra?['exam_type']?.toString() ?? extra?['examType']?.toString() ?? query['exam_type'] ?? query['examType'],
+          );
+        },
       ),
       GoRoute(
         path: '/academics/marks-entry',
-        builder: (context, state) => const MarksEntryDeskScreen(),
+        builder: (context, state) {
+          final query = state.uri.queryParameters;
+          final extra = state.extra is Map<String, dynamic> ? state.extra as Map<String, dynamic> : null;
+          return MarksEntryDeskScreen(
+            classId: extra?['class_id']?.toString() ?? extra?['classId']?.toString() ?? query['class_id'] ?? query['classId'],
+            className: extra?['class_name']?.toString() ?? extra?['className']?.toString() ?? query['class_name'] ?? query['className'] ?? query['class'],
+            subjectId: extra?['subject_id']?.toString() ?? extra?['subjectId']?.toString() ?? query['subject_id'] ?? query['subjectId'],
+            subjectName: extra?['subject_name']?.toString() ?? extra?['subjectName']?.toString() ?? query['subject_name'] ?? query['subjectName'] ?? query['subject'],
+            examType: extra?['exam_type']?.toString() ?? extra?['examType']?.toString() ?? query['exam_type'] ?? query['examType'],
+          );
+        },
       ),
       GoRoute(
         path: '/teacher/timetable-grid',

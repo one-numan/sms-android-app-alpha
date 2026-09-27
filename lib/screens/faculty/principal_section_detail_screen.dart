@@ -651,7 +651,7 @@ class _PrincipalSectionDetailScreenState
               // -------------------------------------------------------------
               // 6. ACADEMIC RECORDS & RESULTS
               // -------------------------------------------------------------
-              _buildAcademicRecordsCard(),
+              _buildAcademicRecordsCard(schoolClass),
 
               const SizedBox(height: 14),
 
@@ -1384,7 +1384,9 @@ class _PrincipalSectionDetailScreenState
                         ),
                         onPressed: () {
                           Navigator.pop(ctx);
-                          context.push('/students/marks-entry');
+                          context.push(
+                            '/students/marks-entry?class=${Uri.encodeComponent(cls.className)}&class_id=${Uri.encodeComponent(cls.id)}&subject=${Uri.encodeComponent(sub.name)}',
+                          );
                         },
                         child: Text(
                           'Marks Ledger',
@@ -1459,7 +1461,7 @@ class _PrincipalSectionDetailScreenState
   }
 
   /// Academic Records & Results Card
-  Widget _buildAcademicRecordsCard() {
+  Widget _buildAcademicRecordsCard(SchoolClass cls) {
     return InsetCard(
       margin: EdgeInsets.zero,
       padding: const EdgeInsets.all(14),
@@ -1562,7 +1564,9 @@ class _PrincipalSectionDetailScreenState
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),
-                  onPressed: () => context.push('/students/marks-entry'),
+                  onPressed: () => context.push(
+                    '/students/marks-entry?class=${Uri.encodeComponent(cls.className)}&class_id=${Uri.encodeComponent(cls.id)}',
+                  ),
                   child: Text(
                     'Marks Ledger',
                     style: GoogleFonts.manrope(

@@ -951,7 +951,20 @@ class _DailyRollCallScreenState extends State<DailyRollCallScreen> {
       },
       child: Scaffold(
         backgroundColor: AcademicColors.canvas,
-        appBar: const AppTopBar(showBrand: true),
+        appBar: AppTopBar(
+          title: 'Attendance',
+          onBackPressed: () async {
+            final canLeave = await _onWillPop();
+            if (!context.mounted) return;
+            if (canLeave) {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/dashboard/class-teacher');
+              }
+            }
+          },
+        ),
         body: SafeArea(
           child: Column(
             children: [
@@ -1010,34 +1023,25 @@ class _DailyRollCallScreenState extends State<DailyRollCallScreen> {
   // ===========================================================================
   Widget _buildPageHeader(SchoolClass? assignedClass, bool allPresent) {
     final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
-    final className = assignedClass != null ? assignedClass.className : '5-A';
+    final rawClassName = assignedClass != null ? assignedClass.className : '5-A';
+    final cleanClassName = rawClassName.replaceFirst(RegExp(r'^Grade\s+', caseSensitive: false), '');
+    final displayTitle = 'Class $cleanClassName';
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: isLandscape ? 4 : 8),
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: isLandscape ? 4 : 8),
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(bottom: BorderSide(color: AcademicColors.border, width: 0.8)),
       ),
       child: Row(
         children: [
-          IconButton(
-            visualDensity: VisualDensity.compact,
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-            icon: const Icon(Icons.arrow_back, size: 22, color: AcademicColors.textPrimary),
-            onPressed: () async {
-              final canLeave = await _onWillPop();
-              if (canLeave && mounted) context.pop();
-            },
-          ),
-          const SizedBox(width: 8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Attendance $className',
+                  displayTitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.newsreader(
@@ -1058,7 +1062,7 @@ class _DailyRollCallScreenState extends State<DailyRollCallScreen> {
               ],
             ),
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 8),
 
           // Primary Header Action: [ ✓ Mark All Present ]
           if (assignedClass != null &&

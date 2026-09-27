@@ -39,5 +39,8 @@
 | **Announcements** | Principal Moderation Queue| `IMPLEMENTED` | Approval / rejection workflow (`/principal/moderation`). |
 | **Calendar** | Gazetted Holidays Calendar | `IMPLEMENTED` | National & institutional holiday listing (`/calendar/holidays`). |
 | **Faculty Mgmt** | Principal Teachers Desk | `IMPLEMENTED` | Faculty CRUD & assignment validation (`/principal/teachers`). |
+| **Dashboards** | Needs Attention Feed (`/attention/`) | `BACKEND_ONLY` | Shipped on backend (`docs/attention_api_android.md`); mobile client integration pending. |
+| **Dashboards** | Teacher Today Status (`/teacher/today-status/`) | `PLANNED` | Proposed Android API spec (`docs/today_status_api_android.md`) for day/time/attendance truth. |
 | **Export Engine** | Native PDF Receipt Export | `PARTIALLY_IMPLEMENTED`| UI trigger active; `pdf` package wiring pending. |
 | **Academics** | Student Homework Desk | `PLANNED` | Excluded from current UI to avoid fake workflows. |
+

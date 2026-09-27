@@ -151,7 +151,7 @@ void main() {
       await tester.pumpWidget(wrapWithAuth(const DailyRollCallScreen(), authState));
       await tester.pumpAndSettle();
 
-      expect(find.text('Attendance 5-A'), findsOneWidget);
+      expect(find.text('Class 5-A'), findsOneWidget);
       expect(find.textContaining('32'), findsWidgets);
       expect(find.byType(ElevatedButton), findsWidgets);
 

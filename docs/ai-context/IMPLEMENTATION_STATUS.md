@@ -27,6 +27,12 @@
 - [/] **AI Context Knowledge Base Setup**: Populating `docs/ai-context/` for multi-model interoperability.
 
 ### 2.3 Next (Immediate Backlog)
+- [ ] **Needs Attention Feed Integration (`GET /api/v1/attention/`)**:
+  - Live, shipped backend endpoint (`docs/attention_api_android.md`).
+  - Wire cross-role attention feed across all 7 role dashboards with dynamic `type`-based rendering and 11 deep-link destinations.
+- [ ] **Teacher "Today" Status Integration (`GET /api/v1/teacher/today-status/`)**:
+  - Spec defined (`docs/today_status_api_android.md`).
+  - Authoritatively replaces client-side school open/off checks, teaching period list-index guessing, and attendance gating.
 - [ ] **Native PDF Export Wiring**: Connect PDF buttons (Fee Receipt, Report Card, Timetable) to `pdf` and `path_provider` packages.
 - [ ] **Android 13+ Predictive Back Callback**: Add `android:enableOnBackInvokedCallback="true"` in `AndroidManifest.xml`.
 - [ ] **Deep Link Back Guard**: Ensure safe pop/go navigation on deep-linked secondary screens (`if (context.canPop()) context.pop() else context.go('/')`).
@@ -35,3 +41,4 @@
 - [ ] **Django 5.1.4 REST API Connector**: Replace `MockData` singleton with repository HTTP endpoints & JWT auth tokens.
 - [ ] **Firebase Cloud Messaging (FCM)**: Native push notification payload handler.
 - [ ] **Camera QR Scanner**: Mobile scanner integration for digital ID turnstile validation.
+

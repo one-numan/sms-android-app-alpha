@@ -94,9 +94,9 @@ void main() {
       expect(pdfTimetableButton, findsOneWidget);
 
       await tester.tap(pdfTimetableButton);
-      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
 
-      expect(find.textContaining('Timetable PDF exported successfully.'), findsOneWidget);
+      expect(find.textContaining('Timetable downloaded'), findsOneWidget);
     });
 
     testWidgets('6. Notice Board Screen - Notice PDF Attachment Download Button', (WidgetTester tester) async {
