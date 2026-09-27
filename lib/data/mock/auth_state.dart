@@ -297,6 +297,20 @@ class AuthState extends ChangeNotifier {
             'class_section': 'Grade ${s.grade}-${s.section}',
           }).toList();
         }
+        if (role == UserRole.classTeacher) {
+          final isShubman = username.toLowerCase().contains('shubman');
+          _userProfile = {
+            'full_name': isShubman ? 'Shubman Gill' : 'Anita Desai',
+            'username': username,
+            'role': 'teacher',
+            'designation': 'Senior Faculty',
+            'assigned_class': '5-A',
+            'class_name': '5-A',
+            'grade': '5',
+            'section': 'A',
+            'is_class_teacher': true,
+          };
+        }
         notifyListeners();
         return true;
       }

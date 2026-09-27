@@ -185,16 +185,18 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
                       (c) => c?.classTeacherName == teacher.name,
                       orElse: () => null,
                     )
-                : MockData.classes.cast<SchoolClass?>().firstWhere(
-                      (c) => c?.classTeacherName == teacher.name,
-                      orElse: () => SchoolClass(
-                        id: 'CLS-${teacher.name}',
-                        grade: 'Grade 8',
-                        section: 'G',
-                        className: 'Grade 8-G',
+                : (auth.userProfile?['class_name'] != null
+                    ? SchoolClass(
+                        id: auth.userProfile?['class_id']?.toString() ?? 'CLS-${teacher.name}',
+                        grade: auth.userProfile?['grade']?.toString() ?? 'Grade 5',
+                        section: auth.userProfile?['section']?.toString() ?? 'A',
+                        className: auth.userProfile!['class_name'].toString(),
                         classTeacherName: teacher.name,
-                      ),
-                    )));
+                      )
+                    : MockData.classes.cast<SchoolClass?>().firstWhere(
+                          (c) => c?.classTeacherName == teacher.name,
+                          orElse: () => null,
+                        ))));
 
     return Scaffold(
       backgroundColor: AcademicColors.canvas,

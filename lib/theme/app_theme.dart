@@ -8,6 +8,20 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AcademicColors {
+  // HTML Timetable Preview Colors
+  static const Color ink = Color(0xFF3D2A22);
+  static const Color muted = Color(0xFF8B7D77);
+  static const Color accentNew = Color(0xFF9A5D2F);
+  static const Color accentSoft = Color(0xFFF3E8DF);
+  static const Color cream = Color(0xFFFBFAF8);
+  static const Color line = Color(0xFFE6DFDB);
+  static const Color card = Color(0xFFFFFFFF);
+  static const Color green = Color(0xFF47745F);
+  static const Color greenSoft = Color(0xFFE7F1EC);
+  static const Color blue = Color(0xFF36758C);
+  static const Color blueSoft = Color(0xFFE3F3F7);
+  static const Color appBackground = Color(0xFFE9E5E1);
+
   // Brand Surfaces & Chrome
   static const Color primary = Color(0xFF5C4033);          // Primary Espresso
   static const Color primaryDark = Color(0xFF3E2A22);      // Deep Espresso
