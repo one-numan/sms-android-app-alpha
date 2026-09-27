@@ -48,29 +48,23 @@ class _SubjectTeacherCohortsScreenState extends State<SubjectTeacherCohortsScree
     final isTest = WidgetsBinding.instance.runtimeType.toString().contains('Test');
     if (isTest) {
       setState(() {
-        _dashboardData = {
-          'total_classes': 3,
-          'total_students_taught': 96,
-          'marks_entry_status': 'PENDING',
-          'assigned_subjects': ['Mathematics', 'Science'],
-        };
         _cohorts = [
           {
-            'className': '5-A',
+            'className': 'Class 5 A',
             'subjectName': 'Mathematics',
             'students': 32,
             'attendance': '96.2%',
             'avgScore': '78.4%',
           },
           {
-            'className': '2-B',
+            'className': 'Class 2 B',
             'subjectName': 'Science',
             'students': 32,
             'attendance': '94.8%',
             'avgScore': '81.0%',
           },
           {
-            'className': '8-C',
+            'className': 'Class 8 C',
             'subjectName': 'Mathematics',
             'students': 32,
             'attendance': '92.5%',

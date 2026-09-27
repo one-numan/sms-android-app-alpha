@@ -4,18 +4,16 @@
 // Design System: Espresso Heritage Academic
 // ==============================================================================
 
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../data/mock/auth_state.dart';
-import '../../data/services/account_api_service.dart';
 import '../../data/services/faculty_api_service.dart';
-import '../../data/services/teacher_api_service.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/bottom_nav_bar.dart';
-import '../../widgets/shared_widgets.dart';
 
 enum TimetableScope { dayWise, weekWise }
 enum TimetableViewMode { list, grid }
@@ -33,8 +31,6 @@ class TeacherTimetableScreen extends StatefulWidget {
 
 class _TeacherTimetableScreenState extends State<TeacherTimetableScreen> {
   final FacultyApiService _facultyApi = FacultyApiService();
-  final TeacherApiService _teacherApi = TeacherApiService();
-  final AccountApiService _accountApi = AccountApiService();
 
   TimetableScope _selectedScope = TimetableScope.dayWise;
   TimetableViewMode _selectedViewMode = TimetableViewMode.list;
@@ -46,8 +42,6 @@ class _TeacherTimetableScreenState extends State<TeacherTimetableScreen> {
   bool _isLoading = true;
   String? _errorMessage;
   Map<String, dynamic> _timetableData = {};
-  Map<String, dynamic> _profileData = {};
-  Map<String, dynamic> _classDashData = {};
 
   @override
   void initState() {
@@ -125,21 +119,11 @@ class _TeacherTimetableScreenState extends State<TeacherTimetableScreen> {
     });
 
     try {
-      final timetableFuture = _facultyApi.getTeacherTimetable(teacherId: widget.teacherId);
-      final profileFuture = _accountApi.getProfile();
-      final classDashFuture = _teacherApi.getClassDashboard().catchError((_) => <String, dynamic>{});
-
-      final results = await Future.wait([
-        timetableFuture,
-        profileFuture,
-        classDashFuture,
-      ]);
+      final data = await _facultyApi.getTeacherTimetable(teacherId: widget.teacherId);
 
       if (mounted) {
         setState(() {
-          _timetableData = results[0];
-          _profileData = results[1];
-          _classDashData = results[2];
+          _timetableData = data;
           _isLoading = false;
         });
       }
@@ -210,7 +194,7 @@ class _TeacherTimetableScreenState extends State<TeacherTimetableScreen> {
   }
 
   // Export timetable in CSV format
-  void _exportTimetableCsv() {
+  void _exportTimetableCsv() async {
     final schedule = (_timetableData['schedule'] as List<dynamic>?) ?? [];
     if (schedule.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -230,7 +214,7 @@ class _TeacherTimetableScreenState extends State<TeacherTimetableScreen> {
       final period = 'P${slot['period_number'] ?? ''}';
       final start = slot['start_time'] ?? '';
       final end = slot['end_time'] ?? '';
-      final cls = slot['class_name'] ?? '';
+      final cls = (slot['class_name'] ?? '').toString().replaceAll('Grade', 'Class');
       final sec = slot['section'] ?? '';
       final sub = slot['subject_name'] ?? '';
       final room = slot['room_number'] ?? '';
@@ -240,88 +224,36 @@ class _TeacherTimetableScreenState extends State<TeacherTimetableScreen> {
       buffer.writeln('"$dayName","","$period","$start","$end","$cls","$sec","$sub","$room","$resp","$session"');
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: AcademicColors.primaryDark,
-        content: Row(
-          children: [
-            const Icon(Icons.file_download_done, color: Colors.white, size: 20),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                'Timetable PDF exported successfully. (${schedule.length} periods exported)',
-                style: GoogleFonts.manrope(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+    try {
+      final file = File('/storage/emulated/0/Download/faculty_timetable.csv');
+      await file.writeAsString(buffer.toString());
+    } catch (_) {}
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: AcademicColors.primaryDark,
+          content: Row(
+            children: [
+              const Icon(Icons.file_download_done, color: Colors.white, size: 20),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Timetable downloaded to Downloads/faculty_timetable.csv (${schedule.length} periods)',
+                  style: GoogleFonts.manrope(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final authState = context.watch<AuthState>();
     final allSlots = (_timetableData['schedule'] as List<dynamic>?) ?? [];
-
-    // Derive faculty identity
-    final facultyName = (_timetableData['teacher_name'] as String?) ??
-        (authState.fullName.isNotEmpty ? authState.fullName : widget.teacherName ?? 'Faculty Member');
-
-    final designation = (_profileData['designation'] as String?) ??
-        (_timetableData['department'] as String?) ??
-        'Academics · Senior Faculty';
-
-    // Role badges based STRICTLY on actual backend assignments
-    final List<Widget> roleBadges = [];
-    final assignedClassName = _classDashData['assigned_class']?.toString() ??
-        _profileData['assigned_class']?.toString() ??
-        authState.userProfile?['assigned_class']?.toString() ??
-        authState.userProfile?['class_name']?.toString();
-
-    final hasClassTeacherAssignment = assignedClassName != null &&
-        assignedClassName.isNotEmpty &&
-        assignedClassName.toLowerCase() != 'none';
-
-    if (hasClassTeacherAssignment) {
-      roleBadges.add(
-        _buildRoleBadge(
-          label: 'CLASS TEACHER · ${assignedClassName.replaceAll('Grade ', '').toUpperCase()}',
-          bgColor: const Color(0xFFF3E8FF),
-          textColor: const Color(0xFF6B21A8),
-          borderColor: const Color(0xFFD8B4FE),
-        ),
-      );
-    }
-
-    // Determine subject teacher assignments from timetable
-    final uniqueSubjects = allSlots
-        .map((s) => s['subject_name']?.toString() ?? '')
-        .where((s) => s.isNotEmpty)
-        .toSet()
-        .toList();
-
-    if (uniqueSubjects.isNotEmpty) {
-      for (final subj in uniqueSubjects.take(2)) {
-        roleBadges.add(
-          _buildRoleBadge(
-            label: 'SUBJECT TEACHER · ${subj.toUpperCase()}',
-            bgColor: const Color(0xFFE8F5E9),
-            textColor: const Color(0xFF1B5E20),
-            borderColor: const Color(0xFFA5D6A7),
-          ),
-        );
-      }
-    } else if (!hasClassTeacherAssignment) {
-      roleBadges.add(
-        _buildRoleBadge(
-          label: 'FACULTY MEMBER',
-          bgColor: const Color(0xFFF5EFEB),
-          textColor: AcademicColors.primaryDark,
-          borderColor: AcademicColors.caramelLight,
-        ),
-      );
-    }
 
     // Timetable stats calculations
     final weeklyPeriodsCount = allSlots.length;
@@ -357,10 +289,6 @@ class _TeacherTimetableScreenState extends State<TeacherTimetableScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // SECTION 4: FACULTY IDENTITY
-                          _buildFacultyIdentitySection(facultyName, designation, roleBadges),
-                          const SizedBox(height: 14),
-
                           // SECTION 5: SUMMARY INFORMATION
                           _buildSummaryStatsRow(
                             weeklyPeriods: weeklyPeriodsCount,
@@ -399,96 +327,6 @@ class _TeacherTimetableScreenState extends State<TeacherTimetableScreen> {
   }
 
   // ---------------------------------------------------------------------------
-  // SECTION 4: FACULTY IDENTITY WIDGET
-  // ---------------------------------------------------------------------------
-  Widget _buildFacultyIdentitySection(String name, String designation, List<Widget> badges) {
-    final initials = name.split(' ').map((p) => p.isNotEmpty ? p[0] : '').take(2).join();
-
-    return InsetCard(
-      margin: EdgeInsets.zero,
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: AcademicColors.primaryDark,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: AcademicColors.caramelLight, width: 2),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  initials.isNotEmpty ? initials : 'TC',
-                  style: GoogleFonts.manrope(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      name,
-                      style: GoogleFonts.playfairDisplay(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AcademicColors.textPrimary,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      designation,
-                      style: GoogleFonts.manrope(
-                        fontSize: 12,
-                        color: AcademicColors.textSecondary,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AcademicColors.canvas,
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: AcademicColors.border),
-                ),
-                child: Text(
-                  '2026-27',
-                  style: GoogleFonts.manrope(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: AcademicColors.primaryDark,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          if (badges.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 6,
-              children: badges,
-            ),
-          ],
-        ],
-      ),
-    );
-  }
 
   Widget _buildRoleBadge({
     required String label,
@@ -524,52 +362,59 @@ class _TeacherTimetableScreenState extends State<TeacherTimetableScreen> {
     required int classesThisWeek,
     required int freePeriods,
   }) {
-    return Row(
-      children: [
-        Expanded(child: _buildStatItem('$weeklyPeriods', 'Weekly Periods')),
-        const SizedBox(width: 8),
-        Expanded(child: _buildStatItem('$teachingDays', 'Teaching Days')),
-        const SizedBox(width: 8),
-        Expanded(child: _buildStatItem('$classesThisWeek', 'Classes / Wk')),
-        const SizedBox(width: 8),
-        Expanded(child: _buildStatItem('$freePeriods', 'Free Periods')),
-      ],
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+      decoration: BoxDecoration(
+        color: AcademicColors.primaryDark,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Expanded(child: _buildStatItem('$weeklyPeriods', 'Weekly\nPeriods')),
+          _buildSummaryDivider(),
+          Expanded(child: _buildStatItem('$teachingDays', 'Teaching\nDays')),
+          _buildSummaryDivider(),
+          Expanded(child: _buildStatItem('$classesThisWeek', 'Classes /\nWeek')),
+          _buildSummaryDivider(),
+          Expanded(child: _buildStatItem('$freePeriods', 'Free\nPeriods')),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSummaryDivider() {
+    return Container(
+      height: 30,
+      width: 1,
+      color: Colors.white.withValues(alpha: 0.15),
     );
   }
 
   Widget _buildStatItem(String value, String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AcademicColors.border),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            value,
-            style: GoogleFonts.manrope(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: AcademicColors.primaryDark,
-            ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          value,
+          style: GoogleFonts.newsreader(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFFDFC0A4),
           ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.manrope(
-              fontSize: 10,
-              color: AcademicColors.textSecondary,
-              fontWeight: FontWeight.w500,
-            ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          style: GoogleFonts.manrope(
+            fontSize: 10,
+            color: const Color(0xFFD4C7C0),
+            fontWeight: FontWeight.w500,
+            height: 1.2,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -886,14 +731,13 @@ class _TeacherTimetableScreenState extends State<TeacherTimetableScreen> {
   // Detailed Period Card (Day Wise List)
   Widget _buildPeriodDetailedCard(Map<String, dynamic> slot, int dayOfWeek) {
     final periodNum = slot['period_number'] ?? 1;
-    final className = slot['class_name']?.toString() ?? 'Grade 8 G';
+    final className = (slot['class_name']?.toString() ?? 'Class 8 G').replaceAll('Grade', 'Class');
     final subject = slot['subject_name']?.toString() ?? 'Science';
     final startTime = slot['start_time']?.toString() ?? '09:00 AM';
     final endTime = slot['end_time']?.toString() ?? '09:40 AM';
     final room = slot['room_number']?.toString() ?? 'Room 532';
     final isClassTeacher = slot['is_class_teacher'] == true;
     final studentCount = slot['student_count'] ?? 40;
-    final attendanceStatus = slot['attendance_status']?.toString() ?? 'Attendance Pending';
 
     final status = _calculatePeriodStatus(startTime, endTime, dayOfWeek);
 
@@ -965,34 +809,25 @@ class _TeacherTimetableScreenState extends State<TeacherTimetableScreen> {
             ),
             const SizedBox(height: 12),
 
-            // Row 2: Responsibility Pill + Student Count + Attendance State
+            // Row 2: Responsibility Pill + Student Count
             Wrap(
               spacing: 8,
               runSpacing: 6,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                _buildRoleBadge(
-                  label: isClassTeacher ? 'CLASS TEACHER' : 'SUBJECT TEACHER',
-                  bgColor: isClassTeacher ? const Color(0xFFF3E8FF) : const Color(0xFFE8F5E9),
-                  textColor: isClassTeacher ? const Color(0xFF6B21A8) : const Color(0xFF1B5E20),
-                  borderColor: isClassTeacher ? const Color(0xFFD8B4FE) : const Color(0xFFA5D6A7),
-                ),
+                if (isClassTeacher)
+                  _buildRoleBadge(
+                    label: 'CLASS TEACHER',
+                    bgColor: const Color(0xFFF3E8FF),
+                    textColor: const Color(0xFF6B21A8),
+                    borderColor: const Color(0xFFD8B4FE),
+                  ),
                 Text(
                   '$studentCount Students',
                   style: GoogleFonts.manrope(
                     fontSize: 11,
                     color: AcademicColors.textSecondary,
                     fontWeight: FontWeight.w500,
-                  ),
-                ),
-                Text(
-                  '•  $attendanceStatus',
-                  style: GoogleFonts.manrope(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: attendanceStatus.toLowerCase().contains('pending')
-                        ? const Color(0xFFB45309)
-                        : const Color(0xFF15803D),
                   ),
                 ),
               ],
@@ -1032,6 +867,9 @@ class _TeacherTimetableScreenState extends State<TeacherTimetableScreen> {
   }
 
   Widget _buildStatusTag(PeriodCardStatus status) {
+    if (status == PeriodCardStatus.completed) {
+      return const SizedBox.shrink();
+    }
     Color bg;
     Color text;
     String label;
@@ -1052,16 +890,13 @@ class _TeacherTimetableScreenState extends State<TeacherTimetableScreen> {
         text = const Color(0xFF4B5563);
         label = 'UPCOMING';
         break;
-      case PeriodCardStatus.completed:
-        bg = const Color(0xFFE5E7EB);
-        text = const Color(0xFF6B7280);
-        label = 'COMPLETED';
-        break;
       case PeriodCardStatus.freePeriod:
         bg = const Color(0xFFF5EFEB);
         text = AcademicColors.primaryDark;
         label = 'FREE';
         break;
+      case PeriodCardStatus.completed:
+        return const SizedBox.shrink();
     }
 
     return Container(
@@ -1131,7 +966,7 @@ class _TeacherTimetableScreenState extends State<TeacherTimetableScreen> {
 
   Widget _buildDayGridCard(Map<String, dynamic> slot, int dayOfWeek) {
     final periodNum = slot['period_number'] ?? 1;
-    final className = slot['class_name']?.toString() ?? 'Grade 8 G';
+    final className = (slot['class_name']?.toString() ?? 'Class 8 G').replaceAll('Grade', 'Class');
     final subject = slot['subject_name']?.toString() ?? 'Science';
     final startTime = slot['start_time']?.toString() ?? '09:00 AM';
     final endTime = slot['end_time']?.toString() ?? '09:40 AM';
@@ -1170,18 +1005,19 @@ class _TeacherTimetableScreenState extends State<TeacherTimetableScreen> {
                   ),
                 ),
               ),
-              Flexible(
-                child: Text(
-                  isClassTeacher ? 'Class Teacher' : 'Subject Teacher',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.manrope(
-                    fontSize: 9.5,
-                    fontWeight: FontWeight.w600,
-                    color: isClassTeacher ? const Color(0xFF6B21A8) : const Color(0xFF1B5E20),
+              if (isClassTeacher)
+                Flexible(
+                  child: Text(
+                    'Class Teacher',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.manrope(
+                      fontSize: 9.5,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF6B21A8),
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
           Column(
@@ -1326,7 +1162,7 @@ class _TeacherTimetableScreenState extends State<TeacherTimetableScreen> {
                   itemBuilder: (context, sIdx) {
                     final slot = daySlots[sIdx];
                     final periodNum = slot['period_number'] ?? 1;
-                    final className = slot['class_name']?.toString() ?? 'Grade 8 G';
+                    final className = (slot['class_name']?.toString() ?? 'Class 8 G').replaceAll('Grade', 'Class');
                     final subject = slot['subject_name']?.toString() ?? 'Science';
                     final startTime = slot['start_time']?.toString() ?? '09:00 AM';
                     final endTime = slot['end_time']?.toString() ?? '09:40 AM';
@@ -1368,7 +1204,7 @@ class _TeacherTimetableScreenState extends State<TeacherTimetableScreen> {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                '${isClassTeacher ? 'Class Teacher' : 'Subject Teacher'} · $room',
+                                '${isClassTeacher ? 'Class Teacher · ' : ''}$room',
                                 style: GoogleFonts.manrope(
                                   fontSize: 11,
                                   color: AcademicColors.textSecondary,

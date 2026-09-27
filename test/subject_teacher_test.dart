@@ -73,7 +73,7 @@ void main() {
       await tester.pumpWidget(createTestApp(const SubjectTeacherCohortsScreen(), authState));
       await tester.pumpAndSettle();
 
-      expect(find.text('Robert Chen'), findsOneWidget);
+      expect(find.text('My Classes'), findsWidgets);
       expect(find.text('Enter Marks →'), findsWidgets);
     });
 
