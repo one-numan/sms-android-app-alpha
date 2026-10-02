@@ -538,7 +538,8 @@ class _ModuleGridSheetState extends State<ModuleGridSheet> {
       // Super Admin
       case UserRole.superAdmin:
         return const [
-          ModuleDescriptor(label: 'Super Admin Console', subtitle: 'System telemetry & database', icon: Icons.terminal_outlined, route: '/admin/modules', categoryKey: 'admin', categoryLabel: 'ADMINISTRATION'),
+          ModuleDescriptor(label: 'Super Admin Console', subtitle: 'All institutional ERP modules', icon: Icons.terminal_outlined, route: '/admin/modules', categoryKey: 'admin', categoryLabel: 'ADMINISTRATION'),
+          ModuleDescriptor(label: 'System Telemetry', subtitle: 'Error rates & system health', icon: Icons.monitor_heart_outlined, route: '/admin/telemetry', categoryKey: 'admin', categoryLabel: 'ADMINISTRATION'),
           ModuleDescriptor(label: 'Cross-Entity Search', subtitle: 'Global ERP query tool', icon: Icons.search, route: '/search/cross-entity', categoryKey: 'admin', categoryLabel: 'ADMINISTRATION'),
           ModuleDescriptor(label: 'School Setup', subtitle: 'Academic session & config', icon: Icons.settings_outlined, route: '/admin/setup', categoryKey: 'admin', categoryLabel: 'ADMINISTRATION'),
           ModuleDescriptor(label: 'Parents Directory', subtitle: 'Parent registry & students', icon: Icons.people_outlined, route: '/admin/parents', categoryKey: 'admin', categoryLabel: 'ADMINISTRATION'),

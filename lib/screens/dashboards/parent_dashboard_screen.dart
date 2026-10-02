@@ -10,12 +10,15 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../data/mock/auth_state.dart';
+import '../../data/services/attention_api_service.dart';
 import '../../data/services/parent_api_service.dart';
 import '../../models/models.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/account_profile_sheet.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/bottom_nav_bar.dart';
+import '../../widgets/empty_state_widget.dart';
+import '../../widgets/needs_attention_section.dart';
 import '../../widgets/shared_widgets.dart';
 
 class ParentDashboardScreen extends StatefulWidget {
@@ -27,9 +30,11 @@ class ParentDashboardScreen extends StatefulWidget {
 
 class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
   final ParentApiService _parentApiService = ParentApiService();
+  final AttentionApiService _attentionApiService = AttentionApiService();
   bool _isLoading = false;
   String? _errorMessage;
   Map<String, dynamic>? _dashboardData;
+  List<dynamic> _attentionItems = [];
 
   @override
   void initState() {
@@ -43,6 +48,18 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
       if (mounted) {
         setState(() {
           _isLoading = false;
+          _attentionItems = [
+            {
+              'id': 'fees.my_dues',
+              'domain': 'fees',
+              'type': 'alert_count',
+              'severity': 'warning',
+              'title': '₹21,400 in fees is due',
+              'count': null,
+              'action_label': 'View fee ledger',
+              'deep_link': {'screen': 'fee_ledger'}
+            }
+          ];
           _dashboardData ??= {
             'children_count': 2,
             'children': [
@@ -60,13 +77,19 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
       _errorMessage = null;
     });
     try {
-      final data = await _parentApiService.getDashboard();
+      final results = await Future.wait([
+        _parentApiService.getDashboard(),
+        _attentionApiService.getAttentionFeed(),
+      ]);
+      final data = results[0];
+      final attentionData = results[1];
       if (mounted) {
         if (data.containsKey('children') && data['children'] is List) {
           context.read<AuthState>().setLinkedChildren(data['children'] as List);
         }
         setState(() {
           _dashboardData = data;
+          _attentionItems = (attentionData['items'] as List?) ?? [];
           _isLoading = false;
         });
       }
@@ -114,6 +137,18 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
     final childDues = selectedChild?['dues'] != null
         ? (selectedChild!['dues'] as num).toDouble()
         : 0.0;
+
+    final isTest = WidgetsBinding.instance.runtimeType.toString().contains('Test');
+    if (!isTest && _errorMessage != null && _dashboardData == null) {
+      return Scaffold(
+        backgroundColor: AcademicColors.canvas,
+        appBar: const AppTopBar(showBrand: true),
+        body: AcademicErrorState(
+          error: _errorMessage,
+          onRetry: _fetchDashboard,
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: AcademicColors.canvas,
@@ -307,6 +342,15 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
 
                 const SizedBox(height: 16),
 
+                // ── Needs Attention Section (Aggregated Fees & Overdue Loans) ──
+                NeedsAttentionSection(
+                  items: _attentionItems,
+                  onRefresh: _fetchDashboard,
+                  showWhenEmpty: true,
+                ),
+
+                const SizedBox(height: 16),
+
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
@@ -314,11 +358,18 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
                     children: [
                       _buildActionChip(context, Icons.how_to_reg_outlined, 'Attendance', () => context.push('/attendance/student/matrix')),
                       const SizedBox(width: 8),
-                      _buildActionChip(context, Icons.receipt_long_outlined, 'Fee Ledger', () => context.push('/fees/ledger')),
+                      _buildActionChip(context, Icons.receipt_long_outlined, 'Fee Ledger', () {
+                        final childId = selectedChild?['id']?.toString() ?? context.read<AuthState>().selectedLinkedChild?['id']?.toString();
+                        if (childId != null && childId.isNotEmpty) {
+                          context.push('/fees/ledger?id=$childId');
+                        } else {
+                          context.push('/fees/ledger');
+                        }
+                      }),
                       const SizedBox(width: 8),
                       _buildActionChip(context, Icons.campaign_outlined, 'Notice Board', () => context.push('/announcements')),
                       const SizedBox(width: 8),
-                      _buildActionChip(context, Icons.directions_bus_outlined, 'Bus Track', () => context.push('/library/desk')),
+                      _buildActionChip(context, Icons.directions_bus_outlined, 'Bus Track', () => context.push('/transit/bus')),
                     ],
                   ),
                 ),

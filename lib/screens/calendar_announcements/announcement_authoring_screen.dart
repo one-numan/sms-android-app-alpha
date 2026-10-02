@@ -12,7 +12,6 @@ import '../../models/models.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/bottom_nav_bar.dart';
-import '../../widgets/shared_widgets.dart';
 
 class AnnouncementAuthoringScreen extends StatefulWidget {
   const AnnouncementAuthoringScreen({super.key});
@@ -78,12 +77,8 @@ class _AnnouncementAuthoringScreenState extends State<AnnouncementAuthoringScree
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AcademicColors.canvas,
-      appBar: AppTopBar(
+      appBar: const AppTopBar(
         title: 'Compose Circular',
-        actions: [
-          Center(child: PillBadge.warning('Draft #CIR-108')),
-          const SizedBox(width: 8),
-        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(

@@ -66,44 +66,10 @@ class _DailyRollCallScreenState extends State<DailyRollCallScreen> {
   bool _isSubmitted = false;
   bool _hasUnsavedChanges = false;
   bool _isSubmitting = false;
+  bool _isLoadingRoster = false;
+  bool _hasRosterError = false;
   bool _justMarkedAllPresent = false;
   Timer? _allPresentFeedbackTimer;
-
-  // Deterministic parent name mappings for 5-A roster
-  static const Map<String, String> _fatherNames = {
-    'Aarav Agarwal': 'Rajesh Agarwal',
-    'Ananya Dixit': 'Sanjay Dixit',
-    'Aarav Sharma': 'Vivek Sharma',
-    'Aditya Roy': 'Subhash Roy',
-    'Anika Bose': 'Soumitra Bose',
-    'Aryan Chopra': 'Rakesh Chopra',
-    'Bhavya Patel': 'Manoj Patel',
-    'Chirag Joshi': 'Prakash Joshi',
-    'Devansh Nanda': 'Alok Nanda',
-    'Divya Kapoor': 'Vikram Kapoor',
-    'Diya Sharma': 'Rajesh Sharma',
-    'Eshaan Varma': 'Arun Varma',
-    'Gauri Nair': 'Suresh Nair',
-    'Harsh Vardhan': 'Anand Vardhan',
-    'Kabir Mehta': 'Sameer Mehta',
-    'Zoya Akhtar': 'Javed Akhtar',
-    'Karan Johar': 'Yash Johar',
-    'Kavya Menon': 'Radhakrishnan Menon',
-    'Lakshya Sen': 'D.K. Sen',
-    'Manan Gupta': 'Sunil Gupta',
-    'Rohan Verma': 'Ashok Verma',
-    'Meera Iyer': 'Ramaswamy Iyer',
-    'Nikhil Sethi': 'Deepak Sethi',
-    'Prisha Das': 'Anirban Das',
-    'Rahul Khanna': 'Vinod Khanna',
-    'Rhea Pillai': 'Raymond Pillai',
-    'Rishi Kapoor': 'Raj Kapoor',
-    'Saanvi Reddy': 'Venkat Reddy',
-    'Samar Pratap': 'Mahendra Pratap',
-    'Tanvi Malik': 'Satish Malik',
-    'Utkarsh Sinha': 'Akhilesh Sinha',
-    'Vedika Rao': 'Krishna Rao',
-  };
 
   @override
   void initState() {
@@ -123,6 +89,7 @@ class _DailyRollCallScreenState extends State<DailyRollCallScreen> {
       _roster = _generateFullClassRoster();
     } else {
       _roster = [];
+      _isLoadingRoster = true;
       _loadLiveClassRoster();
     }
 
@@ -151,6 +118,10 @@ class _DailyRollCallScreenState extends State<DailyRollCallScreen> {
   }
 
   Future<void> _loadLiveClassRoster() async {
+    setState(() {
+      _isLoadingRoster = true;
+      _hasRosterError = false;
+    });
     try {
       final auth = context.read<AuthState>();
       final className = widget.classOverride?.className ??
@@ -162,17 +133,62 @@ class _DailyRollCallScreenState extends State<DailyRollCallScreen> {
         className: className.isNotEmpty ? className : null,
         classId: classId,
       );
-      if (mounted && rawList.isNotEmpty) {
+
+      // Fetch saved attendance for today/selected date from the server
+      Map<String, dynamic>? savedAttendanceMap;
+      try {
+        final dateStr = '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}';
+        final attData = await AttendanceApiService().getClassAttendance(
+          classId: classId,
+          date: dateStr,
+        );
+        if (attData.containsKey('attendance') && attData['attendance'] is Map) {
+          savedAttendanceMap = Map<String, dynamic>.from(attData['attendance'] as Map);
+        }
+      } catch (e) {
+        debugPrint('Note: No prior saved attendance or offline: $e');
+      }
+
+      if (mounted) {
         setState(() {
-          _roster = rawList
-              .map((m) => Student.fromJson(m))
-              .toList();
-          for (final s in _roster) {
-            _attendanceMap.putIfAbsent(s.id, () => AttendanceStatus.present);
+          _isLoadingRoster = false;
+          _hasRosterError = false;
+          if (rawList.isNotEmpty) {
+            _roster = rawList
+                .map((m) => Student.fromJson(m))
+                .toList();
+            for (final s in _roster) {
+              if (savedAttendanceMap != null && savedAttendanceMap.isNotEmpty) {
+                final sDigits = s.id.replaceAll(RegExp(r'[^0-9]'), '');
+                final statusStr = savedAttendanceMap[s.id] ??
+                    (sDigits.isNotEmpty ? savedAttendanceMap[sDigits] : null);
+                if (statusStr != null) {
+                  final upper = statusStr.toString().toUpperCase();
+                  if (upper == 'ABSENT' || upper == 'A') {
+                    _attendanceMap[s.id] = AttendanceStatus.absent;
+                  } else if (upper == 'LATE' || upper == 'L') {
+                    _attendanceMap[s.id] = AttendanceStatus.late;
+                  } else if (upper == 'LEAVE' || upper == 'ON_LEAVE' || upper == 'E') {
+                    _attendanceMap[s.id] = AttendanceStatus.onLeave;
+                  } else {
+                    _attendanceMap[s.id] = AttendanceStatus.present;
+                  }
+                  continue;
+                }
+              }
+              _attendanceMap.putIfAbsent(s.id, () => AttendanceStatus.present);
+            }
           }
         });
       }
-    } catch (_) {}
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _isLoadingRoster = false;
+          _hasRosterError = true;
+        });
+      }
+    }
   }
 
   @override
@@ -182,11 +198,15 @@ class _DailyRollCallScreenState extends State<DailyRollCallScreen> {
     super.dispose();
   }
 
-  // Helper to get relationship and parent name (appears only once)
+  // Helper to get relationship and parent name (authoritative backend guardianName first).
+  // No fabricated names: if the backend hasn't provided a real guardian name, fall back to
+  // an honest, non-specific label rather than inventing a person who doesn't exist.
   (String relation, String parentName) _getParentInfo(Student student) {
-    final fullName = student.fullName;
-    final parent = _fatherNames[fullName] ?? 'Rajesh ${student.lastName}';
     final relation = student.gender.toLowerCase() == 'female' ? 'D/o' : 'S/o';
+    if (student.guardianName != null && student.guardianName!.trim().isNotEmpty) {
+      return (relation, student.guardianName!.trim());
+    }
+    final parent = student.lastName.isNotEmpty ? '${student.lastName} Family' : 'Guardian';
     return (relation, parent);
   }
 
@@ -785,22 +805,35 @@ class _DailyRollCallScreenState extends State<DailyRollCallScreen> {
                                         attendanceRecords: records,
                                       );
                                     }
+                                    if (mounted) {
+                                      setState(() {
+                                        _isSubmitting = false;
+                                        _isSubmitted = true;
+                                        _hasUnsavedChanges = false;
+                                      });
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('Attendance register successfully recorded.'),
+                                          backgroundColor: AcademicColors.success,
+                                          duration: Duration(seconds: 2),
+                                        ),
+                                      );
+                                    }
                                   } catch (e) {
                                     debugPrint('Roll call submit error: $e');
-                                  }
-                                  if (mounted) {
-                                    setState(() {
-                                      _isSubmitting = false;
-                                      _isSubmitted = true;
-                                      _hasUnsavedChanges = false;
-                                    });
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('Attendance register successfully recorded.'),
-                                        backgroundColor: AcademicColors.success,
-                                        duration: Duration(seconds: 2),
-                                      ),
-                                    );
+                                    if (mounted) {
+                                      setState(() {
+                                        _isSubmitting = false;
+                                      });
+                                      final errStr = e.toString().replaceAll('Exception: ', '').replaceAll('ApiException: ', '');
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Failed to submit attendance: $errStr. Please retry.'),
+                                          backgroundColor: AcademicColors.danger,
+                                          duration: const Duration(seconds: 3),
+                                        ),
+                                      );
+                                    }
                                   }
                                 },
                                 icon: const Icon(Icons.check, size: 15),
@@ -1147,11 +1180,15 @@ class _DailyRollCallScreenState extends State<DailyRollCallScreen> {
         // SEARCH BAR & FILTER CHIPS
         _buildSearchAndFilters(totalCount, presentCount, absentCount, lateCount, leaveCount, unmarkedCount),
 
-        // ROSTER LIST OR SEARCH EMPTY STATE
+        // ROSTER LIST, LOADING, OR ERROR STATE
         Expanded(
-          child: filteredRoster.isEmpty
-              ? _buildSearchEmptyState()
-              : ListView.builder(
+          child: _isLoadingRoster
+              ? const Center(child: CircularProgressIndicator())
+              : _hasRosterError
+                  ? _buildRosterErrorState()
+                  : filteredRoster.isEmpty
+                      ? _buildSearchEmptyState()
+                      : ListView.builder(
                   padding: const EdgeInsets.fromLTRB(14, 6, 14, 20),
                   itemCount: filteredRoster.length,
                   itemBuilder: (context, idx) {
@@ -1565,7 +1602,7 @@ class _DailyRollCallScreenState extends State<DailyRollCallScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: canSubmit
                     ? AcademicColors.primaryDark
-                    : (_isSubmitted ? AcademicColors.success : AcademicColors.border),
+                    : ((_isSubmitted || widget.isLockedOverride) ? AcademicColors.success : AcademicColors.border),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
@@ -1581,9 +1618,9 @@ class _DailyRollCallScreenState extends State<DailyRollCallScreen> {
                   : null,
               icon: _isSubmitting
                   ? const SizedBox(width: 15, height: 15, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : Icon(_isSubmitted ? Icons.check_circle : Icons.task_alt, size: 16),
+                  : Icon((_isSubmitted || widget.isLockedOverride) ? Icons.check_circle : Icons.task_alt, size: 16),
               label: Text(
-                _isSubmitted
+                (_isSubmitted || widget.isLockedOverride)
                     ? 'Attendance Officially Recorded'
                     : isComplete
                         ? 'Submit Attendance'
@@ -1600,6 +1637,40 @@ class _DailyRollCallScreenState extends State<DailyRollCallScreen> {
   // ===========================================================================
   // 7. EDGE CASE & EMPTY VIEWS
   // ===========================================================================
+  Widget _buildRosterErrorState() {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.cloud_off_outlined, size: 40, color: AcademicColors.danger),
+            const SizedBox(height: 12),
+            Text(
+              'Unable to load class roster.',
+              style: GoogleFonts.newsreader(fontSize: 16, fontWeight: FontWeight.bold, color: AcademicColors.textPrimary),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Please check your network connection and try again.',
+              style: GoogleFonts.manrope(fontSize: 11.5, color: AcademicColors.textSecondary),
+            ),
+            const SizedBox(height: 14),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AcademicColors.primaryDark,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: _loadLiveClassRoster,
+              icon: const Icon(Icons.refresh, size: 16),
+              label: const Text('Retry'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSearchEmptyState() {
     return Center(
       child: SingleChildScrollView(

@@ -20,6 +20,7 @@ import '../../data/services/faculty_api_service.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/account_profile_sheet.dart';
 import '../../widgets/bottom_nav_bar.dart';
+import '../../widgets/needs_attention_section.dart';
 import '../../widgets/shared_widgets.dart';
 
 enum AttendanceMarkingState {
@@ -35,6 +36,7 @@ class ClassTeacherDashboardScreen extends StatefulWidget {
   final AttendanceMarkingState? attendanceStateOverride;
   final List<Map<String, dynamic>>? attentionItemsOverride;
   final List<dynamic>? timetableScheduleOverride;
+  final Map<String, dynamic>? dashboardDataOverride;
   final bool simulateLoading;
   final bool simulateError;
   final bool simulateEmptySchedule;
@@ -47,6 +49,7 @@ class ClassTeacherDashboardScreen extends StatefulWidget {
     this.attendanceStateOverride,
     this.attentionItemsOverride,
     this.timetableScheduleOverride,
+    this.dashboardDataOverride,
     this.simulateLoading = false,
     this.simulateError = false,
     this.simulateEmptySchedule = false,
@@ -81,6 +84,9 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
     }
     if (widget.timetableScheduleOverride != null) {
       _timetableSchedule = widget.timetableScheduleOverride!;
+    }
+    if (widget.dashboardDataOverride != null) {
+      _dashboardData = widget.dashboardDataOverride;
     }
     _fetchLiveDashboard();
   }
@@ -149,7 +155,7 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
                   status: AnnouncementStatus.published,
                   isPinned: item['is_pinned'] == true,
                   audience: item['audience'] ?? 'All School',
-                  publishedAt: item['created_at'] ?? item['published_at'] ?? 'Today',
+                  publishedAt: Announcement.formatDate(item['created_at']?.toString() ?? item['published_at']?.toString()),
                   category: item['category'] ?? 'General',
                 );
               }
@@ -180,12 +186,16 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
         }
         setState(() {
           _isLoading = false;
+          _hasError = true;
         });
       }
     }
   }
 
   Future<void> _handleRefresh() async {
+    setState(() {
+      _hasError = false;
+    });
     await _fetchLiveDashboard();
   }
 
@@ -289,8 +299,8 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
                             _buildQuickActionsDesk(context),
                             const SizedBox(height: 16),
 
-                            // 5. NEEDS ATTENTION (Only when actionable items exist from backend)
-                            if (_attentionItems.isNotEmpty && !widget.simulateZeroPending) ...[
+                            // 5. NEEDS ATTENTION (Universal Feed with First-Class Empty State)
+                            if (!widget.simulateZeroPending) ...[
                               _buildNeedsAttentionSection(context, assignedClass),
                               const SizedBox(height: 16),
                             ],
@@ -474,8 +484,7 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
   static const Color _onpsGold = Color(0xFFD7B06D);
 
   Widget _buildPrimaryClassAndAttendanceCard(SchoolClass assignedClass) {
-    final isTest = WidgetsBinding.instance.runtimeType.toString().contains('Test');
-    final totalStudents = (_dashboardData?['total_students'] as num?)?.toInt() ?? (isTest ? 40 : 40);
+    final totalStudents = (_dashboardData?['total_students'] as num?)?.toInt() ?? 0;
     final boysCount = _dashboardData?['boys_count'] as num?;
     final girlsCount = _dashboardData?['girls_count'] as num?;
 
@@ -495,10 +504,8 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
     final bool isMarked = _attendanceState == AttendanceMarkingState.marked;
     final bool isPartial = _attendanceState == AttendanceMarkingState.partiallyRecorded;
     final bool isNotApplicable = _attendanceState == AttendanceMarkingState.notApplicable;
-    final int presentCount = (_dashboardData?['present_today'] as num?)?.toInt() ??
-        (isMarked ? totalStudents - 1 : (isPartial ? 24 : 0));
-    final int absentCount = (_dashboardData?['absent_today'] as num?)?.toInt() ??
-        (isMarked ? 1 : 0);
+    final int presentCount = (_dashboardData?['present_today'] as num?)?.toInt() ?? 0;
+    final int absentCount = (_dashboardData?['absent_today'] as num?)?.toInt() ?? 0;
     final double percentage = totalStudents > 0 && isMarked ? (presentCount / totalStudents) * 100 : 0.0;
 
     final String attendanceStatusTitle;
@@ -671,11 +678,16 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   elevation: 0,
                 ),
-                onPressed: () {
+                onPressed: () async {
                   if (isNotApplicable) {
-                    context.push('/faculty/timetable');
+                    await context.push('/faculty/timetable');
+                  } else if (_attendanceState == AttendanceMarkingState.marked) {
+                    await context.push('/attendance/roll-call?locked=true');
                   } else {
-                    context.push('/attendance/roll-call');
+                    await context.push('/attendance/roll-call');
+                  }
+                  if (mounted) {
+                    _fetchLiveDashboard();
                   }
                 },
                 child: Row(
@@ -796,16 +808,16 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
       );
     }
 
-    final slotPeriod = currentSlot?['period_number'] ?? currentSlot?['period'] ?? 4;
-    final slotSubject = currentSlot?['subject_name'] ?? currentSlot?['subject'] ?? 'Mathematics';
+    final slotPeriod = currentSlot?['period_number'] ?? currentSlot?['period'] ?? '—';
+    final slotSubject = currentSlot?['subject_name'] ?? currentSlot?['subject'] ?? 'Not specified';
     final slotClass = currentSlot?['class_name'] ?? currentSlot?['class'] ?? assignedClass.className;
-    final slotRoom = currentSlot?['room_number'] ?? currentSlot?['room'] ?? 'Room 204';
-    final slotStartTime = currentSlot?['start_time'] ?? '11:05 AM';
-    final slotEndTime = currentSlot?['end_time'] ?? '11:45 AM';
+    final slotRoom = currentSlot?['room_number'] ?? currentSlot?['room'] ?? 'Not assigned';
+    final slotStartTime = currentSlot?['start_time'] ?? '—';
+    final slotEndTime = currentSlot?['end_time'] ?? '—';
 
-    final nextPeriod = nextSlot?['period_number'] ?? nextSlot?['period'] ?? 5;
-    final nextSubject = nextSlot?['subject_name'] ?? nextSlot?['subject'] ?? 'Hindi';
-    final nextTime = nextSlot?['start_time'] ?? '12:30 PM';
+    final nextPeriod = nextSlot?['period_number'] ?? nextSlot?['period'] ?? '—';
+    final nextSubject = nextSlot?['subject_name'] ?? nextSlot?['subject'] ?? 'Not specified';
+    final nextTime = nextSlot?['start_time'] ?? '—';
 
     return InsetCard(
       margin: EdgeInsets.zero,
@@ -981,7 +993,14 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
             _buildActionTile(
               label: _attendanceState == AttendanceMarkingState.marked ? 'View\nAttendance' : 'Take\nAttendance',
               icon: Icons.how_to_reg,
-              onTap: () => context.push('/attendance/roll-call'),
+              onTap: () async {
+                await context.push(
+                  _attendanceState == AttendanceMarkingState.marked ? '/attendance/roll-call?locked=true' : '/attendance/roll-call',
+                );
+                if (mounted) {
+                  _fetchLiveDashboard();
+                }
+              },
             ),
             const SizedBox(width: 8),
             _buildActionTile(
@@ -999,7 +1018,12 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
             _buildActionTile(
               label: 'Marks &\nGrades',
               icon: Icons.edit_note,
-              onTap: () => context.push('/students/marks-entry'),
+              onTap: () async {
+                await context.push('/students/marks-entry');
+                if (mounted) {
+                  _fetchLiveDashboard();
+                }
+              },
             ),
             const SizedBox(width: 8),
             _buildActionTile(
@@ -1058,103 +1082,13 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
   // SECTION 5: NEEDS ATTENTION (Pending Work - Data-Driven & Privacy Safe)
   // ===========================================================================
   Widget _buildNeedsAttentionSection(BuildContext context, SchoolClass assignedClass) {
-    if (widget.simulateZeroPending || _attentionItems.isEmpty) {
+    if (widget.simulateZeroPending) {
       return const SizedBox.shrink();
     }
-
-    return InsetCard(
-      margin: EdgeInsets.zero,
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.pending_actions, size: 18, color: AcademicColors.warning),
-                  const SizedBox(width: 8),
-                  Text(
-                    'NEEDS ATTENTION',
-                    style: GoogleFonts.manrope(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      color: AcademicColors.textSecondary,
-                      letterSpacing: 0.8,
-                    ),
-                  ),
-                ],
-              ),
-              PillBadge.warning('${_attentionItems.length} Items'),
-            ],
-          ),
-          const SizedBox(height: 12),
-
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: _attentionItems.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 8),
-            itemBuilder: (context, index) {
-              final item = _attentionItems[index];
-              final title = item['title']?.toString() ?? 'Action Required';
-              final subtitle = item['subtitle']?.toString() ?? item['description']?.toString() ?? '';
-              final actionLabel = item['action_label']?.toString() ?? 'Review';
-              final actionRoute = item['action_route']?.toString() ?? '/attendance/roll-call';
-
-              return Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AcademicColors.canvas,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            title,
-                            style: GoogleFonts.manrope(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: AcademicColors.textPrimary,
-                            ),
-                          ),
-                          if (subtitle.isNotEmpty) ...[
-                            const SizedBox(height: 2),
-                            Text(
-                              subtitle,
-                              style: GoogleFonts.manrope(
-                                fontSize: 10.5,
-                                color: AcademicColors.textSecondary,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                    OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        minimumSize: const Size(0, 32),
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        side: const BorderSide(color: AcademicColors.border),
-                      ),
-                      onPressed: () => context.push(actionRoute),
-                      child: Text(
-                        actionLabel,
-                        style: GoogleFonts.manrope(fontSize: 11, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ],
-      ),
+    return NeedsAttentionSection(
+      items: _attentionItems,
+      onRefresh: _fetchLiveDashboard,
+      showWhenEmpty: true,
     );
   }
 
@@ -1278,7 +1212,7 @@ class _ClassTeacherDashboardScreenState extends State<ClassTeacherDashboardScree
                   children: [
                     PillBadge.danger('Pinned Advisory'),
                     Text(
-                      notice.publishedAt,
+                      notice.displayPublishedAt,
                       style: GoogleFonts.manrope(fontSize: 10, color: AcademicColors.textSecondary),
                     ),
                   ],

@@ -85,10 +85,9 @@ void main() {
     expect(find.text('₹16,92,800'), findsOneWidget);
     expect(find.text('₹1,47,200'), findsOneWidget);
 
-    // 7. Verify Upcoming Events
+    // 7. Verify Upcoming Events (empty state when no real holiday data is loaded)
     expect(find.text('Upcoming Events'), findsOneWidget);
-    expect(find.text('Term 2 Examination Commences'), findsOneWidget);
-    expect(find.text('Parent-Teacher Conference'), findsOneWidget);
+    expect(find.text('No upcoming holidays or events scheduled.'), findsOneWidget);
 
     // 8. Verify Quick Access Shortcuts
     expect(find.text('QUICK ACCESS'), findsOneWidget);

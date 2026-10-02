@@ -24,11 +24,11 @@ class TeacherApiService {
     return response is Map<String, dynamic> ? response : {};
   }
 
-  /// Fetch Class Teacher Attention items.
-  /// GET /teacher/dashboard/attention/
+  /// Fetch Teacher Attention items.
+  /// GET /api/v1/attention/
   Future<Map<String, dynamic>> getDashboardAttention() async {
     try {
-      final response = await _apiClient.get('/teacher/dashboard/attention/');
+      final response = await _apiClient.get('/attention/');
       if (response is Map<String, dynamic> && response.containsKey('data')) {
         return response['data'] is Map<String, dynamic> ? response['data'] : response;
       }

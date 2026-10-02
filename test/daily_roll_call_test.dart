@@ -105,14 +105,15 @@ void main() {
       expect(find.textContaining('Absent (1)'), findsOneWidget);
     });
 
-    testWidgets('TEST 5: Single father/parent name formatting on secondary line without duplication', (tester) async {
+    testWidgets('TEST 5: Single guardian name formatting on secondary line without duplication', (tester) async {
       await tester.pumpWidget(createRollCallTestWidget(const DailyRollCallScreen()));
       await tester.pumpAndSettle();
 
-      // Expect single father line format
-      expect(find.text('Roll No. 01 · S/o Rajesh Agarwal'), findsOneWidget);
-      expect(find.text('Roll No. 02 · D/o Sanjay Dixit'), findsOneWidget);
-      expect(find.text('Roll No. 03 · S/o Vivek Sharma'), findsOneWidget);
+      // No backend guardian_name is present on the generated test roster, so the UI must
+      // fall back to an honest, non-fabricated label — never a synthetic person's name.
+      expect(find.text('Roll No. 01 · S/o Agarwal Family'), findsOneWidget);
+      expect(find.text('Roll No. 02 · D/o Dixit Family'), findsOneWidget);
+      expect(find.text('Roll No. 03 · S/o Sharma Family'), findsOneWidget);
     });
 
     testWidgets('TEST 6: Tapping roll number opens clean student profile bottom sheet', (tester) async {
@@ -128,7 +129,7 @@ void main() {
       // Verify profile popup contents
       expect(find.text('Student Name'), findsOneWidget);
       expect(find.text("Father's Name"), findsOneWidget);
-      expect(find.text('Rajesh Agarwal'), findsOneWidget);
+      expect(find.text('Agarwal Family'), findsOneWidget);
       expect(find.text('Admission No.'), findsOneWidget);
       expect(find.text('ADM-2024-0890'), findsOneWidget);
       expect(find.text('Date of Birth'), findsOneWidget);
@@ -185,8 +186,11 @@ void main() {
       expect(find.text('Aarav Agarwal'), findsOneWidget);
       expect(find.text('Diya Sharma'), findsNothing);
 
-      // Search by Parent name "Sanjay"
-      await tester.enterText(find.byType(TextField), 'Sanjay');
+      // Search by the honest guardian fallback label ("<lastName> Family" — no fabricated
+      // guardian_name is supplied by this test fixture). "Dixit Family" is unique to Ananya
+      // Dixit's row and does not appear in any student's own full name, so a match here proves
+      // the search index also checks the parent/guardian field, not just the student name.
+      await tester.enterText(find.byType(TextField), 'Dixit Family');
       await tester.pumpAndSettle();
 
       expect(find.text('Ananya Dixit'), findsOneWidget);

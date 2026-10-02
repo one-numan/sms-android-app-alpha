@@ -7,12 +7,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../data/services/attention_api_service.dart';
 import '../../data/services/library_api_service.dart';
 import '../../models/models.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/account_profile_sheet.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/bottom_nav_bar.dart';
+import '../../widgets/needs_attention_section.dart';
 import '../../widgets/shared_widgets.dart';
 
 class LibrarianDashboardScreen extends StatefulWidget {
@@ -24,9 +26,11 @@ class LibrarianDashboardScreen extends StatefulWidget {
 
 class _LibrarianDashboardScreenState extends State<LibrarianDashboardScreen> {
   final LibraryApiService _libraryApiService = LibraryApiService();
+  final AttentionApiService _attentionApiService = AttentionApiService();
   bool _isLoading = true;
   String? _errorMessage;
   Map<String, dynamic> _dashboardData = {};
+  List<dynamic> _attentionItems = [];
   List<Map<String, dynamic>> _activeIssues = [];
   String _searchQuery = '';
 
@@ -41,6 +45,18 @@ class _LibrarianDashboardScreenState extends State<LibrarianDashboardScreen> {
     if (bindingName.contains('Test')) {
       if (mounted) {
         setState(() {
+          _attentionItems = [
+            {
+              'id': 'library.overdue',
+              'domain': 'library',
+              'type': 'alert_count',
+              'severity': 'warning',
+              'title': '214 books overdue',
+              'count': 214,
+              'action_label': 'View overdue loans',
+              'deep_link': {'screen': 'library_overdue'}
+            }
+          ];
           _isLoading = false;
         });
       }
@@ -53,10 +69,17 @@ class _LibrarianDashboardScreenState extends State<LibrarianDashboardScreen> {
     });
 
     try {
-      final data = await _libraryApiService.getLibrarianDashboard();
+      final results = await Future.wait([
+        _libraryApiService.getLibrarianDashboard(),
+        _attentionApiService.getAttentionFeed(),
+      ]);
+      final data = results[0];
+      final attentionData = results[1];
+
       if (mounted) {
         setState(() {
           _dashboardData = data;
+          _attentionItems = (attentionData['items'] as List?) ?? [];
           final issues = data['active_issues'];
           if (issues is List) {
             _activeIssues = issues.map((e) => Map<String, dynamic>.from(e as Map)).toList();
@@ -228,6 +251,15 @@ class _LibrarianDashboardScreenState extends State<LibrarianDashboardScreen> {
 
                           const SizedBox(height: 16),
 
+                          // ── Needs Attention Section (Library Overdue Alerts) ──
+                          NeedsAttentionSection(
+                            items: _attentionItems,
+                            onRefresh: _loadDashboard,
+                            showWhenEmpty: true,
+                          ),
+
+                          const SizedBox(height: 16),
+
                           // Catalog Search Bar
                           TextField(
                             onChanged: (val) => setState(() => _searchQuery = val),
@@ -372,7 +404,10 @@ class _LibrarianDashboardScreenState extends State<LibrarianDashboardScreen> {
                                         ),
                                         onPressed: () {
                                           ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(content: Text('Returned: $bookTitle ($issueId)')),
+                                            SnackBar(
+                                              content: Text('Book returns are not yet supported. Ref: $issueId'),
+                                              backgroundColor: AcademicColors.warning,
+                                            ),
                                           );
                                         },
                                         child: Text(

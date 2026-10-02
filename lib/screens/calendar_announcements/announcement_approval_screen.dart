@@ -125,12 +125,8 @@ class _AnnouncementApprovalScreenState extends State<AnnouncementApprovalScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AcademicColors.canvas,
-      appBar: AppTopBar(
+      appBar: const AppTopBar(
         title: 'Moderation Queue',
-        actions: [
-          Center(child: PillBadge.warning('${_pendingList.length} Awaiting Review')),
-          const SizedBox(width: 8),
-        ],
       ),
       body: SafeArea(
         child: Column(

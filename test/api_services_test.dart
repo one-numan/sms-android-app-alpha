@@ -30,6 +30,12 @@ void main() {
       expect(token, equals('test_access_token'));
     });
 
+    test('saves and retrieves refresh token', () async {
+      await TokenStorage.saveRefreshToken('test_refresh_token');
+      final refreshToken = await TokenStorage.getRefreshToken();
+      expect(refreshToken, equals('test_refresh_token'));
+    });
+
     test('clears session tokens', () async {
       await TokenStorage.saveToken('test_access_token');
       await TokenStorage.saveRefreshToken('test_refresh_token');
@@ -55,4 +61,21 @@ void main() {
       expect(ex.message, equals('Invalid email'));
     });
   });
+
+  group('AuthApiService Refresh Tests', () {
+    test('refreshToken throws UnauthorizedException if no refresh token exists', () async {
+      await TokenStorage.clearSession();
+      final service = AuthApiService();
+      expect(() => service.refreshToken(), throwsA(isA<UnauthorizedException>()));
+    });
+  });
+
+  group('AttendanceApiService Roll Call Tests', () {
+    test('getClassAttendance handles parameters and returns empty map on offline/error', () async {
+      final service = AttendanceApiService();
+      final result = await service.getClassAttendance(classId: 'CLS-1', date: '2026-09-29');
+      expect(result, isA<Map<String, dynamic>>());
+    });
+  });
 }
+

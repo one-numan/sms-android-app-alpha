@@ -1,4 +1,5 @@
 import '../../core/api/api_client.dart';
+import '../../core/api/api_exception.dart';
 import '../../core/api/token_storage.dart';
 
 /// Authentication API Service.
@@ -76,6 +77,30 @@ class AuthApiService {
       },
     );
     return response is Map<String, dynamic> ? response : {'data': response};
+  }
+
+  /// Refresh active JWT token using refresh token (`POST /api/v1/auth/token/refresh/`).
+  Future<Map<String, dynamic>> refreshToken({String? refreshToken}) async {
+    final token = refreshToken ?? await TokenStorage.getRefreshToken();
+    if (token == null || token.trim().isEmpty) {
+      throw const UnauthorizedException('No refresh token available');
+    }
+    final response = await _apiClient.post(
+      '/auth/token/refresh/',
+      body: {'refresh': token},
+    );
+    if (response is Map<String, dynamic>) {
+      final newAccess = response['access'] ?? response['token'] ?? response['access_token'];
+      if (newAccess != null && newAccess is String) {
+        await TokenStorage.saveToken(newAccess);
+      }
+      final newRefresh = response['refresh'] ?? response['refresh_token'];
+      if (newRefresh != null && newRefresh is String) {
+        await TokenStorage.saveRefreshToken(newRefresh);
+      }
+      return response;
+    }
+    return {'status': 'success', 'data': response};
   }
 
   /// Logout and revoke active session token.

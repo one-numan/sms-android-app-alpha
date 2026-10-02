@@ -44,6 +44,8 @@ class AuthState extends ChangeNotifier {
   List<Map<String, dynamic>> get linkedChildren => _linkedChildren;
   Student? get authenticatedStudent => _authenticatedStudent;
   Map<String, dynamic>? get userProfile => _userProfile;
+  String? _lastAuthError;
+  String? get lastAuthError => _lastAuthError;
 
   Map<String, dynamic>? get selectedLinkedChild {
     if (_linkedChildren.isEmpty) return null;
@@ -194,10 +196,14 @@ class AuthState extends ChangeNotifier {
   }
 
   Future<bool> login({required UserRole role, required String username, String? password}) async {
-    final uname = username.toLowerCase();
-    final effectiveRole = (uname.contains('principal') || role == UserRole.principal)
-        ? UserRole.principal
-        : role;
+    final uname = username.toLowerCase().trim();
+    final effectiveRole = (uname == 'admin' || uname.contains('superadmin') || role == UserRole.superAdmin)
+        ? UserRole.superAdmin
+        : (uname.contains('viceprincipal') || role == UserRole.vicePrincipal)
+            ? UserRole.vicePrincipal
+            : (uname.contains('principal') || role == UserRole.principal)
+                ? UserRole.principal
+                : role;
     _currentRole = effectiveRole;
     _currentUsername = username;
 
@@ -208,6 +214,7 @@ class AuthState extends ChangeNotifier {
       return false;
     }
 
+    _lastAuthError = null;
     try {
       final authService = AuthApiService();
       final pwd = (password != null && password.isNotEmpty) ? password : 'demo12345';
@@ -223,7 +230,30 @@ class AuthState extends ChangeNotifier {
         final bindingName = WidgetsBinding.instance.runtimeType.toString();
         if (!bindingName.contains('Test')) {
           try {
-            final profile = await AccountApiService().getProfile();
+            final isTeacherPersona = (effectiveRole == UserRole.classTeacher || effectiveRole == UserRole.subjectTeacher);
+            final isParentPersona = (effectiveRole == UserRole.parent);
+
+            final profileFuture = AccountApiService().getProfile().catchError((_) => <String, dynamic>{});
+            final teacherFuture = isTeacherPersona
+                ? TeacherApiService().resolveClassTeacherAssignment(
+                    email: '$username@school.example',
+                    username: username,
+                  ).catchError((_) => <String, dynamic>{})
+                : Future.value(<String, dynamic>{});
+            final parentFuture = isParentPersona
+                ? ParentApiService().getDashboard().catchError((_) => <String, dynamic>{})
+                : Future.value(<String, dynamic>{});
+
+            final postLoginResults = await Future.wait([
+              profileFuture,
+              teacherFuture,
+              parentFuture,
+            ]);
+
+            final profile = postLoginResults[0];
+            final teacherAssignment = postLoginResults[1];
+            final parentDashboard = postLoginResults[2];
+
             if (profile.isNotEmpty) {
               _userProfile = Map<String, dynamic>.from(profile);
               final pName = (_userProfile!['username'] ?? _currentUsername).toString().toLowerCase();
@@ -231,7 +261,12 @@ class AuthState extends ChangeNotifier {
               final pRole = (_userProfile!['role'] ?? '').toString().toLowerCase();
               final pDesig = (_userProfile!['designation'] ?? '').toString().toLowerCase();
 
-              if (pRole == 'principal' || pDesig == 'principal' || pName.contains('principal') || pEmail.contains('principal')) {
+              if (pRole == 'vice_principal' || pDesig.contains('vice') || pName.contains('viceprincipal') || pEmail.contains('viceprincipal')) {
+                _userProfile!['role'] = 'vice_principal';
+                _userProfile!['designation'] = 'Vice Principal';
+                _currentRole = UserRole.vicePrincipal;
+                await TokenStorage.saveActiveRole(UserRole.vicePrincipal.name);
+              } else if (pRole == 'principal' || pDesig == 'principal' || pName.contains('principal') || pEmail.contains('principal')) {
                 _userProfile!['role'] = 'principal';
                 _userProfile!['designation'] = 'Principal';
                 if (_userProfile!['full_name'] == null || (_userProfile!['full_name'] as String).trim().isEmpty) {
@@ -241,57 +276,68 @@ class AuthState extends ChangeNotifier {
                 await TokenStorage.saveActiveRole(UserRole.principal.name);
               } else {
                 if (pRole == 'teacher') {
-                  try {
-                    final assignment = await TeacherApiService().resolveClassTeacherAssignment(
-                      email: pEmail,
-                      username: pName,
-                    );
-                    if (assignment.isNotEmpty) {
-                      _userProfile!['assigned_class'] = assignment['assigned_class'];
-                      _userProfile!['class_name'] = assignment['class_name'];
-                      _userProfile!['class_id'] = assignment['class_id'];
-                      if (assignment['grade'] != null) _userProfile!['grade'] = assignment['grade'];
-                      if (assignment['section'] != null) _userProfile!['section'] = assignment['section'];
-                      _userProfile!['is_class_teacher'] = true;
-                      if (assignment.containsKey('total_students')) {
-                        _userProfile!['total_students'] = assignment['total_students'];
-                      }
+                  Map<String, dynamic> assignment = teacherAssignment;
+                  if (assignment.isEmpty && (pEmail.isNotEmpty || pName.isNotEmpty)) {
+                    try {
+                      assignment = await TeacherApiService().resolveClassTeacherAssignment(
+                        email: pEmail,
+                        username: pName,
+                      );
+                    } catch (_) {}
+                  }
+                  if (assignment.isNotEmpty) {
+                    _userProfile!['assigned_class'] = assignment['assigned_class'];
+                    _userProfile!['class_name'] = assignment['class_name'];
+                    _userProfile!['class_id'] = assignment['class_id'];
+                    if (assignment['grade'] != null) _userProfile!['grade'] = assignment['grade'];
+                    if (assignment['section'] != null) _userProfile!['section'] = assignment['section'];
+                    _userProfile!['is_class_teacher'] = true;
+                    if (assignment.containsKey('total_students')) {
+                      _userProfile!['total_students'] = assignment['total_students'];
                     }
-                  } catch (_) {}
+                  }
                 }
 
                 final backendRole = resolveRoleFromProfile(_userProfile);
                 if (backendRole != null) {
-                  final isTeacherPersona = (effectiveRole == UserRole.classTeacher || effectiveRole == UserRole.subjectTeacher);
-                  final isBackendTeacher = (backendRole == UserRole.classTeacher || backendRole == UserRole.subjectTeacher);
-
-                  if (isTeacherPersona && isBackendTeacher) {
-                    _currentRole = backendRole;
-                    await TokenStorage.saveActiveRole(backendRole.name);
-                  } else {
-                    _currentRole = backendRole;
-                    await TokenStorage.saveActiveRole(backendRole.name);
-                  }
+                  _currentRole = backendRole;
+                  await TokenStorage.saveActiveRole(backendRole.name);
                 }
               }
             }
-          } catch (_) {}
-          if (_currentRole == UserRole.parent) {
-            try {
-              final parentData = await ParentApiService().getDashboard();
-              final children = parentData['children'] as List?;
+
+            if (_currentRole == UserRole.parent) {
+              final children = parentDashboard['children'] as List?;
               if (children != null && children.isNotEmpty) {
                 _linkedChildren = children.map((c) => Map<String, dynamic>.from(c as Map)).toList();
                 _selectedChildIndex = 0;
               }
-            } catch (_) {}
-          }
+            }
+          } catch (_) {}
         }
         notifyListeners();
         return true;
       }
     } catch (e) {
       debugPrint('Backend auth connection note: $e');
+      final errStr = e.toString().toLowerCase();
+      if (errStr.contains('timeout') ||
+          errStr.contains('socket') ||
+          errStr.contains('network') ||
+          errStr.contains('connection refused') ||
+          errStr.contains('failed host lookup') ||
+          errStr.contains('clientexception')) {
+        _lastAuthError = "Couldn't reach the server — check your connection and try again.";
+      } else if (errStr.contains('unauthorized') ||
+          errStr.contains('401') ||
+          errStr.contains('credentials') ||
+          errStr.contains('invalid login') ||
+          errStr.contains('400')) {
+        _lastAuthError = 'Wrong password or invalid credentials. Please try again.';
+      } else {
+        _lastAuthError = 'Authentication failed. Please check your connection and try again.';
+      }
+
       final bindingName = WidgetsBinding.instance.runtimeType.toString();
       if (bindingName.contains('Test')) {
         _isAuthenticated = true;
@@ -339,17 +385,21 @@ class AuthState extends ChangeNotifier {
     final username = (userMap?['username'] ?? profile['username'] ?? '').toString().trim().toLowerCase();
     final email = (userMap?['email'] ?? profile['email'] ?? '').toString().trim().toLowerCase();
 
-    if (roleStr == 'superadmin' || roleStr == 'super_admin') {
+    if (roleStr == 'admin' || roleStr == 'superadmin' || roleStr == 'super_admin' || username == 'admin') {
       return UserRole.superAdmin;
+    }
+    if (roleStr == 'vice_principal' ||
+        desigStr == 'vice principal' ||
+        desigStr.contains('vice') ||
+        username.contains('viceprincipal') ||
+        email.contains('viceprincipal')) {
+      return UserRole.vicePrincipal;
     }
     if (roleStr == 'principal' ||
         desigStr == 'principal' ||
         username.contains('principal') ||
         email.contains('principal')) {
       return UserRole.principal;
-    }
-    if (roleStr == 'vice_principal' || desigStr == 'vice principal') {
-      return UserRole.vicePrincipal;
     }
     if (roleStr == 'accountant' || desigStr == 'accountant') {
       return UserRole.accountant;

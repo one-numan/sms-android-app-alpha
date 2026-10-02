@@ -152,7 +152,7 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
                   status: AnnouncementStatus.published,
                   isPinned: item['is_pinned'] == true,
                   audience: item['audience'] ?? 'All School',
-                  publishedAt: item['created_at'] ?? item['published_at'] ?? 'Today',
+                  publishedAt: Announcement.formatDate(item['created_at']?.toString() ?? item['published_at']?.toString()),
                   category: item['category'] ?? 'General',
                 );
               }
@@ -322,7 +322,7 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
                                   const Icon(Icons.calendar_today_outlined, size: 15, color: AcademicColors.textSecondary),
                                   const SizedBox(width: 6),
                                   Text(
-                                    'Published: ${notice.publishedAt}',
+                                    'Published: ${notice.displayPublishedAt}',
                                     style: GoogleFonts.manrope(fontSize: 12, color: AcademicColors.textPrimary, fontWeight: FontWeight.w500),
                                   ),
                                 ],
@@ -656,7 +656,7 @@ class _NoticeBoardScreenState extends State<NoticeBoardScreen> {
                         ],
                       ),
                       Text(
-                        notice.publishedAt,
+                        notice.displayPublishedAt,
                         style: GoogleFonts.manrope(
                           fontSize: 11.5,
                           color: AcademicColors.textSecondary,

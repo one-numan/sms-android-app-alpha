@@ -27,7 +27,7 @@ void main() {
     expect(find.text('Attendance'), findsWidgets);
     expect(find.text('90.0%'), findsWidgets);
     expect(find.text('Term Result'), findsOneWidget);
-    expect(find.text('Grade A1'), findsOneWidget);
+    expect(find.text('A1'), findsOneWidget);
     expect(find.text('Outstanding'), findsOneWidget);
     expect(find.text('₹0'), findsOneWidget);
     expect(find.text('Books on Loan'), findsOneWidget);

@@ -87,20 +87,29 @@ class _DigitalStudentIdCardScreenState extends State<DigitalStudentIdCardScreen>
     final rawStudentId = _idCardData['student_id']?.toString();
     final studentId = _idCardData['admission_number'] as String? ??
         _idCardData['adm_no'] as String? ??
+        _idCardData['barcode'] as String? ??
+        _idCardData['barcode_data'] as String? ??
         (rawStudentId != null
-            ? (rawStudentId.startsWith('ADM-') ? rawStudentId : 'ADM-2024-$rawStudentId')
+            ? (RegExp(r'[A-Za-z]').hasMatch(rawStudentId) ? rawStudentId : 'STU-$rawStudentId')
             : (widget.studentId ?? 'N/A'));
     final classSection = _idCardData['class_section'] as String? ?? 'Enrolled';
     final rollNumber = _idCardData['roll_no']?.toString() ?? _idCardData['roll_number']?.toString() ?? 'N/A';
     final dob = _idCardData['date_of_birth'] as String? ?? 'N/A';
     final bloodGroup = _idCardData['blood_group'] as String? ?? 'N/A';
-    final house = _idCardData['house'] as String? ?? 'Primary Wing';
-    final validThrough = _idCardData['valid_through'] as String? ?? _idCardData['valid_until'] as String? ?? (_idCardData['academic_session'] != null ? 'Session ${_idCardData['academic_session']}' : 'AY 2026-27');
-    final qrCode = _idCardData['qr_data'] as String? ?? _idCardData['qr_verification_code'] as String? ?? _idCardData['qr_code'] as String? ?? 'ONPS-VERIFY';
+    final house = _idCardData['house'] as String? ?? 'Not assigned';
+    final validThrough = _idCardData['valid_through'] as String? ?? _idCardData['validity'] as String? ?? _idCardData['valid_until'] as String? ?? (_idCardData['session'] != null ? 'Session ${_idCardData['session']}' : (_idCardData['academic_session'] != null ? 'Session ${_idCardData['academic_session']}' : 'N/A'));
+    final qrCode = _idCardData['qr_code_payload'] as String? ??
+        _idCardData['qr_token'] as String? ??
+        _idCardData['qr_data'] as String? ??
+        _idCardData['qr_verification_code'] as String? ??
+        _idCardData['qr_code'] as String? ??
+        _idCardData['barcode'] as String? ??
+        _idCardData['barcode_data'] as String? ??
+        'ONPS-VERIFY';
     final emergencyLabel = _idCardData['emergency_contact_label'] as String? ??
         (_idCardData['emergency_contact_relation'] != null
             ? 'EMERGENCY CONTACT (${(_idCardData['emergency_contact_relation'] as String).toUpperCase()})'
-            : 'EMERGENCY CONTACT (FATHER)');
+            : 'EMERGENCY CONTACT');
     final emergencyName = _idCardData['emergency_contact_name'] as String? ?? 'Not Provided';
     final emergencyPhone = _idCardData['emergency_contact_phone'] as String? ??
         _idCardData['emergency_contact'] as String? ?? 'N/A';

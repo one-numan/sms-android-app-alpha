@@ -17,6 +17,7 @@ import '../../models/models.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/bottom_nav_bar.dart';
+import '../../widgets/empty_state_widget.dart';
 import '../../widgets/shared_widgets.dart';
 
 class AcademicReportCardScreen extends StatefulWidget {
@@ -35,6 +36,8 @@ class _AcademicReportCardScreenState extends State<AcademicReportCardScreen> {
   final List<String> _weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   Map<String, dynamic>? _apiReportCard;
   List<StudentMarks> _apiMarks = [];
+  bool _isLoading = false;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -50,6 +53,10 @@ class _AcademicReportCardScreenState extends State<AcademicReportCardScreen> {
   String get session => _apiReportCard?['session'] as String? ?? '2026-27';
 
   Future<void> _loadReportCard() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
     try {
       final auth = context.read<AuthState>();
       String? targetId = widget.studentId.isNotEmpty ? widget.studentId : null;
@@ -86,15 +93,46 @@ class _AcademicReportCardScreenState extends State<AcademicReportCardScreen> {
         setState(() {
           _apiReportCard = res;
           _apiMarks = parsedMarks;
+          _isLoading = false;
+        });
+      } else if (mounted) {
+        setState(() {
+          _isLoading = false;
         });
       }
-    } catch (_) {}
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = e.toString();
+        });
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthState>();
     final isTest = WidgetsBinding.instance.runtimeType.toString().contains('Test');
+
+    if (!isTest && _isLoading && _apiReportCard == null) {
+      return const Scaffold(
+        backgroundColor: AcademicColors.canvas,
+        appBar: AppTopBar(title: 'Academics'),
+        body: Center(child: CircularProgressIndicator(color: AcademicColors.primaryDark)),
+      );
+    }
+
+    if (!isTest && _errorMessage != null && _apiReportCard == null) {
+      return Scaffold(
+        backgroundColor: AcademicColors.canvas,
+        appBar: const AppTopBar(title: 'Academics'),
+        body: AcademicErrorState(
+          error: _errorMessage,
+          onRetry: _loadReportCard,
+        ),
+      );
+    }
 
     final Student student;
     if (auth.currentRole == UserRole.parent) {
@@ -335,7 +373,7 @@ class _AcademicReportCardScreenState extends State<AcademicReportCardScreen> {
               const SizedBox(height: 18),
 
               // 4. Timetable (Compact Preview with day selector)
-              _buildTimetableSection(daySlots),
+              _buildTimetableSection(daySlots, student.className),
 
               const SizedBox(height: 18),
 
@@ -363,7 +401,7 @@ class _AcademicReportCardScreenState extends State<AcademicReportCardScreen> {
               const SizedBox(height: 18),
 
               // 8. Assignments / Homework (Clean Empty State)
-              _buildAssignmentsSection(),
+              _buildAssignmentsSection(student.className),
 
               const SizedBox(height: 24),
             ],
@@ -934,7 +972,10 @@ class _AcademicReportCardScreenState extends State<AcademicReportCardScreen> {
   // ---------------------------------------------------------------------------
   // Section 4: Timetable (Class 5-A Routine)
   // ---------------------------------------------------------------------------
-  Widget _buildTimetableSection(List<TimetableSlot> slots) {
+  Widget _buildTimetableSection(List<TimetableSlot> slots, [String? className]) {
+    final displayClass = (className != null && className.trim().isNotEmpty)
+        ? (className.startsWith('Grade') ? className.replaceFirst('Grade', 'Class').trim() : className.trim())
+        : 'Class';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -955,7 +996,7 @@ class _AcademicReportCardScreenState extends State<AcademicReportCardScreen> {
             ),
             const SizedBox(width: 8),
             Text(
-              'Class 5-A Routine',
+              '$displayClass Routine',
               style: GoogleFonts.manrope(fontSize: 10.5, color: AcademicColors.textSecondary),
             ),
           ],
@@ -1813,7 +1854,10 @@ class _AcademicReportCardScreenState extends State<AcademicReportCardScreen> {
   // ---------------------------------------------------------------------------
   // Section 8: Assignments / Homework (Clean Empty State)
   // ---------------------------------------------------------------------------
-  Widget _buildAssignmentsSection() {
+  Widget _buildAssignmentsSection([String? className]) {
+    final displayClass = (className != null && className.trim().isNotEmpty)
+        ? (className.startsWith('Grade') ? className.replaceFirst('Grade', 'Class').trim() : className.trim())
+        : 'this class';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1875,7 +1919,7 @@ class _AcademicReportCardScreenState extends State<AcademicReportCardScreen> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'All daily coursework and submissions are up to date for Class 5-A.',
+                      'All daily coursework and submissions are up to date for $displayClass.',
                       style: GoogleFonts.manrope(
                         fontSize: 10.5,
                         color: AcademicColors.textSecondary,

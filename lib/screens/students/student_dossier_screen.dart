@@ -56,23 +56,26 @@ class _StudentDossierScreenState extends State<StudentDossierScreen> {
             'name': 'Diya Sharma',
             'admission_number': 'STU-2024-001',
             'roll_number': 14,
-            'class_name': 'Grade 5',
-            'section': 'A',
+            'class_section': 'Grade 5 A',
             'date_of_birth': '2014-05-12',
             'gender': 'Female',
             'blood_group': 'B+',
-            'parent': {
+            'guardian_details': {
               'father_name': 'Rajesh Sharma',
               'mother_name': 'Pooja Sharma',
-              'contact_phone': '+91 98100 12345',
+              'primary_contact': '+91 98100 12345',
               'email': 'rajesh.sharma@example.com',
-              'address': 'Flat 402, Lotus Court, Model Town, Delhi',
+              'residential_address': 'Flat 402, Lotus Court, Model Town, Delhi',
             },
             'academic_summary': {
-              'gpa': '3.9',
-              'attendance_rate': '95.2',
-              'fee_status': 'Cleared',
+              'overall_percentage': 91.2,
+              'rank_in_class': 3,
+              'attendance_percentage': 95.2,
             },
+            'fee_summary': {
+              'outstanding_dues': 0.0,
+            },
+            'fee_status': 'Cleared',
           };
           _isLoading = false;
         });
@@ -105,27 +108,67 @@ class _StudentDossierScreenState extends State<StudentDossierScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final fullName = _dossier['full_name'] as String? ?? _dossier['name'] as String? ?? 'Student';
-    final admNumber = _dossier['admission_number'] as String? ?? _dossier['id'] as String? ?? widget.studentId;
+    final fullName = _dossier['full_name']?.toString() ?? _dossier['name']?.toString() ?? 'Student';
+    final admNumber = _dossier['admission_number']?.toString() ?? _dossier['id']?.toString() ?? widget.studentId;
     final rollNumber = _dossier['roll_number']?.toString() ?? '0';
-    final className = _dossier['class_name'] as String? ?? 'Grade Nursery A';
-    final section = _dossier['section'] as String? ?? 'A';
-    final dob = _dossier['date_of_birth'] as String? ?? 'N/A';
-    final gender = _dossier['gender'] as String? ?? 'Student';
-    final bloodGroup = _dossier['blood_group'] as String? ?? 'N/A';
+    final classSection = _dossier['class_section']?.toString() ??
+        (_dossier['class_name'] != null
+            ? '${_dossier['class_name']}${_dossier['section'] != null ? ' ${_dossier['section']}' : ''}'
+            : 'Not assigned');
+    final dob = _dossier['date_of_birth']?.toString() ?? 'N/A';
+    final gender = _dossier['gender']?.toString() ?? 'Student';
+    final bloodGroup = _dossier['blood_group']?.toString() ?? 'N/A';
 
-    final parent = (_dossier['parent'] as Map<String, dynamic>?) ?? {};
-    final fatherName = parent['father_name'] as String? ?? parent['guardian_name'] as String? ?? parent['parent_name'] as String? ?? _dossier['father_name'] as String? ?? _dossier['guardian_name'] as String? ?? 'Rajesh Sharma';
-    final motherName = parent['mother_name'] as String? ?? _dossier['mother_name'] as String? ?? 'Pooja Sharma';
-    final contactPhone = parent['contact_phone'] as String? ?? parent['phone'] as String? ?? parent['primary_mobile'] as String? ?? parent['mobile'] as String? ?? _dossier['phone'] as String? ?? _dossier['mobile'] as String? ?? '+91 98100 12345';
-    final parentEmail = parent['email'] as String? ?? _dossier['email'] as String? ?? 'parent.contact@onps.edu.in';
-    final address = parent['address'] as String? ?? _dossier['address'] as String? ?? 'Model Town, Delhi';
+    final guardianDetails = (_dossier['guardian_details'] is Map ? _dossier['guardian_details'] as Map : null) ??
+        (_dossier['guardian'] is Map ? _dossier['guardian'] as Map : null) ??
+        (_dossier['parent'] is Map ? _dossier['parent'] as Map : null) ?? {};
+    final personalInfo = (guardianDetails['personal_info'] is Map ? guardianDetails['personal_info'] as Map : null) ?? {};
 
-    final academic = (_dossier['academic_summary'] as Map<String, dynamic>?) ?? {};
-    final gpa = academic['gpa']?.toString() ?? '3.8';
-    final rawAtt = academic['attendance_rate']?.toString() ?? _dossier['attendance_percentage']?.toString() ?? '94.5';
+    final fatherName = guardianDetails['father_name']?.toString() ??
+        guardianDetails['guardian_name']?.toString() ??
+        guardianDetails['name']?.toString() ??
+        personalInfo['name']?.toString() ??
+        _dossier['father_name']?.toString() ??
+        _dossier['guardian_name']?.toString() ??
+        'Not Specified';
+    final motherName = guardianDetails['mother_name']?.toString() ??
+        _dossier['mother_name']?.toString() ??
+        'Not Specified';
+    final contactPhone = guardianDetails['primary_contact']?.toString() ??
+        guardianDetails['contact_phone']?.toString() ??
+        guardianDetails['phone']?.toString() ??
+        guardianDetails['mobile']?.toString() ??
+        personalInfo['phone']?.toString() ??
+        _dossier['guardian_mobile']?.toString() ??
+        _dossier['phone']?.toString() ??
+        _dossier['mobile']?.toString() ??
+        'N/A';
+    final parentEmail = guardianDetails['email']?.toString() ??
+        personalInfo['email']?.toString() ??
+        _dossier['guardian_email']?.toString() ??
+        _dossier['email']?.toString() ??
+        'N/A';
+    final address = guardianDetails['residential_address']?.toString() ??
+        guardianDetails['address']?.toString() ??
+        personalInfo['address']?.toString() ??
+        _dossier['address']?.toString() ??
+        'N/A';
+
+    final feeSummary = (_dossier['fee_summary'] is Map ? _dossier['fee_summary'] as Map : null) ?? {};
+    final academic = (_dossier['academic_summary'] is Map ? _dossier['academic_summary'] as Map : null) ?? {};
+    final overallPercentage = academic['overall_percentage']?.toString() ?? academic['gpa']?.toString();
+    final rankInClass = academic['rank_in_class']?.toString();
+    final rawAtt = academic['attendance_percentage']?.toString() ??
+        academic['attendance_rate']?.toString() ??
+        _dossier['attendance_percentage']?.toString() ??
+        '100';
     final attendanceRate = rawAtt.replaceAll('%', '');
-    final feeStatus = academic['fee_status'] as String? ?? 'Cleared';
+    final dues = (feeSummary['outstanding_dues'] as num?)?.toDouble() ??
+        (_dossier['total_dues'] as num?)?.toDouble() ??
+        0.0;
+    final feeStatus = _dossier['fee_status']?.toString() ??
+        academic['fee_status']?.toString() ??
+        (dues <= 0 ? 'Cleared' : 'Pending: ₹${dues.toStringAsFixed(0)}');
 
     final initials = fullName.split(' ').where((w) => w.isNotEmpty).map((w) => w[0]).take(2).join().toUpperCase();
 
@@ -235,7 +278,7 @@ class _StudentDossierScreenState extends State<StudentDossierScreen> {
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
-                                        '$className (Sec $section) • Roll #$rollNumber',
+                                        '$classSection • Roll #$rollNumber',
                                         style: GoogleFonts.manrope(
                                           fontSize: 12.5,
                                           fontWeight: FontWeight.w600,
@@ -260,7 +303,7 @@ class _StudentDossierScreenState extends State<StudentDossierScreen> {
                             Row(
                               children: [
                                 Expanded(
-                                  child: _buildMetricPill('GPA', gpa, AcademicColors.primary),
+                                  child: _buildMetricPill('SCORE %', overallPercentage != null ? '$overallPercentage%' : 'N/A', AcademicColors.primary),
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
@@ -322,11 +365,11 @@ class _StudentDossierScreenState extends State<StudentDossierScreen> {
                           child: _selectedTabIndex == 0
                               ? _buildProfileTab(dob, gender, fatherName, motherName, contactPhone, parentEmail, address)
                               : _selectedTabIndex == 1
-                                  ? _buildAcademicsTab(gpa)
+                                  ? _buildAcademicsTab(overallPercentage, rankInClass)
                                   : _selectedTabIndex == 2
                                       ? _buildAttendanceTab(attendanceRate)
                                       : _selectedTabIndex == 3
-                                          ? _buildFeesTab(feeStatus)
+                                          ? _buildFeesTab(feeStatus, dues)
                                           : _buildGenericTab(_tabs[_selectedTabIndex]),
                         ),
                       ),
@@ -414,7 +457,7 @@ class _StudentDossierScreenState extends State<StudentDossierScreen> {
     );
   }
 
-  Widget _buildAcademicsTab(String gpa) {
+  Widget _buildAcademicsTab(String? overallPercentage, String? rankInClass) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -423,11 +466,9 @@ class _StudentDossierScreenState extends State<StudentDossierScreen> {
         InsetCard(
           child: Column(
             children: [
-              _buildInfoRow('Cumulative GPA', gpa),
+              _buildInfoRow('Overall Percentage', overallPercentage != null ? '$overallPercentage%' : 'Not available'),
               const Divider(height: 12),
-              _buildInfoRow('Academic Standing', 'First Class with Distinction'),
-              const Divider(height: 12),
-              _buildInfoRow('Class Rank', '3 of 40'),
+              _buildInfoRow('Class Rank', rankInClass != null ? 'Rank $rankInClass' : 'Not available'),
             ],
           ),
         ),
@@ -445,10 +486,6 @@ class _StudentDossierScreenState extends State<StudentDossierScreen> {
           child: Column(
             children: [
               _buildInfoRow('Overall Attendance', '$attendanceRate%'),
-              const Divider(height: 12),
-              _buildInfoRow('Days Present', '85 Days'),
-              const Divider(height: 12),
-              _buildInfoRow('Days Absent', '5 Days'),
             ],
           ),
         ),
@@ -456,7 +493,7 @@ class _StudentDossierScreenState extends State<StudentDossierScreen> {
     );
   }
 
-  Widget _buildFeesTab(String feeStatus) {
+  Widget _buildFeesTab(String feeStatus, double outstandingDues) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -467,9 +504,7 @@ class _StudentDossierScreenState extends State<StudentDossierScreen> {
             children: [
               _buildInfoRow('Status', feeStatus),
               const Divider(height: 12),
-              _buildInfoRow('Outstanding Balance', '₹0.00'),
-              const Divider(height: 12),
-              _buildInfoRow('Receipts Generated', '2 Official Receipts'),
+              _buildInfoRow('Outstanding Balance', '₹${outstandingDues.toStringAsFixed(2)}'),
             ],
           ),
         ),

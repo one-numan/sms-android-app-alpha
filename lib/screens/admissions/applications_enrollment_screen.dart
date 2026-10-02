@@ -96,12 +96,8 @@ class _ApplicationsEnrollmentScreenState extends State<ApplicationsEnrollmentScr
 
     return Scaffold(
       backgroundColor: AcademicColors.canvas,
-      appBar: AppTopBar(
+      appBar: const AppTopBar(
         title: 'Admissions & Enrollment Desk',
-        actions: [
-          Center(child: PillBadge.success('Session 2026-27')),
-          const SizedBox(width: 8),
-        ],
       ),
       body: SafeArea(
         child: Column(
@@ -271,7 +267,16 @@ class _ApplicationsEnrollmentScreenState extends State<ApplicationsEnrollmentScr
                                 final grade = app['grade_applied'] as String? ?? 'Grade';
                                 final parent = app['parent_name'] as String? ?? 'Parent';
                                 final phone = app['contact_phone'] as String? ?? '';
-                                final date = app['submission_date'] as String? ?? '';
+                                final rawDate = app['application_date'] as String? ??
+                                    app['submission_date'] as String? ??
+                                    app['created_at'] as String? ??
+                                    '';
+                                String date = rawDate;
+                                final parsedDate = DateTime.tryParse(rawDate);
+                                if (parsedDate != null) {
+                                  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                                  date = '${parsedDate.day} ${months[parsedDate.month - 1]} ${parsedDate.year}';
+                                }
                                 final status = (app['status'] as String? ?? 'PENDING').toUpperCase();
 
                                 return Container(
@@ -315,7 +320,7 @@ class _ApplicationsEnrollmentScreenState extends State<ApplicationsEnrollmentScr
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
                                           Text(
-                                            'App #$appNum • Submitted $date',
+                                            date.isNotEmpty ? 'App #$appNum • Submitted $date' : 'App #$appNum',
                                             style: GoogleFonts.manrope(
                                               fontSize: 11,
                                               fontWeight: FontWeight.w600,

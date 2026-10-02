@@ -23,8 +23,10 @@ class UnauthorizedException extends ApiException {
 
 /// Thrown on HTTP 403 Forbidden errors.
 class ForbiddenException extends ApiException {
-  const ForbiddenException([super.message = 'Access denied for this resource.'])
-      : super(statusCode: 403);
+  const ForbiddenException([
+    super.message = 'Access denied for this resource.',
+    dynamic errorData,
+  ]) : super(statusCode: 403, errorData: errorData);
 }
 
 /// Thrown on HTTP 404 Resource Not Found errors.

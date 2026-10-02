@@ -173,6 +173,7 @@ class Student {
   final String dwellingType; // House/Apartment, Bungalow, Flat, Villa, Other
   final String? grade; // e.g. '5', 'K', '1', '10'
   final String? section; // e.g. 'A', 'B', 'C', 'D', 'E'
+  final String? guardianName;
 
   const Student({
     required this.id,
@@ -190,6 +191,7 @@ class Student {
     required this.dwellingType,
     this.grade,
     this.section,
+    this.guardianName,
   });
 
   factory Student.fromJson(Map<String, dynamic> json) {
@@ -207,6 +209,11 @@ class Student {
       if (parts.isNotEmpty) g = parts[0];
       if (parts.length > 1) s = parts[1];
     }
+
+    final guardian = json['guardian_name'] as String? ??
+        json['father_name'] as String? ??
+        json['parent_name'] as String? ??
+        (json['guardian'] is Map ? json['guardian']['name']?.toString() : null);
 
     return Student(
       id: json['id']?.toString() ?? '',
@@ -236,6 +243,7 @@ class Student {
       dwellingType: json['dwelling_type'] as String? ?? 'House/Apartment',
       grade: json['grade'] as String? ?? g,
       section: json['section'] as String? ?? s,
+      guardianName: guardian,
     );
   }
 
@@ -1026,6 +1034,18 @@ class Announcement {
                       : 'School'))));
 
   bool get hasAttachment => attachmentName != null && attachmentName!.isNotEmpty;
+
+  static String formatDate(String? raw) {
+    if (raw == null || raw.trim().isEmpty) return 'Today';
+    final dt = DateTime.tryParse(raw);
+    if (dt != null) {
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return '${dt.day} ${months[dt.month - 1]} ${dt.year}';
+    }
+    return raw;
+  }
+
+  String get displayPublishedAt => formatDate(publishedAt);
 
   factory Announcement.fromJson(Map<String, dynamic> json) {
     return Announcement(

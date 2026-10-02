@@ -12,12 +12,14 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/config/app_config.dart';
 import '../../data/services/accountant_api_service.dart';
+import '../../data/services/attention_api_service.dart';
 import '../../data/services/fee_api_service.dart';
 import '../../models/models.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/account_profile_sheet.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/bottom_nav_bar.dart';
+import '../../widgets/needs_attention_section.dart';
 import '../../widgets/shared_widgets.dart';
 
 class AccountantDashboardScreen extends StatefulWidget {
@@ -29,10 +31,12 @@ class AccountantDashboardScreen extends StatefulWidget {
 
 class _AccountantDashboardScreenState extends State<AccountantDashboardScreen> {
   final AccountantApiService _accountantApiService = AccountantApiService();
+  final AttentionApiService _attentionApiService = AttentionApiService();
   final FeeApiService _feeApiService = FeeApiService();
   bool _isLoading = true;
   String? _errorMessage;
   Map<String, dynamic> _dashboardData = {};
+  List<dynamic> _attentionItems = [];
   List<FeePayment> _transactions = [];
 
   @override
@@ -86,6 +90,18 @@ class _AccountantDashboardScreenState extends State<AccountantDashboardScreen> {
               remarks: 'Cash counter collection',
             ),
           ];
+          _attentionItems = [
+            {
+              'id': 'fees.defaulters',
+              'domain': 'fees',
+              'type': 'alert_count',
+              'severity': 'warning',
+              'title': '10000 students have pending fees (₹623,312,970 total)',
+              'count': 10000,
+              'action_label': 'View defaulters',
+              'deep_link': {'screen': 'fee_defaulters'}
+            }
+          ];
           _isLoading = false;
         });
       }
@@ -98,7 +114,13 @@ class _AccountantDashboardScreenState extends State<AccountantDashboardScreen> {
     });
 
     try {
-      final data = await _accountantApiService.getDashboard();
+      final results = await Future.wait([
+        _accountantApiService.getDashboard(),
+        _attentionApiService.getAttentionFeed(),
+      ]);
+      final data = results[0];
+      final attentionData = results[1];
+
       List<FeePayment> txList = [];
       if (data.containsKey('recent_transactions') && data['recent_transactions'] is List) {
         final list = data['recent_transactions'] as List;
@@ -120,6 +142,7 @@ class _AccountantDashboardScreenState extends State<AccountantDashboardScreen> {
         setState(() {
           _dashboardData = data;
           _transactions = txList;
+          _attentionItems = (attentionData['items'] as List?) ?? [];
           _isLoading = false;
         });
       }
@@ -173,8 +196,11 @@ class _AccountantDashboardScreenState extends State<AccountantDashboardScreen> {
         0.0;
     final totalExpected = (_dashboardData['total_expected'] as num?)?.toDouble() ??
         (totalCollected + totalOutstanding);
-    final realizedRatio = totalExpected > 0 ? (totalCollected / totalExpected).clamp(0.0, 1.0) : 0.0;
-    final realizedPercentage = (realizedRatio * 100).toStringAsFixed(1);
+    final backendPercentage = (_dashboardData['collection_percentage'] as num?)?.toDouble();
+    final realizedRatio = backendPercentage != null
+        ? (backendPercentage / 100).clamp(0.0, 1.0)
+        : (totalExpected > 0 ? (totalCollected / totalExpected).clamp(0.0, 1.0) : 0.0);
+    final realizedPercentage = backendPercentage != null ? backendPercentage.toStringAsFixed(1) : (realizedRatio * 100).toStringAsFixed(1);
     final term = _dashboardData['term']?.toString() ?? 'Term 2 FY ${AppConfig.sessionYear}';
 
     final modes = (_dashboardData['modes'] as Map<String, dynamic>?) ??
@@ -359,6 +385,15 @@ class _AccountantDashboardScreenState extends State<AccountantDashboardScreen> {
                       ),
                     ],
                   ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // ── Needs Attention Section (Defaulters Alert & Calendar) ──
+                NeedsAttentionSection(
+                  items: _attentionItems,
+                  onRefresh: _loadDashboardData,
+                  showWhenEmpty: true,
                 ),
 
                 const SizedBox(height: 18),

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/widgets.dart';
@@ -6,9 +7,26 @@ import 'api_config.dart';
 import 'api_exception.dart';
 import 'token_storage.dart';
 
-/// Core HTTP REST Client for ONPS ERP Alpha.
+class _CachedEntry {
+  final dynamic data;
+  final DateTime expiresAt;
+  _CachedEntry(this.data, this.expiresAt);
+}
+
+/// Core HTTP REST Client for ONPS ERP Alpha with automatic token refresh, caching, and retry.
 class ApiClient {
   static void Function()? onUnauthorized;
+  static Completer<bool>? _refreshCompleter;
+  static final Map<String, _CachedEntry> _cache = {};
+
+  /// Invalidate in-memory cache entirely or by matching endpoint substring.
+  static void invalidateCache([String? pattern]) {
+    if (pattern == null) {
+      _cache.clear();
+    } else {
+      _cache.removeWhere((k, v) => k.contains(pattern));
+    }
+  }
 
   final http.Client _client;
 
@@ -58,13 +76,14 @@ class ApiClient {
     return _sendRequest('DELETE', endpoint, headers: headers);
   }
 
-  /// Low-level HTTP executor.
+  /// Low-level HTTP executor with automatic token refresh on 401.
   Future<dynamic> _sendRequest(
     String method,
     String endpoint, {
     dynamic body,
     Map<String, String>? headers,
     Map<String, dynamic>? queryParameters,
+    bool isRetry = false,
   }) async {
     Uri uri = Uri.parse('${ApiConfig.baseUrl}$endpoint');
     if (queryParameters != null && queryParameters.isNotEmpty) {
@@ -72,9 +91,11 @@ class ApiClient {
       uri = uri.replace(queryParameters: stringParams);
     }
 
-    // Omit Authorization header for auth endpoints (e.g. login, register) to avoid
+    // Omit Authorization header for auth endpoints (e.g. login, register, token refresh) to avoid
     // rejecting requests with stale/expired JWT tokens before credential validation.
-    final isAuthEndpoint = endpoint.contains('/auth/login') || endpoint.contains('/auth/register');
+    final isAuthEndpoint = endpoint.contains('/auth/login') ||
+        endpoint.contains('/auth/register') ||
+        endpoint.contains('/auth/token/refresh');
     final token = isAuthEndpoint ? null : await TokenStorage.getToken();
     final requestHeaders = ApiConfig.defaultHeaders(token: token);
     if (headers != null) {
@@ -85,6 +106,18 @@ class ApiClient {
     final isFlutterTest = bindingName.contains('Test') || HttpOverrides.current != null;
     if (isFlutterTest) {
       throw const NetworkException('Flutter test environment network bypass');
+    }
+
+    final isGet = method.toUpperCase() == 'GET';
+    final cacheKey = uri.toString();
+
+    if (isGet && !isRetry) {
+      final cached = _cache[cacheKey];
+      if (cached != null && DateTime.now().isBefore(cached.expiresAt)) {
+        return cached.data;
+      }
+    } else if (!isGet) {
+      invalidateCache();
     }
 
     const timeoutDuration = Duration(seconds: ApiConfig.connectTimeoutSeconds);
@@ -123,11 +156,104 @@ class ApiClient {
           throw ArgumentError('Unsupported HTTP method: $method');
       }
 
-      return _handleResponse(response);
+      // Handle 401 Unauthorized with automatic token refresh and retry
+      if (response.statusCode == 401) {
+        if (!isAuthEndpoint && !isRetry) {
+          final refreshed = await _tryRefreshToken();
+          if (refreshed) {
+            // Automatically retry original request with newly refreshed token
+            return await _sendRequest(
+              method,
+              endpoint,
+              body: body,
+              headers: headers,
+              queryParameters: queryParameters,
+              isRetry: true,
+            );
+          }
+        }
+        await TokenStorage.clearSession();
+        onUnauthorized?.call();
+        throw const UnauthorizedException();
+      }
+
+      final result = _handleResponse(response);
+      if (isGet && response.statusCode == 200) {
+        _cache[cacheKey] = _CachedEntry(result, DateTime.now().add(const Duration(seconds: 30)));
+      }
+      return result;
     } on SocketException catch (e) {
+      if (isGet && !isRetry) {
+        await Future.delayed(const Duration(milliseconds: 300));
+        return _sendRequest(method, endpoint, body: body, headers: headers, queryParameters: queryParameters, isRetry: true);
+      }
       throw NetworkException('Network connection unavailable: ${e.message}');
     } on http.ClientException catch (e) {
+      if (isGet && !isRetry) {
+        await Future.delayed(const Duration(milliseconds: 300));
+        return _sendRequest(method, endpoint, body: body, headers: headers, queryParameters: queryParameters, isRetry: true);
+      }
       throw NetworkException('HTTP client error: ${e.message}');
+    } on TimeoutException {
+      if (isGet && !isRetry) {
+        await Future.delayed(const Duration(milliseconds: 300));
+        return _sendRequest(method, endpoint, body: body, headers: headers, queryParameters: queryParameters, isRetry: true);
+      }
+      throw const NetworkException('Connection timed out. Please check your network.');
+    }
+  }
+
+  /// Attempts to refresh the JWT access token using the stored refresh token.
+  /// Deduplicates concurrent refresh attempts across simultaneous failing requests.
+  Future<bool> _tryRefreshToken() async {
+    if (_refreshCompleter != null) {
+      return _refreshCompleter!.future;
+    }
+
+    final completer = Completer<bool>();
+    _refreshCompleter = completer;
+
+    try {
+      final refreshToken = await TokenStorage.getRefreshToken();
+      if (refreshToken == null || refreshToken.trim().isEmpty) {
+        completer.complete(false);
+        return false;
+      }
+
+      final refreshUri = Uri.parse('${ApiConfig.baseUrl}/auth/token/refresh/');
+      final response = await _client
+          .post(
+            refreshUri,
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+            body: jsonEncode({'refresh': refreshToken}),
+          )
+          .timeout(const Duration(seconds: ApiConfig.connectTimeoutSeconds));
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final dynamic data = jsonDecode(response.body);
+        if (data is Map<String, dynamic>) {
+          final newAccessToken = data['access'] ?? data['token'] ?? data['access_token'];
+          if (newAccessToken != null && newAccessToken is String) {
+            await TokenStorage.saveToken(newAccessToken);
+          }
+          final newRefreshToken = data['refresh'] ?? data['refresh_token'];
+          if (newRefreshToken != null && newRefreshToken is String) {
+            await TokenStorage.saveRefreshToken(newRefreshToken);
+          }
+          completer.complete(true);
+          return true;
+        }
+      }
+      completer.complete(false);
+      return false;
+    } catch (_) {
+      completer.complete(false);
+      return false;
+    } finally {
+      _refreshCompleter = null;
     }
   }
 
@@ -160,7 +286,15 @@ class ApiClient {
         onUnauthorized?.call();
         throw const UnauthorizedException();
       case 403:
-        throw const ForbiddenException();
+        String forbiddenMsg = 'Access denied for this resource.';
+        if (jsonResponse is Map) {
+          if (jsonResponse.containsKey('detail') && jsonResponse['detail'] != null) {
+            forbiddenMsg = jsonResponse['detail'].toString();
+          } else if (jsonResponse.containsKey('message') && jsonResponse['message'] != null) {
+            forbiddenMsg = jsonResponse['message'].toString();
+          }
+        }
+        throw ForbiddenException(forbiddenMsg, jsonResponse);
       case 404:
         throw const NotFoundException();
       case 500:

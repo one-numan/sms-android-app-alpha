@@ -109,16 +109,14 @@ class _SubjectTeacherCohortsScreenState extends State<SubjectTeacherCohortsScree
     });
 
     try {
-      final dashboardData = await _teacherApi.getSubjectDashboard();
-      Map<String, dynamic> timetable = {};
-      try {
-        timetable = await _facultyApi.getTeacherTimetable();
-      } catch (_) {}
-
-      Map<String, dynamic> classDashboard = {};
-      try {
-        classDashboard = await _teacherApi.getClassDashboard();
-      } catch (_) {}
+      final results = await Future.wait([
+        _teacherApi.getSubjectDashboard(),
+        _facultyApi.getTeacherTimetable().catchError((_) => <String, dynamic>{}),
+        _teacherApi.getClassDashboard().catchError((_) => <String, dynamic>{}),
+      ]);
+      final dashboardData = results[0];
+      final timetable = results[1];
+      final classDashboard = results[2];
 
       String? homeroomClass;
       String? homeroomClassId;
@@ -198,9 +196,9 @@ class _SubjectTeacherCohortsScreenState extends State<SubjectTeacherCohortsScree
               'room': item['room']?.toString() ?? 'Allocated Room',
               'students': studentCnt,
               'periodsPerWeek': (item['periods_per_week'] as num?)?.toInt() ?? 6,
-              'attendance': item['attendance']?.toString() ?? '95.0%',
-              'avgScore': item['avg_score']?.toString() ?? '78.0%',
-              'fa2Status': item['fa2_status']?.toString() ?? 'Completed',
+              'attendance': item['attendance']?.toString(),
+              'avgScore': item['avg_score']?.toString(),
+              'fa2Status': item['fa2_status']?.toString(),
               'isClassTeacher': isClassTchr,
               'isSubjectTeacher': true,
             };
@@ -228,9 +226,9 @@ class _SubjectTeacherCohortsScreenState extends State<SubjectTeacherCohortsScree
                 'room': room.isNotEmpty ? room : 'Allocated Room',
                 'students': 0,
                 'periodsPerWeek': 1,
-                'attendance': '95.0%',
-                'avgScore': '78.0%',
-                'fa2Status': 'Completed',
+                'attendance': null,
+                'avgScore': null,
+                'fa2Status': null,
                 'isClassTeacher': isClassTchr,
                 'isSubjectTeacher': true,
               };
@@ -257,11 +255,11 @@ class _SubjectTeacherCohortsScreenState extends State<SubjectTeacherCohortsScree
           'className': resolvedHrClass,
           'subjectName': 'Homeroom',
           'room': 'Assigned Section',
-          'students': (classDashboard['total_students'] as num?)?.toInt() ?? 40,
+          'students': (classDashboard['total_students'] as num?)?.toInt() ?? 0,
           'periodsPerWeek': 0,
-          'attendance': '91.2%',
-          'avgScore': '80.0%',
-          'fa2Status': 'Completed',
+          'attendance': null,
+          'avgScore': null,
+          'fa2Status': null,
           'isClassTeacher': true,
           'isSubjectTeacher': false,
         };
@@ -433,10 +431,10 @@ class _SubjectTeacherCohortsScreenState extends State<SubjectTeacherCohortsScree
                     final compactClassName = ClassSectionFormatter.formatCompact(rawClassName);
                     final displayClassName = ClassSectionFormatter.formatFull(rawClassName);
                     final subjectName = cls['subjectName']?.toString() ?? 'General';
-                    final studentsCount = cls['students']?.toString() ?? '39';
-                    final attendance = cls['attendance']?.toString() ?? '95.0%';
-                    final avgScore = cls['avgScore']?.toString() ?? '78.0%';
-                    final fa2Status = cls['fa2Status']?.toString() ?? 'Completed';
+                    final studentsCount = cls['students']?.toString() ?? '0';
+                    final attendance = cls['attendance']?.toString() ?? '—';
+                    final avgScore = cls['avgScore']?.toString() ?? '—';
+                    final fa2Status = cls['fa2Status']?.toString() ?? '—';
                     final isHomeroom = cls['isClassTeacher'] == true;
                     final isSubject = cls['isSubjectTeacher'] != false;
                     final classId = cls['classId']?.toString() ?? '';
@@ -589,7 +587,16 @@ class _SubjectTeacherCohortsScreenState extends State<SubjectTeacherCohortsScree
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                     ),
-                                    onPressed: () => context.push('/academics/marks-entry'),
+                                    onPressed: () => context.push(
+                                      Uri(
+                                        path: '/academics/marks-entry',
+                                        queryParameters: {
+                                          if (classId.isNotEmpty) 'class_id': classId,
+                                          if (displayClassName.isNotEmpty) 'class_name': displayClassName,
+                                          if (subjectName.isNotEmpty) 'subject_name': subjectName,
+                                        },
+                                      ).toString(),
+                                    ),
                                     child: Text(
                                       'Enter Marks →',
                                       style: GoogleFonts.manrope(

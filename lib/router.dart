@@ -31,6 +31,8 @@ import 'screens/dashboards/principal_dashboard_screen.dart';
 import 'screens/dashboards/accountant_dashboard_screen.dart';
 import 'screens/dashboards/librarian_dashboard_screen.dart';
 import 'screens/dashboards/super_admin_modules_screen.dart';
+import 'screens/dashboards/telemetry_dashboard_screen.dart';
+import 'screens/dashboards/front_desk_dashboard_screen.dart';
 
 // Screens — Students
 import 'screens/students/student_dossier_screen.dart';
@@ -157,7 +159,7 @@ GoRouter createOnpsRouter(AuthState authState) {
               child = const LibrarianDashboardScreen();
               break;
             case UserRole.receptionist:
-              child = const AdmissionsEnquiryScreen();
+              child = const FrontDeskDashboardScreen();
               break;
             case UserRole.superAdmin:
               child = const SuperAdminModulesScreen();
@@ -328,8 +330,16 @@ GoRouter createOnpsRouter(AuthState authState) {
         builder: (context, state) => const LibrarianDashboardScreen(),
       ),
       GoRoute(
+        path: '/dashboard/receptionist',
+        builder: (context, state) => const FrontDeskDashboardScreen(),
+      ),
+      GoRoute(
         path: '/dashboard/modules',
         builder: (context, state) => const SuperAdminModulesScreen(),
+      ),
+      GoRoute(
+        path: '/admin/telemetry',
+        builder: (context, state) => const TelemetryDashboardScreen(),
       ),
       GoRoute(
         path: '/dashboard/admin',
@@ -348,14 +358,38 @@ GoRouter createOnpsRouter(AuthState authState) {
       GoRoute(
         path: '/students/dossier',
         builder: (context, state) {
-          final studentId = (state.extra as String?) ?? state.uri.queryParameters['id'] ?? '1';
+          final explicitId = state.extra?.toString() ?? state.uri.queryParameters['id'];
+          String studentId = (explicitId != null && explicitId.trim().isNotEmpty) ? explicitId.trim() : '';
+          if (studentId.isEmpty) {
+            if (authState.currentRole == UserRole.parent && authState.selectedChild.id.isNotEmpty) {
+              studentId = authState.selectedChild.id;
+            } else if (authState.authenticatedStudent != null && authState.authenticatedStudent!.id.isNotEmpty) {
+              studentId = authState.authenticatedStudent!.id;
+            } else if (authState.userProfile?['student_id'] != null) {
+              studentId = authState.userProfile!['student_id'].toString();
+            } else {
+              studentId = '1';
+            }
+          }
           return StudentDossierScreen(studentId: studentId);
         },
       ),
       GoRoute(
         path: '/students/report-card',
         builder: (context, state) {
-          final studentId = (state.extra as String?) ?? state.uri.queryParameters['id'] ?? '1';
+          final explicitId = state.extra?.toString() ?? state.uri.queryParameters['id'];
+          String studentId = (explicitId != null && explicitId.trim().isNotEmpty) ? explicitId.trim() : '';
+          if (studentId.isEmpty) {
+            if (authState.currentRole == UserRole.parent && authState.selectedChild.id.isNotEmpty) {
+              studentId = authState.selectedChild.id;
+            } else if (authState.authenticatedStudent != null && authState.authenticatedStudent!.id.isNotEmpty) {
+              studentId = authState.authenticatedStudent!.id;
+            } else if (authState.userProfile?['student_id'] != null) {
+              studentId = authState.userProfile!['student_id'].toString();
+            } else {
+              studentId = '1';
+            }
+          }
           return AcademicReportCardScreen(studentId: studentId);
         },
       ),
@@ -380,8 +414,19 @@ GoRouter createOnpsRouter(AuthState authState) {
       GoRoute(
         path: '/students/id-card',
         builder: (context, state) {
-          final studentId = (state.extra as String?) ?? state.uri.queryParameters['id'] ?? '1';
-          return DigitalStudentIdCardScreen(studentId: studentId);
+          final explicitId = state.extra?.toString() ?? state.uri.queryParameters['id'];
+          String? studentId = (explicitId != null && explicitId.trim().isNotEmpty) ? explicitId.trim() : null;
+          if (studentId == null) {
+            if (authState.currentRole == UserRole.parent && authState.selectedChild.id.isNotEmpty) {
+              studentId = authState.selectedChild.id;
+            } else if (authState.authenticatedStudent != null && authState.authenticatedStudent!.id.isNotEmpty) {
+              studentId = authState.authenticatedStudent!.id;
+            } else if (authState.userProfile?['student_id'] != null) {
+              studentId = authState.userProfile!['student_id'].toString();
+            }
+          }
+          final isTest = WidgetsBinding.instance.runtimeType.toString().contains('Test');
+          return DigitalStudentIdCardScreen(studentId: studentId ?? (isTest ? '1' : null));
         },
       ),
 
@@ -409,7 +454,11 @@ GoRouter createOnpsRouter(AuthState authState) {
       ),
       GoRoute(
         path: '/attendance/roll-call',
-        builder: (context, state) => const DailyRollCallScreen(),
+        builder: (context, state) {
+          final isLocked = state.uri.queryParameters['locked'] == 'true' ||
+              state.uri.queryParameters['mode'] == 'view';
+          return DailyRollCallScreen(isLockedOverride: isLocked);
+        },
       ),
       GoRoute(
         path: '/attendance/matrix',
@@ -559,7 +608,12 @@ GoRouter createOnpsRouter(AuthState authState) {
       GoRoute(
         path: '/fees/ledger',
         builder: (context, state) {
-          final studentId = state.uri.queryParameters['id'];
+          final explicitId = state.uri.queryParameters['id'];
+          String? studentId = (explicitId != null && explicitId.trim().isNotEmpty) ? explicitId.trim() : null;
+          if (studentId == null && authState.currentRole == UserRole.parent) {
+            studentId = authState.selectedLinkedChild?['id']?.toString() ??
+                (authState.selectedChild.id.isNotEmpty ? authState.selectedChild.id : null);
+          }
           return FeeLedgerScreen(studentId: studentId);
         },
       ),

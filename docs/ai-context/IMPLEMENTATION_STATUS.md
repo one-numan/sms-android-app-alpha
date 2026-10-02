@@ -6,7 +6,7 @@
 
 ## 1. Status Summary Dashboard
 - **Completed & Verified Screens**: 53 / 53
-- **Automated Test Suite**: **129 / 129 Passing** (`flutter test`)
+- **Automated Test Suite**: **315 / 315 Passing** (`flutter test`)
 - **Static Analyzer**: **0 Errors, 0 Warnings, 0 Lints** (`flutter analyze`)
 - **Physical Device Deployment**: Verified on Realme RMX5004 (Android 16 / API 36)
 
@@ -17,6 +17,12 @@
 ### 2.1 Completed (Verified in Code & Tests)
 - [x] **53 UI Screens & Dashboards**: Built with Espresso Heritage Academic theme.
 - [x] **Universal Role Switcher**: Instant switching between 9 personas.
+- [x] **Needs Attention Feed Integration (`GET /api/v1/attention/`)**:
+  - Live, shipped backend endpoint (`docs/attention_api_android.md`).
+  - Wired cross-role attention feed across all 8 role dashboards (Class Teacher, Subject Teacher, Principal, Accountant, Librarian, Front Desk, Parent, Student Hub) with generic `type`-based rendering (actionable_queue, alert_count, reminder) and all 11 deep-link destinations mapped.
+- [x] **Teacher "Today" Status Integration (`GET /api/v1/teacher/today-status/`)**:
+  - Live production backend endpoint (`docs/today_status_api_android.md` / `docs/BACKEND_HANDOFF_DASHBOARD_APIS_2026-10-01.md`).
+  - Integrated in Class Teacher and Subject Teacher dashboards with dynamic period truth, strict homeroom attendance gating (`attendance != null`), and zero room fabrication (`room_number: null`).
 - [x] **Help & FAQ Knowledge Base**: SQLite offline storage (`onps_erp.db`) pre-seeded with 14 production FAQ records.
 - [x] **Principal Executive Tools**: 13-grade K-12 section matrix, section detail, and teacher management desk with assignment validation.
 - [x] **Role-Based Bottom Navigation**: Scoped 5-item bottom docks for Student, Parent, Class Teacher, Subject Teacher, and Principal.
@@ -27,12 +33,6 @@
 - [/] **AI Context Knowledge Base Setup**: Populating `docs/ai-context/` for multi-model interoperability.
 
 ### 2.3 Next (Immediate Backlog)
-- [ ] **Needs Attention Feed Integration (`GET /api/v1/attention/`)**:
-  - Live, shipped backend endpoint (`docs/attention_api_android.md`).
-  - Wire cross-role attention feed across all 7 role dashboards with dynamic `type`-based rendering and 11 deep-link destinations.
-- [ ] **Teacher "Today" Status Integration (`GET /api/v1/teacher/today-status/`)**:
-  - Spec defined (`docs/today_status_api_android.md`).
-  - Authoritatively replaces client-side school open/off checks, teaching period list-index guessing, and attendance gating.
 - [ ] **Native PDF Export Wiring**: Connect PDF buttons (Fee Receipt, Report Card, Timetable) to `pdf` and `path_provider` packages.
 - [ ] **Android 13+ Predictive Back Callback**: Add `android:enableOnBackInvokedCallback="true"` in `AndroidManifest.xml`.
 - [ ] **Deep Link Back Guard**: Ensure safe pop/go navigation on deep-linked secondary screens (`if (context.canPop()) context.pop() else context.go('/')`).

@@ -47,6 +47,8 @@ import 'package:sms_android_app_alpha/screens/dashboards/student_hub_screen.dart
 import 'package:sms_android_app_alpha/screens/dashboards/subject_teacher_cohorts_screen.dart';
 import 'package:sms_android_app_alpha/screens/dashboards/subject_teacher_dashboard_screen.dart';
 import 'package:sms_android_app_alpha/screens/dashboards/super_admin_modules_screen.dart';
+import 'package:sms_android_app_alpha/screens/dashboards/telemetry_dashboard_screen.dart';
+import 'package:sms_android_app_alpha/screens/dashboards/front_desk_dashboard_screen.dart';
 import 'package:sms_android_app_alpha/screens/faculty/class_info_screen.dart';
 import 'package:sms_android_app_alpha/screens/faculty/class_student_directory_screen.dart';
 import 'package:sms_android_app_alpha/screens/faculty/class_subjects_screen.dart';
@@ -162,6 +164,8 @@ void main() {
     testWidgets('31. SubjectTeacherCohortsScreen', (tester) => testMount(tester, 'SubjectTeacherCohortsScreen', const SubjectTeacherCohortsScreen()));
     testWidgets('32. SubjectTeacherDashboardScreen', (tester) => testMount(tester, 'SubjectTeacherDashboardScreen', const SubjectTeacherDashboardScreen()));
     testWidgets('33. SuperAdminModulesScreen', (tester) => testMount(tester, 'SuperAdminModulesScreen', const SuperAdminModulesScreen()));
+    testWidgets('33b. TelemetryDashboardScreen', (tester) => testMount(tester, 'TelemetryDashboardScreen', const TelemetryDashboardScreen()));
+    testWidgets('33c. FrontDeskDashboardScreen', (tester) => testMount(tester, 'FrontDeskDashboardScreen', const FrontDeskDashboardScreen()));
     testWidgets('34. ClassInfoScreen', (tester) => testMount(tester, 'ClassInfoScreen', const ClassInfoScreen()));
     testWidgets('35. ClassStudentDirectoryScreen', (tester) => testMount(tester, 'ClassStudentDirectoryScreen', const ClassStudentDirectoryScreen()));
     testWidgets('36. ClassSubjectsScreen', (tester) => testMount(tester, 'ClassSubjectsScreen', const ClassSubjectsScreen()));

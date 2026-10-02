@@ -104,10 +104,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
     final auth = context.read<AuthState>();
     final uTrim = username.toLowerCase();
-    final effectiveRole = (uTrim.contains('principal') || _selectedRole == UserRole.principal)
-        ? UserRole.principal
-        : _selectedRole;
+    final effectiveRole = (uTrim.contains('viceprincipal') || _selectedRole == UserRole.vicePrincipal)
+        ? UserRole.vicePrincipal
+        : (uTrim.contains('principal') || _selectedRole == UserRole.principal)
+            ? UserRole.principal
+            : _selectedRole;
 
+    debugPrint('[_handleSignIn] Attempting login: username=$username, role=$effectiveRole');
     try {
       if (isTest) {
         auth.login(
@@ -131,15 +134,19 @@ class _LoginScreenState extends State<LoginScreen> {
         password: password,
       );
 
+      debugPrint('[_handleSignIn] Login result: success=$success, isAuth=${auth.isAuthenticated}, role=${auth.currentRole}');
+
       if (mounted) {
         if (success && auth.isAuthenticated) {
           _navigateForRole(auth.currentRole);
         } else {
           setState(() {
-            _errorMessage = 'Wrong password or invalid credentials. Please try again.';
+            _errorMessage = auth.lastAuthError ?? 'Wrong password or invalid credentials. Please try again.';
           });
         }
       }
+    } catch (e, st) {
+      debugPrint('[_handleSignIn] Exception during sign in: $e\n$st');
     } finally {
       if (mounted) {
         setState(() {
@@ -174,7 +181,7 @@ class _LoginScreenState extends State<LoginScreen> {
         context.go('/library/desk');
         break;
       case UserRole.receptionist:
-        context.go('/admissions/enquiries');
+        context.go('/dashboard/receptionist');
         break;
       case UserRole.superAdmin:
         context.go('/admin/modules');

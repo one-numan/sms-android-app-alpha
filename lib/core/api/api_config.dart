@@ -1,14 +1,12 @@
 /// Configuration file for ONPS ERP Backend API integration.
 class ApiConfig {
   /// Base URL for the running backend server.
-  /// Local backend running on: `http://127.0.0.1:8000/api/v1` via adb reverse
-  static String baseUrl = 'http://127.0.0.1:8000/api/v1';
+  /// Production backend server: `https://alpha.onenuman.com/api/v1`
+  static String baseUrl = 'https://alpha.onenuman.com/api/v1';
 
-  /// Connection timeout in seconds.
-  static const int connectTimeoutSeconds = 45;
-
-  /// Receive timeout in seconds.
-  static const int receiveTimeoutSeconds = 45;
+  /// Connection and receive timeouts in seconds (30s for resilient mobile network requests).
+  static const int connectTimeoutSeconds = 30;
+  static const int receiveTimeoutSeconds = 30;
 
   /// Whether to fall back to mock data if the backend server is unreachable.
   /// Set to false in production mode to prevent mock data leakage.

@@ -315,10 +315,10 @@ class AcademicBottomNavBar extends StatelessWidget {
       case UserRole.receptionist:
         roleItems = [
           const AcademicNavItem(
-            label: 'Enquiries',
-            icon: Icons.desk_outlined,
-            activeIcon: Icons.desk,
-            route: '/admissions/enquiry',
+            label: 'Desk',
+            icon: Icons.dashboard_outlined,
+            activeIcon: Icons.dashboard,
+            route: '/dashboard/receptionist',
           ),
           const AcademicNavItem(
             label: 'Enrollment',

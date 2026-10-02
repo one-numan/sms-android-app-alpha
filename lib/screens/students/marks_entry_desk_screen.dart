@@ -288,7 +288,7 @@ class _MarksEntryDeskScreenState extends State<MarksEntryDeskScreen> {
         final text = _scoreControllers[s.id]?.text.trim() ?? '0';
         final val = double.tryParse(text) ?? 0.0;
         return {
-          'student_id': s.id,
+          'student_id': int.tryParse(s.id) ?? int.tryParse(StudentApiService.resolveStudentId(s.id)) ?? s.id,
           'score': val,
           'grade': _getGrade(val),
         };
@@ -347,12 +347,8 @@ class _MarksEntryDeskScreenState extends State<MarksEntryDeskScreen> {
 
     return Scaffold(
       backgroundColor: AcademicColors.canvas,
-      appBar: AppTopBar(
+      appBar: const AppTopBar(
         title: 'Marks Entry Desk',
-        actions: [
-          Center(child: PillBadge.success('Online Sync Live')),
-          const SizedBox(width: 8),
-        ],
       ),
       body: SafeArea(
         child: Column(
@@ -397,7 +393,7 @@ class _MarksEntryDeskScreenState extends State<MarksEntryDeskScreen> {
                           ],
                         ),
                       ),
-                      PillBadge.info('Active Term'),
+                      PillBadge.success('Online Sync Live'),
                     ],
                   ),
 

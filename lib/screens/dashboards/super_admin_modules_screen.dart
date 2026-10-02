@@ -167,6 +167,13 @@ class _SuperAdminModulesScreenState extends State<SuperAdminModulesScreen> {
       'route': '/search/cross-entity',
       'desc': 'Global index across students, staff & documents',
     },
+    {
+      'title': 'System Telemetry',
+      'category': 'Administration',
+      'icon': Icons.monitor_heart_outlined,
+      'route': '/admin/telemetry',
+      'desc': 'Error rates, top categories & recent exceptions',
+    },
   ];
 
   @override
@@ -321,12 +328,15 @@ class _SuperAdminModulesScreenState extends State<SuperAdminModulesScreen> {
                               children: [
                                 Row(
                                   children: [
-                                    Text(
-                                      m['title'] as String,
-                                      style: GoogleFonts.manrope(
-                                        fontSize: 13.5,
-                                        fontWeight: FontWeight.bold,
-                                        color: AcademicColors.textPrimary,
+                                    Flexible(
+                                      child: Text(
+                                        m['title'] as String,
+                                        style: GoogleFonts.manrope(
+                                          fontSize: 13.5,
+                                          fontWeight: FontWeight.bold,
+                                          color: AcademicColors.textPrimary,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
                                     const SizedBox(width: 8),

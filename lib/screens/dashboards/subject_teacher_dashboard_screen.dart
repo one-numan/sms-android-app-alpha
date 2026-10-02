@@ -12,13 +12,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../data/mock/auth_state.dart';
 import '../../data/services/teacher_api_service.dart';
-import '../../data/services/faculty_api_service.dart';
 import '../../models/models.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/account_profile_sheet.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/empty_state_widget.dart';
+import '../../widgets/needs_attention_section.dart';
 import '../../widgets/onps_verified_badge.dart';
 import '../../widgets/shared_widgets.dart';
 import '../../widgets/students_taught_sheet.dart';
@@ -32,11 +32,12 @@ class SubjectTeacherDashboardScreen extends StatefulWidget {
 
 class _SubjectTeacherDashboardScreenState extends State<SubjectTeacherDashboardScreen> {
   final TeacherApiService _teacherApi = TeacherApiService();
-  final FacultyApiService _facultyApi = FacultyApiService();
 
   bool _isLoading = false;
   String? _errorMessage;
   Map<String, dynamic>? _dashboardData;
+  Map<String, dynamic>? _todayStatus;
+  List<dynamic> _attentionItems = [];
   List<Map<String, dynamic>> _assignedClasses = [];
   List<String> _assignedSubjects = [];
 
@@ -61,14 +62,47 @@ class _SubjectTeacherDashboardScreenState extends State<SubjectTeacherDashboardS
           {
             'className': '5-A',
             'subjectName': 'Mathematics',
-            'room': 'Room 204',
             'students': 32,
           },
           {
             'className': '2-B',
             'subjectName': 'Science',
-            'room': 'Room 205',
             'students': 32,
+          },
+        ];
+        _todayStatus = {
+          'date': '2026-10-01',
+          'is_teaching_day': true,
+          'day_type': 'WORKING',
+          'reason': null,
+          'current_period': {
+            'period_number': 1,
+            'subject_name': 'Mathematics',
+            'class_name': 'Grade 5-A',
+            'room_number': null,
+            'start_time': '09:00 AM',
+            'end_time': '09:40 AM',
+          },
+          'next_period': {
+            'period_number': 2,
+            'subject_name': 'Science',
+            'class_name': 'Grade 2-B',
+            'room_number': null,
+            'start_time': '09:45 AM',
+            'end_time': '10:25 AM',
+          },
+          'attendance': null,
+        };
+        _attentionItems = [
+          {
+            'id': 'calendar.upcoming_birthdays',
+            'domain': 'calendar',
+            'type': 'reminder',
+            'severity': 'info',
+            'title': '8 birthdays this week',
+            'count': 8,
+            'action_label': null,
+            'deep_link': {'screen': 'birthdays'},
           },
         ];
         _isLoading = false;
@@ -82,36 +116,36 @@ class _SubjectTeacherDashboardScreenState extends State<SubjectTeacherDashboardS
     });
 
     try {
-      final data = await _teacherApi.getSubjectDashboard();
-      Map<String, dynamic> timetableData = {};
-      try {
-        timetableData = await _facultyApi.getTeacherTimetable();
-      } catch (_) {}
+      final results = await Future.wait([
+        _teacherApi.getSubjectDashboard(),
+        _teacherApi.getTodayStatus(),
+        _teacherApi.getDashboardAttention(),
+      ]);
 
-      final schedule = (timetableData['schedule'] as List?) ?? [];
-      final Map<String, Map<String, dynamic>> unique = {};
-      for (final item in schedule) {
-        if (item is Map) {
-          final className = item['class_name']?.toString() ?? '';
-          if (className.isNotEmpty && !unique.containsKey(className)) {
-            unique[className] = {
-              'className': className,
-              'subjectName': item['subject_name']?.toString() ?? 'General',
-              'room': item['room_number']?.toString() ?? 'Allocated Room',
-              'students': 35,
-            };
-          }
-        }
-      }
+      final data = results[0];
+      final todayStatusData = results[1];
+      final attentionData = results[2];
+
+      final rawClasses = (data['assigned_classes'] as List?) ?? (data['classes'] as List?) ?? [];
+      final classes = rawClasses.whereType<Map>().map((item) {
+        return {
+          'className': item['class_name']?.toString() ?? 'Class',
+          'subjectName': item['subject_name']?.toString() ?? item['subject']?.toString() ?? 'General',
+          'students': item['students'] as int? ?? 0,
+          'classTeacherName': item['class_teacher_name']?.toString(),
+        };
+      }).toList();
 
       if (mounted) {
         setState(() {
           _dashboardData = data;
+          _todayStatus = todayStatusData.isNotEmpty ? todayStatusData : null;
+          _attentionItems = (attentionData['items'] as List?) ?? [];
           _assignedSubjects = (data['assigned_subjects'] as List?)
                   ?.map((e) => e.toString())
                   .toList() ??
               [];
-          _assignedClasses = unique.values.toList();
+          _assignedClasses = classes;
           _isLoading = false;
         });
       }
@@ -349,6 +383,23 @@ class _SubjectTeacherDashboardScreenState extends State<SubjectTeacherDashboardS
                   ),
                 ],
 
+                // ── Homeroom Attendance Card (Only if assigned a homeroom class) ──
+                if (_todayStatus != null &&
+                    _todayStatus!['attendance'] != null &&
+                    _todayStatus!['attendance'] is Map) ...[
+                  const SizedBox(height: 12),
+                  _buildHomeroomAttendanceCard(
+                    context,
+                    Map<String, dynamic>.from(_todayStatus!['attendance'] as Map),
+                  ),
+                ],
+
+                // ── Today's Teaching Schedule Card (Driven by live today-status) ──
+                if (_todayStatus != null) ...[
+                  const SizedBox(height: 12),
+                  _buildTeachingScheduleCard(context, _todayStatus!),
+                ],
+
                 const SizedBox(height: 16),
 
                 // 4 Core Academic KPI Tiles (2x2 Grid)
@@ -402,6 +453,15 @@ class _SubjectTeacherDashboardScreenState extends State<SubjectTeacherDashboardS
                       onTap: () => context.push('/students/marks-entry'),
                     ),
                   ],
+                ),
+
+                const SizedBox(height: 16),
+
+                // ── Needs Attention Section (Universal Feed) ──
+                NeedsAttentionSection(
+                  items: _attentionItems,
+                  onRefresh: _loadDashboard,
+                  showWhenEmpty: true,
                 ),
 
                 const SizedBox(height: 20),
@@ -519,11 +579,12 @@ class _SubjectTeacherDashboardScreenState extends State<SubjectTeacherDashboardS
                                           ),
                                         ),
                                         Text(
-                                          '${cls['room']} • Active Period',
+                                          '${cls['students'] ?? 0} Students${cls['classTeacherName'] != null ? ' • Class Teacher: ${cls['classTeacherName']}' : ''}',
                                           style: GoogleFonts.manrope(
                                             fontSize: 11,
                                             color: AcademicColors.textSecondary,
                                           ),
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ],
                                     ),
@@ -682,6 +743,313 @@ class _SubjectTeacherDashboardScreenState extends State<SubjectTeacherDashboardS
               child: card,
             )
           : card,
+    );
+  }
+
+  /// Homeroom Attendance Card (Only renders when teacher has homeroom assignment).
+  Widget _buildHomeroomAttendanceCard(BuildContext context, Map<String, dynamic> attendance) {
+    final className = attendance['class_name']?.toString() ?? 'Homeroom';
+    final status = attendance['status']?.toString().toUpperCase() ?? 'NOT_MARKED';
+    final bool canTake = attendance['can_take_attendance'] == true;
+    final int? markedCount = attendance['marked_count'] as int?;
+    final int? totalStudents = attendance['total_students'] as int?;
+
+    final String statusLabel;
+    final Color statusColor;
+    final IconData statusIcon;
+
+    if (status == 'MARKED' || status == 'SUBMITTED' || status == 'COMPLETED') {
+      statusLabel = 'Homeroom Attendance Marked';
+      statusColor = AcademicColors.success;
+      statusIcon = Icons.check_circle_outline;
+    } else if (status == 'PARTIAL') {
+      statusLabel = markedCount != null && totalStudents != null
+          ? 'Attendance In Progress ($markedCount / $totalStudents)'
+          : 'Attendance Partially Marked';
+      statusColor = AcademicColors.warning;
+      statusIcon = Icons.timelapse;
+    } else if (status == 'NOT_APPLICABLE') {
+      statusLabel = 'Attendance Not Applicable Today';
+      statusColor = AcademicColors.textSecondary;
+      statusIcon = Icons.event_busy;
+    } else {
+      statusLabel = 'Homeroom Attendance Not Marked';
+      statusColor = AcademicColors.danger;
+      statusIcon = Icons.pending_actions;
+    }
+
+    return InsetCard(
+      margin: EdgeInsets.zero,
+      padding: const EdgeInsets.all(14),
+      child: Row(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: statusColor.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(statusIcon, color: statusColor, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  className,
+                  style: GoogleFonts.manrope(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.bold,
+                    color: AcademicColors.secondary,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                Text(
+                  statusLabel,
+                  style: GoogleFonts.manrope(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.bold,
+                    color: AcademicColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (canTake)
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AcademicColors.primaryDark,
+                foregroundColor: Colors.white,
+                minimumSize: const Size(0, 32),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                elevation: 0,
+              ),
+              onPressed: () => context.push('/attendance/roll-call'),
+              child: Text(
+                status == 'MARKED' ? 'Review' : 'Roll Call',
+                style: GoogleFonts.manrope(fontSize: 11, fontWeight: FontWeight.bold),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// Today's Teaching Schedule Card (Driven authoritatively by today-status).
+  Widget _buildTeachingScheduleCard(BuildContext context, Map<String, dynamic> todayStatus) {
+    final bool isTeachingDay = todayStatus['is_teaching_day'] == true;
+    final dayType = todayStatus['day_type']?.toString() ?? 'WORKING';
+    final reason = todayStatus['reason']?.toString();
+
+    if (!isTeachingDay || dayType != 'WORKING') {
+      final offTitle = reason ?? (dayType == 'WEEKLY_OFF' ? 'Weekly Off' : 'School Holiday');
+      return InsetCard(
+        margin: EdgeInsets.zero,
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: AcademicColors.info.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.beach_access_outlined, color: AcademicColors.info, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    offTitle,
+                    style: GoogleFonts.newsreader(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: AcademicColors.textPrimary,
+                    ),
+                  ),
+                  Text(
+                    'No active teaching periods scheduled today',
+                    style: GoogleFonts.manrope(
+                      fontSize: 11,
+                      color: AcademicColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final currentPeriod = todayStatus['current_period'] is Map
+        ? Map<String, dynamic>.from(todayStatus['current_period'] as Map)
+        : null;
+    final nextPeriod = todayStatus['next_period'] is Map
+        ? Map<String, dynamic>.from(todayStatus['next_period'] as Map)
+        : null;
+
+    final currNum = currentPeriod?['period_number']?.toString() ?? '—';
+    final currSubj = currentPeriod?['subject_name']?.toString() ?? 'Period Free';
+    final currClass = currentPeriod?['class_name']?.toString() ?? '';
+    final currRoom = currentPeriod?['room_number']?.toString();
+    final currRoomDisplay = (currRoom != null && currRoom.isNotEmpty) ? ' · Room $currRoom' : '';
+    final currStart = currentPeriod?['start_time']?.toString() ?? '';
+    final currEnd = currentPeriod?['end_time']?.toString() ?? '';
+
+    return InsetCard(
+      margin: EdgeInsets.zero,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.schedule, size: 18, color: AcademicColors.primaryDark),
+                  const SizedBox(width: 8),
+                  Text(
+                    "TODAY'S TEACHING SCHEDULE",
+                    style: GoogleFonts.manrope(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: AcademicColors.textSecondary,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                ],
+              ),
+              GestureDetector(
+                onTap: () => context.push('/faculty/timetable'),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Timetable',
+                      style: GoogleFonts.manrope(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: AcademicColors.secondary,
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right, size: 14, color: AcademicColors.secondary),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: AcademicColors.primaryDark,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        'PERIOD $currNum',
+                        style: GoogleFonts.manrope(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFFD4AF37),
+                          letterSpacing: 0.6,
+                        ),
+                      ),
+                    ),
+                    if (currStart.isNotEmpty && currEnd.isNotEmpty)
+                      Text(
+                        '$currStart – $currEnd',
+                        style: GoogleFonts.manrope(
+                          fontSize: 11,
+                          color: Colors.white.withValues(alpha: 0.85),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  currSubj,
+                  style: GoogleFonts.newsreader(
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                if (currClass.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    '$currClass$currRoomDisplay',
+                    style: GoogleFonts.manrope(
+                      fontSize: 11.5,
+                      color: Colors.white.withValues(alpha: 0.8),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          if (nextPeriod != null) ...[
+            const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Row(
+                children: [
+                  Text(
+                    'NEXT',
+                    style: GoogleFonts.manrope(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.bold,
+                      color: AcademicColors.secondary,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Period ${nextPeriod['period_number'] ?? '—'} · ${nextPeriod['subject_name'] ?? ''} (${nextPeriod['class_name'] ?? ''})',
+                      style: GoogleFonts.manrope(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w600,
+                        color: AcademicColors.textPrimary,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  if (nextPeriod['start_time'] != null)
+                    Text(
+                      nextPeriod['start_time'].toString(),
+                      style: GoogleFonts.manrope(
+                        fontSize: 10.5,
+                        color: AcademicColors.textSecondary,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 }

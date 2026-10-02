@@ -84,11 +84,12 @@ class _SubjectTeacherAssignmentsScreenState extends State<SubjectTeacherAssignme
     });
 
     try {
-      final dashboardData = await _teacherApi.getSubjectDashboard();
-      Map<String, dynamic> timetable = {};
-      try {
-        timetable = await _facultyApi.getTeacherTimetable();
-      } catch (_) {}
+      final results = await Future.wait([
+        _teacherApi.getSubjectDashboard(),
+        _facultyApi.getTeacherTimetable().catchError((_) => <String, dynamic>{}),
+      ]);
+      final dashboardData = results[0];
+      final timetable = results[1];
 
       final schedule = (timetable['schedule'] as List?) ?? [];
       final int totalStudentsTaught = (dashboardData['total_students_taught'] as num?)?.toInt() ?? 0;

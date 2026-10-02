@@ -179,14 +179,18 @@ class _ParentsDirectoryScreenState extends State<ParentsDirectoryScreen> {
           _currentPage = 1;
           _totalBackendCount = count;
           _hasMorePages = data['has_more'] as bool? ?? (results.length >= 20);
-          _parents = loaded.isNotEmpty ? loaded : _demoParents;
+          // A legitimately empty directory is real data, not an error — show it as-is
+          // rather than substituting a fabricated demo parent list.
+          _parents = loaded;
           _isLoading = false;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _parents = _demoParents;
+          // Surface the real failure instead of silently showing fabricated demo data
+          // (e.g. "Rajesh Sharma") as if it were the live directory.
+          _errorMessage = e.toString().replaceAll('Exception: ', '').replaceAll('ApiException: ', '');
           _isLoading = false;
         });
       }

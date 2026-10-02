@@ -25,7 +25,9 @@ Widget createTestWidget(Widget child) {
 void main() {
   group('Class Teacher Home Screen — UX & Hierarchy Deep Verification', () {
     testWidgets('TEST 1: Assigned class and student count are visible and prominent', (tester) async {
-      await tester.pumpWidget(createTestWidget(const ClassTeacherDashboardScreen()));
+      await tester.pumpWidget(createTestWidget(const ClassTeacherDashboardScreen(
+        dashboardDataOverride: {'total_students': 40},
+      )));
       await tester.pumpAndSettle();
 
       // Verify Teacher Context Greeting
@@ -108,7 +110,12 @@ void main() {
     });
 
     testWidgets('TEST 6 & 8: Current and next period schedule is displayed', (tester) async {
-      await tester.pumpWidget(createTestWidget(const ClassTeacherDashboardScreen()));
+      await tester.pumpWidget(createTestWidget(const ClassTeacherDashboardScreen(
+        timetableScheduleOverride: [
+          {'period_number': 4, 'subject_name': 'Mathematics', 'room_number': 'Room 204', 'start_time': '11:05 AM', 'end_time': '11:45 AM'},
+          {'period_number': 5, 'subject_name': 'Hindi', 'start_time': '12:30 PM'},
+        ],
+      )));
       await tester.pumpAndSettle();
 
       expect(find.text("TODAY'S TEACHING SCHEDULE"), findsOneWidget);

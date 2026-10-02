@@ -215,7 +215,7 @@ class _FacultyAllocationScreenState extends State<FacultyAllocationScreen> {
         }
       }
     }
-    return 35; // Standard active class student strength fallback
+    return 0;
   }
 
   int get _studentsInCurrentGrade {

@@ -355,7 +355,7 @@ class _FeeLedgerScreenState extends State<FeeLedgerScreen> {
       ),
       bottomNavigationBar: AcademicBottomNavBar.forRole(
         auth.currentRole,
-        currentIndex: 2,
+        currentIndex: 3,
         context: context,
       ),
     );

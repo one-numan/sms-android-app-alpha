@@ -203,7 +203,7 @@ class StudentApiService {
       if (sId is int) {
         parsedId = sId;
       } else if (sId is String) {
-        parsedId = int.tryParse(_resolveStudentId(sId)) ?? 0;
+        parsedId = int.tryParse(sId) ?? int.tryParse(_resolveStudentId(sId)) ?? 0;
       }
       final scoreVal = m['marks_obtained'] ?? m['score'] ?? 0;
       final numericScore = scoreVal is num ? scoreVal.toDouble() : (double.tryParse(scoreVal.toString()) ?? 0.0);
@@ -223,8 +223,6 @@ class StudentApiService {
       final parsedCsId = int.tryParse(classId ?? '') ?? int.tryParse(subjectId ?? '');
       if (parsedCsId != null && parsedCsId > 0) {
         body['class_subject_id'] = parsedCsId;
-      } else {
-        body['class_subject_id'] = 1;
       }
     }
 
@@ -235,7 +233,12 @@ class StudentApiService {
     return response is Map<String, dynamic> ? response : {'data': response};
   }
 
+  static String resolveStudentId(String studentId) => _resolveStudentId(studentId);
+
   static String _resolveStudentId(String studentId) {
+    final direct = int.tryParse(studentId);
+    if (direct != null && direct > 0) return direct.toString();
+
     if (studentId.contains('-')) {
       final last = studentId.split('-').last;
       final parsed = int.tryParse(last);

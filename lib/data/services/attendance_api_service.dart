@@ -28,21 +28,65 @@ class AttendanceApiService {
 
   /// Submit daily roll call register for a class section (`POST /api/v1/attendance/roll-call/`).
   Future<Map<String, dynamic>> submitRollCall({
-    required String classId,
+    required dynamic classId,
     required String sectionId,
     required String date,
     required List<Map<String, dynamic>> attendanceRecords,
   }) async {
+    final rawClassStr = classId.toString();
+    final classDigits = rawClassStr.replaceAll(RegExp(r'[^0-9]'), '');
+    final intClassId = int.tryParse(classDigits) ?? int.tryParse(rawClassStr) ?? 0;
+
+    final sanitizedRecords = attendanceRecords.map((r) {
+      final rawSId = r['student_id']?.toString() ?? '';
+      final lastToken = rawSId.contains('-') ? rawSId.split('-').last : rawSId;
+      final sDigits = lastToken.replaceAll(RegExp(r'[^0-9]'), '');
+      final intStudentId = int.tryParse(sDigits) ?? int.tryParse(lastToken) ?? 0;
+      return {
+        'student_id': intStudentId,
+        'status': r['status'],
+        if (r.containsKey('remark')) 'remark': r['remark'],
+      };
+    }).toList();
+
     final response = await _apiClient.post(
       '/attendance/roll-call/',
       body: {
-        'class_id': classId,
+        'class_id': intClassId,
         'section_id': sectionId,
         'date': date,
-        'records': attendanceRecords,
+        'records': sanitizedRecords,
       },
     );
     return response is Map<String, dynamic> ? response : {'status': 'success'};
+  }
+
+  /// Fetch daily roll call attendance records for a class section (`GET /api/v1/attendance/roll-call/`).
+  Future<Map<String, dynamic>> getClassAttendance({
+    dynamic classId,
+    String? date,
+  }) async {
+    final rawClassStr = classId?.toString();
+    final classDigits = rawClassStr?.replaceAll(RegExp(r'[^0-9]'), '');
+    final intClassId = classDigits != null && classDigits.isNotEmpty
+        ? int.tryParse(classDigits)
+        : int.tryParse(rawClassStr ?? '');
+
+    try {
+      final response = await _apiClient.get(
+        '/attendance/roll-call/',
+        queryParameters: {
+          if (intClassId != null && intClassId > 0) 'class_id': intClassId.toString(),
+          if (date != null) 'date': date,
+        },
+      );
+      if (response is Map<String, dynamic> && response.containsKey('data') && response['data'] is Map<String, dynamic>) {
+        return response['data'] as Map<String, dynamic>;
+      }
+      return response is Map<String, dynamic> ? response : {};
+    } catch (_) {
+      return {};
+    }
   }
 
   /// Fetch faculty leave balances and history (`GET /api/v1/attendance/faculty-leave/`).

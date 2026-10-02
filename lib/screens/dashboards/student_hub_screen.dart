@@ -10,12 +10,14 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../data/mock/auth_state.dart';
+import '../../data/services/attention_api_service.dart';
 import '../../data/services/student_api_service.dart';
 import '../../models/models.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/account_profile_sheet.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/bottom_nav_bar.dart';
+import '../../widgets/needs_attention_section.dart';
 import '../../widgets/onps_verified_badge.dart';
 import '../../widgets/shared_widgets.dart';
 
@@ -28,9 +30,11 @@ class StudentHubScreen extends StatefulWidget {
 
 class _StudentHubScreenState extends State<StudentHubScreen> {
   final StudentApiService _studentApiService = StudentApiService();
+  final AttentionApiService _attentionApiService = AttentionApiService();
   bool _isLoading = false;
   String? _errorMessage;
   Map<String, dynamic>? _hubData;
+  List<dynamic> _attentionItems = [];
 
   @override
   void initState() {
@@ -46,12 +50,14 @@ class _StudentHubScreenState extends State<StudentHubScreen> {
           _hubData ??= {
             'student_name': 'Diya Sharma',
             'class_section': 'Class 8-A',
-            'roll_no': 'Roll #14',
+            'roll_no': '14',
             'attendance_percentage': 90.0,
             'dues': 0.0,
             'open_loans': 0,
             'overdue_loans': 0,
+            'report_card': {'percentage': 91.0, 'grade': 'A1', 'subjects': 6},
           };
+          _attentionItems = [];
           _isLoading = false;
         });
       }
@@ -62,10 +68,16 @@ class _StudentHubScreenState extends State<StudentHubScreen> {
       _errorMessage = null;
     });
     try {
-      final data = await _studentApiService.getStudentHub();
+      final results = await Future.wait([
+        _studentApiService.getStudentHub(),
+        _attentionApiService.getAttentionFeed(),
+      ]);
+      final data = results[0];
+      final attentionData = results[1];
       if (mounted) {
         setState(() {
           _hubData = data;
+          _attentionItems = (attentionData['items'] as List?) ?? [];
           _isLoading = false;
         });
       }
@@ -98,6 +110,9 @@ class _StudentHubScreenState extends State<StudentHubScreen> {
         : 0.0;
     final int openLoans = _hubData?['open_loans'] as int? ?? 0;
     final int overdueLoans = _hubData?['overdue_loans'] as int? ?? 0;
+    final reportCard = _hubData?['report_card'] is Map ? _hubData!['report_card'] as Map : null;
+    final String? reportGrade = reportCard?['grade']?.toString();
+    final double? reportPercentage = (reportCard?['percentage'] as num?)?.toDouble();
 
     return Scaffold(
       backgroundColor: AcademicColors.canvas,
@@ -170,6 +185,15 @@ class _StudentHubScreenState extends State<StudentHubScreen> {
 
                 const SizedBox(height: 14),
 
+                // Needs Attention
+                NeedsAttentionSection(
+                  items: _attentionItems,
+                  onRefresh: _fetchHubData,
+                  showWhenEmpty: true,
+                ),
+
+                const SizedBox(height: 14),
+
                 // 2. Summary Information (Real Backend Data)
                 _buildSummaryGrid(
                   context,
@@ -178,6 +202,8 @@ class _StudentHubScreenState extends State<StudentHubScreen> {
                   feeOutstanding: feeOutstanding,
                   booksOnLoan: openLoans,
                   overdueBooksCount: overdueLoans,
+                  reportGrade: reportGrade,
+                  reportPercentage: reportPercentage,
                 ),
 
                 const SizedBox(height: 16),
@@ -327,6 +353,8 @@ class _StudentHubScreenState extends State<StudentHubScreen> {
     required double feeOutstanding,
     required int booksOnLoan,
     required int overdueBooksCount,
+    String? reportGrade,
+    double? reportPercentage,
   }) {
     final feeFormatted = '₹${feeOutstanding.toInt().toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}';
 
@@ -354,8 +382,8 @@ class _StudentHubScreenState extends State<StudentHubScreen> {
             _buildKpiCard(
               context,
               title: 'Term Result',
-              value: 'Grade A1',
-              badge: 'Report Card',
+              value: reportGrade ?? (reportPercentage != null ? '${reportPercentage.toStringAsFixed(1)}%' : 'N/A'),
+              badge: reportPercentage != null ? '${reportPercentage.toStringAsFixed(1)}%' : 'Report Card',
               badgeColor: AcademicColors.warning,
               icon: Icons.workspace_premium_outlined,
               iconContainerColor: AcademicColors.warningContainer,
@@ -530,6 +558,12 @@ class _StudentHubScreenState extends State<StudentHubScreen> {
           )
         else
           ...scheduleList.map((item) {
+            final startTime = item['start_time']?.toString();
+            final endTime = item['end_time']?.toString();
+            final timeLabel = (startTime != null && endTime != null)
+                ? '$startTime – $endTime'
+                : (item['time']?.toString() ?? '');
+            final teacher = item['teacher']?.toString();
             return Container(
               margin: const EdgeInsets.only(bottom: 8),
               padding: const EdgeInsets.all(12),
@@ -541,12 +575,24 @@ class _StudentHubScreenState extends State<StudentHubScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    item['subject'] ?? 'Subject',
-                    style: GoogleFonts.manrope(fontWeight: FontWeight.bold, fontSize: 13),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item['subject']?.toString() ?? 'Subject',
+                          style: GoogleFonts.manrope(fontWeight: FontWeight.bold, fontSize: 13),
+                        ),
+                        if (teacher != null && teacher.isNotEmpty)
+                          Text(
+                            teacher,
+                            style: GoogleFonts.manrope(fontSize: 11, color: AcademicColors.textSecondary),
+                          ),
+                      ],
+                    ),
                   ),
                   Text(
-                    item['time'] ?? '',
+                    timeLabel,
                     style: GoogleFonts.manrope(fontSize: 12, color: AcademicColors.textSecondary),
                   ),
                 ],

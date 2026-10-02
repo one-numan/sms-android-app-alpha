@@ -1,11 +1,9 @@
-# Teacher "Today" status — Android API spec (PROPOSED, NOT YET IMPLEMENTED)
+# Teacher "Today" status — Android API spec (IMPLEMENTED)
 
-**Status: design spec for implementation, not a built endpoint.** Every
-JSON block below is illustrative (hand-written to match the intended
-contract), not captured from a real response — unlike
-`docs/attention_api_android.md`, which documents an already-shipped
-endpoint. Whoever implements this should replace illustrative payloads
-with real captured examples once built, following that doc's pattern.
+**Status: Live in production backend and integrated in Flutter/Android client.**
+Endpoint: `GET /api/v1/teacher/today-status/`
+Client Integration: Screen 14 (Class Teacher Dashboard) and Screen 15 (Subject Teacher Dashboard).
+Full backend and client contract verified per `docs/BACKEND_HANDOFF_DASHBOARD_APIS_2026-10-01.md`.
 
 ## 0. Why this endpoint
 
